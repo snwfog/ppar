@@ -1,4 +1,4 @@
-package activeRecord;
+package com.sunnyd.activerecord;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -6,8 +6,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import models.DBManager;
+import com.sunnyd.activerecord.annotations.*;
 
+import com.sunnyd.models.DBManager;
 
 
 public class Base {
@@ -36,7 +37,7 @@ public class Base {
 					}
 					
 					//TODO verify SOLUTION 1: all getter Setter method = setDBFirstName or use annotations
-					Annotation ARMethod = method.getAnnotation(activeRecord.annotations.ARMethod.class);
+					Annotation ARMethod = method.getAnnotation(ARMethod.class);
 					
 					method.invoke(this, value);
 					

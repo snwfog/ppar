@@ -1,4 +1,4 @@
-package models;
+package com.sunnyd.models;
 
 import java.util.HashMap;
 

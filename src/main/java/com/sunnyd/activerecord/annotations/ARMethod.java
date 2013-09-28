@@ -1,4 +1,4 @@
-package activeRecord.annotations;
+package com.sunnyd.activerecord.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

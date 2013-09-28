@@ -1,9 +1,9 @@
-package models;
+package com.sunnyd.models;
 
 import java.util.HashMap;
 
-import activeRecord.Base;
-import activeRecord.annotations.ARMethod;
+import com.sunnyd.activerecord.Base;
+import com.sunnyd.activerecord.annotations.ARMethod;
 
 
 public class Person extends Base{
