@@ -1,0 +1,7 @@
+<Context>
+	<Resource name="jdbc/harrydb" auth="Container"
+		type="javax.sql.DataSource" maxActive="20" maxIdle="30"
+		maxWait="10000" username="harry" password="harry"
+		driverClassName="com.mysql.jdbc.Driver"
+		url="jdbc:mysql://localhost:3306/harrydb" />
+</Context>
