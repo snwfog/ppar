@@ -52,3 +52,5 @@ In webcontent/meta-inf folder, create context.xml:
 </Context>
 
 run the jsp, should work
+
+@harry, what is it doesn't work?
