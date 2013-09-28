@@ -7,8 +7,7 @@ Active Record Library
 
 
 
-DATABASE CONNECTION (from scratch)
--------------------
+### DATABASE CONNECTION (from scratch)
 1. Download mysql and start mysql service locally.
 2. Create a user, a test db, test table and test data as follow:
 use app or using terminal: mysql
