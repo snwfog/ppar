@@ -5,7 +5,7 @@
  * Use is subject to license terms.
  */
 
-package com.sunnyd.activerecord.database;
+package com.sunnyd.database;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
