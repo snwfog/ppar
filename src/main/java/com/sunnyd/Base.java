@@ -1,7 +1,7 @@
 package com.sunnyd;
 
 import com.sunnyd.annotations.Method;
-import com.sunnyd.database.DatabaseManager;
+import com.sunnyd.database.Manager;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -63,7 +63,7 @@ public class Base
   @SuppressWarnings("unchecked")
   public static <T> T find(int id)
   {
-    HashMap<Object, Object> HM = new DatabaseManager().find(id);
+    HashMap<Object, Object> HM = new Manager().find(id);
     if (HM == null)
     {
       return null;
