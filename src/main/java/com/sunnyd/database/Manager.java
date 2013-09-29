@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 
-public class DatabaseManager
+public class Manager
 {
 
   public static void main(String[] args)
   {
-    final Logger logger = LoggerFactory.getLogger(DatabaseManager.class);
+    final Logger logger = LoggerFactory.getLogger(Manager.class);
     logger.info("Hello world");
   }
 
