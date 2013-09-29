@@ -18,7 +18,7 @@ public class DBConnectionTest {
         try{
             connection = DBConnection.getConnection();
             stmt = connection.createStatement();
-            rs = stmt.executeQuery("SELECT  from test data where id =" + 1);
+            rs = stmt.executeQuery("SELECT * from testdata where id =1");
 
             if(rs.next()){
                 System.out.println(rs.getString("foo"));
