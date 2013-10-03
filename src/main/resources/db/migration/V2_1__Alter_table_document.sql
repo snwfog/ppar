@@ -1,0 +1,1 @@
+ALTER table Document ADD COLUMN type varchar(100) not null

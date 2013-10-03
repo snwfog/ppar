@@ -1,0 +1,1 @@
+ALTER table PERSON ADD COLUMN lastname varchar(100) not NULL
