@@ -10,64 +10,44 @@ package com.sunnyd.database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Manager
 {
 
-  public static void main(String[] args)
+  final static Logger logger = LoggerFactory.getLogger(Manager.class);
+
+  public static HashMap<Object, Object> find(int id, String tableName)
   {
-    final Logger logger = LoggerFactory.getLogger(Manager.class);
-    logger.info("Hello world");
-    
-    
-    //sample test for CRUD below:
-    
-    //System.out.println(find(1, "persons"));
-    //System.out.println(destroy(2, "persons"));
-    
-    /**
-    HashMap<String, Object> map = new HashMap<String, Object>();
-    map.put("firstName", "newfirst");
-    map.put("lastName", "newlast");
-    System.out.println(update(3, "persons", map));
-    */
+    Connection connection = null;
+    Statement stmt = null;
+    ResultSet rs = null;
 
-  }
+    HashMap<Object, Object> result = new HashMap<Object, Object>();
+    try
+    {
+      connection = Connector.getConnection();
+      stmt = connection.createStatement();
+      rs = stmt.executeQuery("SELECT * from " + tableName + " where id =" + id);
+      ResultSetMetaData rsmd = rs.getMetaData();
+      int columnCount = rsmd.getColumnCount();
 
-  
-  
-  public static HashMap<Object, Object> find(int id, String tableName){
-	  	Connection connection = null;
-		Statement stmt = null;
-		ResultSet rs = null;
-		
-		HashMap<Object, Object> result = new HashMap<Object, Object>();
-		try {
-			connection = Connector.getConnection();
-			stmt = connection.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE ID = " + id);
-			ResultSetMetaData rsmd = rs.getMetaData();
-			int columnCount = rsmd.getColumnCount();
-
-			// The column count starts from 1
-			rs.next(); //
-			for (int i = 1; i < columnCount + 1; i++ ) {
-			  String columnName = rsmd.getColumnName(i);
-			  Object value = rs.getObject(columnName);
-			  result.put(columnName, value);
-			}
-			return result;
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
+      // The column count starts from 1
+      rs.next(); //
+      for (int i = 1; i < columnCount + 1; i++)
+      {
+        String name = rsmd.getColumnName(i);
+        rs.getString(name);
+        result.put(name, rs.getString(name));
+      }
+      return result;
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
+    return null;
   }
   
   
