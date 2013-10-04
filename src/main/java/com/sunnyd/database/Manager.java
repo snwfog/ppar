@@ -25,6 +25,12 @@ public class Manager
   {
     final Logger logger = LoggerFactory.getLogger(Manager.class);
     logger.info("Hello world");
+    
+    //sample test for CRUD below:
+    
+    //System.out.println(find(1, "persons"));
+    //System.out.println(destroy(2, "persons"));
+    
   }
 
   
@@ -65,12 +71,26 @@ public class Manager
 	  	// "INSERT INTO " + tableName + " (`+ col1 + ` + ", "`" + col2 + "`) VALUES (" + val1 + ", " + val2 + ");"
   }
   
-  public static void destroy(int id, String tableName){
-	  	// "DELETE FROM " + tableName + " WHERE ID = " + id";
+  
+  public static boolean destroy(int id, String tableName){
+	  	Connection connection = null;
+		Statement stmt = null;
+		boolean isDestroyed = true;
+	
+		try {
+			connection = Connector.getConnection();
+			stmt = connection.createStatement();
+			stmt.execute("DELETE FROM " + tableName + " WHERE ID = " + id);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			isDestroyed = false;
+		}
+		return isDestroyed;
   }
   
   public static void update(int id, String tableName, HashMap<Object, Object> newvalue){
-	  	 // "UPDATE " + tableName + " SET " + colname = value, + " WHERE ID = " + id
+	  // "UPDATE " + tableName + " SET " + colname = value, + " WHERE ID = " + id
+	  System.out.println(id + " " + tableName + " " + newvalue);
   }
   
   public static void create(){
