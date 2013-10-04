@@ -30,7 +30,7 @@ public class Manager
     
     //System.out.println(find(1, "persons"));
     //System.out.println(destroy(2, "persons"));
-    
+    //System.out.println(update(1, "persons", ));
   }
 
   
@@ -55,7 +55,6 @@ public class Manager
 			  Object value = rs.getObject(columnName);
 			  result.put(columnName, value);
 			}
-			connection.close();
 			return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -64,7 +63,7 @@ public class Manager
   }
   
   
-  public static HashMap<Object, Object> findAll(int id, String tableName){
+  public static HashMap<Object, Object> findAll(String tableName){
 	  return null;
   }
   
@@ -89,9 +88,20 @@ public class Manager
 		return isDestroyed;
   }
   
-  public static void update(int id, String tableName, HashMap<Object, Object> newvalue){
-	  // "UPDATE " + tableName + " SET " + colname = value, + " WHERE ID = " + id
-	  System.out.println(id + " " + tableName + " " + newvalue);
+  public static boolean update(int id, String tableName, String column, Object newvalue){
+	  	Connection connection = null;
+		Statement stmt = null;
+		boolean isUpdated = true;
+		
+		try {
+			connection = Connector.getConnection();
+			stmt = connection.createStatement();
+			stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			isUpdated = false;
+		}
+		return isUpdated;
   }
   
   public static void create(){
