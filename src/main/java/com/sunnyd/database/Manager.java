@@ -26,11 +26,19 @@ public class Manager
     final Logger logger = LoggerFactory.getLogger(Manager.class);
     logger.info("Hello world");
     
+    
     //sample test for CRUD below:
     
     //System.out.println(find(1, "persons"));
     //System.out.println(destroy(2, "persons"));
-    //System.out.println(update(1, "persons", ));
+    
+    /**
+    HashMap<String, Object> map = new HashMap<String, Object>();
+    map.put("firstName", "newfirst");
+    map.put("lastName", "newlast");
+    System.out.println(update(3, "persons", map));
+    */
+
   }
 
   
@@ -88,7 +96,8 @@ public class Manager
 		return isDestroyed;
   }
   
-  public static boolean update(int id, String tableName, String column, Object newvalue){
+ // update 1 or more fields of a single row 
+  public static boolean update(int id, String tableName, HashMap<String, Object> hashmap){
 	  	Connection connection = null;
 		Statement stmt = null;
 		boolean isUpdated = true;
@@ -96,7 +105,15 @@ public class Manager
 		try {
 			connection = Connector.getConnection();
 			stmt = connection.createStatement();
-			stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
+			for (Object key : hashmap.keySet()) {
+				String column = (String)key;
+				Object newvalue = hashmap.get(key);
+				Class<?> fieldType = hashmap.get(key).getClass();
+				newvalue = fieldType.cast(hashmap.get(key));
+				stmt.execute("UPDATE " + tableName + " SET " + column + " = '" + newvalue + "' WHERE ID = " + id);
+
+		    }
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 			isUpdated = false;
