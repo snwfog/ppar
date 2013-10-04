@@ -76,7 +76,9 @@ public class Base
 
         //Since this is a static method, to get caller of method we must look in the stack trace to get class
         StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-        String className = ste[ste.length - 1].getClassName();
+        //At this point stack should look like this [java.lang.Thread.getStackTrace(Unknown Source), com.sunnyd.Base.find(Base.java:79), com.sunnyd.models.Person.main(Person.java:20), .....so on]
+        //TODO:Need a better solution than stack to get caller class
+        String className = ste[2].getClassName();
         try
         {
             return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
