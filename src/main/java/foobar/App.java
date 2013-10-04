@@ -11,7 +11,7 @@ public class App {
 
 		// Point it to the database
 		// flyway.setDataSource("jdbc:h2:file:target/foobar", "sa", null);
-		flyway.setDataSource("jdbc:mysql://localhost:3306/flyway", "root", null);
+		flyway.setDataSource("jdbc:mysql://localhost:3306/ppardb", "root", null);
 
 		// Start the migration
 		flyway.migrate();
