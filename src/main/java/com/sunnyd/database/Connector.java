@@ -29,24 +29,18 @@ public class Connector
     }
   }
 
-  public static Connection getConnection()
+  public static Connection getConnection() throws SQLException
   {
     return instance.createConnection();
   }
 
-  private Connection createConnection()
+  private Connection createConnection() throws SQLException
   {
 
     Connection connection = null;
-    try
-    {
-      //Step 3: Establish Java MySQL connection
-      connection = DriverManager.getConnection(URL, USER, PASSWORD);
-    }
-    catch (SQLException e)
-    {
-      System.out.println("ERROR: Unable to Connect to Database.");
-    }
+    //Step 3: Establish Java MySQL connection
+    connection = DriverManager.getConnection(URL, USER, PASSWORD);
+
     return connection;
   }
 }

@@ -25,10 +25,18 @@ public class Manager
   {
     final Logger logger = LoggerFactory.getLogger(Manager.class);
     logger.info("Hello world");
+    
+    //sample test for CRUD below:
+    
+    //System.out.println(find(1, "persons"));
+    //System.out.println(destroy(2, "persons"));
+    //System.out.println(update(1, "persons", ));
   }
 
+  
+  
   public static HashMap<Object, Object> find(int id, String tableName){
-		Connection connection = null;
+	  	Connection connection = null;
 		Statement stmt = null;
 		ResultSet rs = null;
 		
@@ -36,21 +44,67 @@ public class Manager
 		try {
 			connection = Connector.getConnection();
 			stmt = connection.createStatement();
-			rs = stmt.executeQuery("SELECT * from "+tableName+" where id ="+id);
+			rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE ID = " + id);
 			ResultSetMetaData rsmd = rs.getMetaData();
 			int columnCount = rsmd.getColumnCount();
 
 			// The column count starts from 1
 			rs.next(); //
 			for (int i = 1; i < columnCount + 1; i++ ) {
-			  String name = rsmd.getColumnName(i);
-			  rs.getString(name);
-			  result.put(name, rs.getString(name));
+			  String columnName = rsmd.getColumnName(i);
+			  Object value = rs.getObject(columnName);
+			  result.put(columnName, value);
 			}
 			return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return null;
+  }
+  
+  
+  public static HashMap<Object, Object> findAll(String tableName){
+	  return null;
+  }
+  
+  public static void save(int id, String tableName){
+	  	// "INSERT INTO " + tableName + " (`+ col1 + ` + ", "`" + col2 + "`) VALUES (" + val1 + ", " + val2 + ");"
+  }
+  
+  
+  public static boolean destroy(int id, String tableName){
+	  	Connection connection = null;
+		Statement stmt = null;
+		boolean isDestroyed = true;
+	
+		try {
+			connection = Connector.getConnection();
+			stmt = connection.createStatement();
+			stmt.execute("DELETE FROM " + tableName + " WHERE ID = " + id);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			isDestroyed = false;
+		}
+		return isDestroyed;
+  }
+  
+  public static boolean update(int id, String tableName, String column, Object newvalue){
+	  	Connection connection = null;
+		Statement stmt = null;
+		boolean isUpdated = true;
+		
+		try {
+			connection = Connector.getConnection();
+			stmt = connection.createStatement();
+			stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			isUpdated = false;
+		}
+		return isUpdated;
+  }
+  
+  public static void create(){
+	  	// create obj
   }
 }
