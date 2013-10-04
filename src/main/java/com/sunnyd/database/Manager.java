@@ -52,9 +52,10 @@ public class Manager
 			rs.next(); //
 			for (int i = 1; i < columnCount + 1; i++ ) {
 			  String columnName = rsmd.getColumnName(i);
-			  String value = rs.getString(columnName);
+			  Object value = rs.getObject(columnName);
 			  result.put(columnName, value);
 			}
+			connection.close();
 			return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
