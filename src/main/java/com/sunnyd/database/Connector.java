@@ -8,9 +8,9 @@ import java.sql.SQLException;
 
 public class Connector
 {
-  public static final String URL = "jdbc:mysql://localhost/harrydb";
-  public static final String USER = "harry";
-  public static final String PASSWORD = "harry";
+  public static final String URL = "jdbc:mysql://localhost/ppardb";
+  public static final String USER = "root";
+  public static final String PASSWORD = "root";
   public static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
   //static reference to itself
   private static Connector instance = new Connector();
