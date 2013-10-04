@@ -90,7 +90,7 @@ public class Base
 	        }
             return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
         }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | NoSuchFieldException e)
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
         {
             e.printStackTrace();
         }
@@ -103,6 +103,7 @@ public class Base
     }
     
     public Boolean Destroy(){
+    	Manager.destroy(this.getId(), getClassDBTableName(getClassName()));
     	return true;
     }
     
@@ -120,8 +121,14 @@ public class Base
     	return this.getClass().getName();
     }
     
-    private static String getClassDBTableName(String className) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, ClassNotFoundException{
-    	return Class.forName(className).getDeclaredField("tableName").get(null).toString();
+    private static String getClassDBTableName(String className){
+    	String name = null;
+    	try {
+			name = Class.forName(className).getDeclaredField("tableName").get(null).toString();
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+    	return name;
     }
 
 
