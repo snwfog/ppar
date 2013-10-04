@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public class Connector
 {
-  public static final String URL = "jdbc:mysql://localhost/ppardb";
+  public static final String URL = "jdbc:mysql://127.0.0.1:8889/ppardb?connectTimeout=3000&socketTimeout=3000";
   public static final String USER = "root";
   public static final String PASSWORD = "root";
   public static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
