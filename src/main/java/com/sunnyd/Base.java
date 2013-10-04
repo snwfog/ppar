@@ -12,13 +12,14 @@ import java.util.HashMap;
 
 public class Base
 {
-
+	private Integer id;
+	private String tableName = null;
     public Base(HashMap<Object, Object> HM)
     {
         //Get Caller ClassName
-        String className = this.getClass().getName();
+        String className = getClassName();
 
-        //Instantiate Current Class
+        //Get Current Class
         Class<?> classObject = null;
         try {
             classObject = Class.forName(className);
@@ -49,6 +50,7 @@ public class Base
 	                            getId()
 	                            setId()
 	                     */
+	                	
 	                    method = classObject.getDeclaredMethod("set" + capitalizeField, field.getType());
 	                }
 	                catch (NoSuchMethodException e)
@@ -56,7 +58,7 @@ public class Base
 	                    break;// If method does not have setMethod then it is not a db Attribute
 	                }
 	
-	                //2nd Verication: Verify method belong to a dbAttribute using annotaitons
+	                //2nd Verification: Verify method belong to a dbAttribute using annotaitons
 	                //TODO verify SOLUTION 1: all getter Setter method = setDBFirstName or use annotations
 	                Annotation ARMethod = method.getAnnotation(Method.class);
 	                
@@ -80,9 +82,9 @@ public class Base
         String className = ste[2].getClassName();
         try
         {
-        	Field tableName = Class.forName(className).getDeclaredField("tableName");       	
-        	HashMap<Object, Object> HM = Manager.find(id, tableName.get(null).toString()); 
-	        if (HM == null)
+        	String tableName = getClassDBTableName(className);
+        	HashMap<Object, Object> HM = Manager.find(id, tableName); 
+        	if (HM == null)
 	        {
 	            return null;
 	        }
@@ -92,8 +94,34 @@ public class Base
         {
             e.printStackTrace();
         }
-
         return null;
+    }
+    
+    
+    public static <T> T findAll(){
+    	return null;
+    }
+    
+    public Boolean Destroy(){
+    	return true;
+    }
+    
+    
+	public Integer getId() {
+		return this.id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+    
+    
+    private String getClassName(){
+    	return this.getClass().getName();
+    }
+    
+    private static String getClassDBTableName(String className) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, ClassNotFoundException{
+    	return Class.forName(className).getDeclaredField("tableName").get(null).toString();
     }
 
 
