@@ -10,7 +10,13 @@ package com.sunnyd.database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Manager
 {
@@ -21,23 +27,30 @@ public class Manager
     logger.info("Hello world");
   }
 
-  public HashMap<Object, Object> find(int id){
-    HashMap<Object, Object> Bean = new HashMap<Object, Object>();
-    switch (id) {
-    case 1:
-      Bean.put("firstName", "bitch");
-      Bean.put("lastName", "please");
-      break;
-    case 2:
-      Bean.put("firstName", "Mike");
-      Bean.put("lastName", "Pham");
-      break;
-    case 3:
-      return null;
-    default:
-      break;
-    }
+  public static HashMap<Object, Object> find(int id, String tableName){
+		Connection connection = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		
+		HashMap<Object, Object> result = new HashMap<Object, Object>();
+		try {
+			connection = Connector.getConnection();
+			stmt = connection.createStatement();
+			rs = stmt.executeQuery("SELECT * from "+tableName+" where id ="+id);
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int columnCount = rsmd.getColumnCount();
 
-    return Bean;
+			// The column count starts from 1
+			rs.next(); //
+			for (int i = 1; i < columnCount + 1; i++ ) {
+			  String name = rsmd.getColumnName(i);
+			  rs.getString(name);
+			  result.put(name, rs.getString(name));
+			}
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
   }
 }

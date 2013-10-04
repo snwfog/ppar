@@ -73,12 +73,6 @@ public class Base
     @SuppressWarnings("unchecked")
     public static <T> T find(int id)
     {
-        HashMap<Object, Object> HM = new Manager().find(id);
-        if (HM == null)
-        {
-            return null;
-        }
-
         //Since this is a static method, to get caller of method we must look in the stack trace to get class
         StackTraceElement[] ste = Thread.currentThread().getStackTrace();
         //At this point stack should look like this [java.lang.Thread.getStackTrace(Unknown Source), com.sunnyd.Base.find(Base.java:79), com.sunnyd.models.Person.main(Person.java:20), .....so on]
@@ -86,9 +80,15 @@ public class Base
         String className = ste[2].getClassName();
         try
         {
+        	Field tableName = Class.forName(className).getDeclaredField("tableName");       	
+        	HashMap<Object, Object> HM = Manager.find(id, tableName.get(null).toString()); 
+	        if (HM == null)
+	        {
+	            return null;
+	        }
             return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
         }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e)
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | NoSuchFieldException e)
         {
             e.printStackTrace();
         }

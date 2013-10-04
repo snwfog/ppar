@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class Person extends Base {
 	private String firstName, lastName, status;
+	public final static String tableName = "persons";
 
 	public Person(HashMap<Object, Object> HM) {
 		super(HM);
