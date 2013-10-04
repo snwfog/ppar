@@ -6,6 +6,7 @@ import com.sunnyd.database.Manager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 
 
@@ -30,37 +31,41 @@ public class Base
         for (Field field : fields)
         {
             String fieldName = field.getName();
-            Object value = HM.get(fieldName);
-            String capitalizeField = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-
-            java.lang.reflect.Method method;
-            try
-            {
-                try
-                {
-                    /*Expect all DB attribute to have mutator methods and is named
-                        getAttributeName
-                        setAttributeName
-                        ex: attribute id
-                            getId()
-                            setId()
-                     */
-                    method = classObject.getDeclaredMethod("set" + capitalizeField, field.getType());
-                }
-                catch (NoSuchMethodException e)
-                {
-                    break;// If method does not have setMethod then it is not a db Attribute
-                }
-
-                //2nd Verication: Verify method belong to a dbAttribute using annotaitons
-                //TODO verify SOLUTION 1: all getter Setter method = setDBFirstName or use annotations
-                Annotation ARMethod = method.getAnnotation(Method.class);
-
-                method.invoke(this, value);
-            }
-            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-            {
-                e.printStackTrace();
+            Class<?> fieldType = field.getType();
+            
+            if(HM.containsKey(fieldName)){
+	            Object value = HM.get(fieldName);
+	            String capitalizeField = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+	
+	            java.lang.reflect.Method method;
+	            try
+	            {
+	                try
+	                {
+	                    /*Expect all DB attribute to have mutator methods and is named
+	                        getAttributeName
+	                        setAttributeName
+	                        ex: attribute id
+	                            getId()
+	                            setId()
+	                     */
+	                    method = classObject.getDeclaredMethod("set" + capitalizeField, field.getType());
+	                }
+	                catch (NoSuchMethodException e)
+	                {
+	                    break;// If method does not have setMethod then it is not a db Attribute
+	                }
+	
+	                //2nd Verication: Verify method belong to a dbAttribute using annotaitons
+	                //TODO verify SOLUTION 1: all getter Setter method = setDBFirstName or use annotations
+	                Annotation ARMethod = method.getAnnotation(Method.class);
+	                
+	                method.invoke(this, fieldType.cast(value));
+	            }
+	            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+	            {
+	                e.printStackTrace();
+	            }
             }
         }
     }
