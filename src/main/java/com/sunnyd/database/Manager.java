@@ -24,22 +24,19 @@ public class Manager
 
         // sample test for CRUD below:
         HashMap<String, Object> map = new HashMap<String, Object>();
-        
-        map.put("firstName", new Date());
-        map.put("asd", true);
-        map.put("lastName", 99.88);
+
+        map.put("firstName", "newguy");
+        map.put("lastName", "newguy");
 
         // FIND:
         // System.out.println(find(1, "persons"));
-        
+
         // FIND ALL:
-        /**ArrayList<HashMap<String, Object>> r = findAll("persons", map);
-        for (HashMap<String, Object> h : r){
-            for (String key : h.keySet()){
-                System.out.println(key + ":" + h.get(key));
-            }
-        }*/
         
+//          ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
+//          (HashMap<String, Object> h : r){ for (String key : h.keySet()){
+//          System.out.println(key + ":" + h.get(key)); } }
+         
 
         // SAVE:
         // System.out.println(save("persons", map));
@@ -49,20 +46,14 @@ public class Manager
 
         // UPDATE:
         // System.out.println(update(3, "persons", map));
-        
-        
-        
-        
-        // converter Java to SQL:
 
-        
-        
-        HashMap<String,String> c = convertJavaSQL(map);
-        for (Object key : c.keySet())
-        {    
-            System.out.println(key + " " + c.get(key));
-            
-        }
+        // converter Java to SQL:
+        /**
+         * HashMap<String,String> c = convertJavaSQL(map); for (Object key :
+         * c.keySet()) { System.out.println(key + " " + c.get(key));
+         * 
+         * }
+         */
 
     }
 
@@ -99,38 +90,33 @@ public class Manager
         return null;
     }
 
-    
     // find multiple by criteria
-    public static ArrayList<HashMap<String, Object>> findAll(String tableName, HashMap<String, Object> conditions)
+    public static ArrayList<HashMap<String, Object>> findAll(String tableName,
+            HashMap<String, Object> conditions)
     {
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
         ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
-        
-  
-        String where = "";
-        
-        for (String key : conditions.keySet())
-        {
-            Class<?> fieldType = conditions.get(key).getClass();
 
-            if (fieldType.getName().indexOf("String") > 0)
-            {
-                where += key + " = '" + conditions.get(key) + "' AND ";
-            } else
-            {
-                where += key + " = " + conditions.get(key) + " AND ";
-            }
+        String where = "";
+
+        HashMap<String, String> SQLConditions = convertJavaSQL(conditions);
+
+        for (String key : SQLConditions.keySet())
+        {
+
+            where += key + " = " + SQLConditions.get(key) + " AND ";
+
         }
-        
+
         // remove trailing comma
         where = where.replaceAll(" AND $", ""); // col1, col2, col3
-       
-        if (!where.equals("")){
+
+        if (!where.equals(""))
+        {
             where = " WHERE " + where;
         }
-        
 
         try
         {
@@ -140,7 +126,7 @@ public class Manager
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnCount = rsmd.getColumnCount();
 
-            rs.beforeFirst(); //go to beginning
+            rs.beforeFirst(); // go to beginning
             while (rs.next())
             {
                 HashMap<String, Object> row = new HashMap<String, Object>();
@@ -157,7 +143,7 @@ public class Manager
             e.printStackTrace();
         }
         return results;
-        
+
     }
 
     public static int save(String tableName, HashMap<String, Object> hashmap)
@@ -175,21 +161,13 @@ public class Manager
         {
             connection = Connector.getConnection();
 
+            HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
+
             // get column value pairs from hashmap as val,val,val...
-            for (String key : hashmap.keySet())
+            for (String key : SQLHashmap.keySet())
             {
                 columns += key + ",";
-                Class<?> fieldType = hashmap.get(key).getClass();
-                // type is string, add single quote
-
-                // REVIEW (@harry): This should be >= 0
-                if (fieldType.getName().indexOf("String") > 0)
-                {
-                    values += "'" + hashmap.get(key) + "',";
-                } else
-                {
-                    values += hashmap.get(key) + ",";
-                }
+                values += SQLHashmap.get(key) + ",";
             }
             // remove trailing comma
             columns = columns.replaceAll(",$", "");
@@ -248,14 +226,14 @@ public class Manager
             connection = Connector.getConnection();
             stmt = connection.createStatement();
 
-            for (Object key : hashmap.keySet())
+            HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
+
+            for (Object key : SQLHashmap.keySet())
             {
                 String column = (String) key;
-                Object newvalue = hashmap.get(key);
-                Class<?> fieldType = hashmap.get(key).getClass();
-                newvalue = fieldType.cast(hashmap.get(key));
-                stmt.execute("UPDATE " + tableName + " SET " + column + " = '"
-                        + newvalue + "' WHERE ID = " + id);
+                String newvalue = SQLHashmap.get(key);
+                stmt.execute("UPDATE " + tableName + " SET " + column + " = "
+                        + newvalue + " WHERE ID = " + id);
             }
 
         } catch (SQLException e)
@@ -270,34 +248,41 @@ public class Manager
     {
         // create obj
     }
-    
-    
-    // helper method to convert java type (string, int, date) to mysql type written in str
-    private static HashMap<String, String> convertJavaSQL(HashMap<String, Object> original){
+
+    // helper method to convert java type (string, int, date) to mysql type
+    // written in str
+    private static HashMap<String, String> convertJavaSQL(
+            HashMap<String, Object> original)
+    {
         HashMap<String, String> converted = new HashMap<String, String>();
-        
+
         for (String key : original.keySet())
         {
             Class<?> fieldType = original.get(key).getClass();
             String type = fieldType.getSimpleName();
-            
-            switch (type){
+
+            switch (type)
+            {
                 case "Boolean":
-                    converted.put(key, "'" + original.get(key).toString() + "'");
+                    converted
+                            .put(key, "'" + original.get(key).toString() + "'");
                     break;
                 case "Integer":
-                    converted.put(key, Integer.toString((int) original.get(key)));
+                    converted.put(key,
+                            Integer.toString((int) original.get(key)));
                     break;
                 case "Double":
-                    converted.put(key, Double.toString((double) original.get(key)));
+                    converted.put(key,
+                            Double.toString((double) original.get(key)));
                     break;
                 case "String":
                     converted.put(key, "'" + original.get(key) + "'");
                     break;
                 case "Date":
-                    Date dt = (Date) original.get(key);   
-                    DateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-                    converted.put(key, "'" + parser.format(dt) +"'");
+                    Date dt = (Date) original.get(key);
+                    DateFormat parser = new SimpleDateFormat(
+                            "yyyy-mm-dd hh:mm:ss");
+                    converted.put(key, "'" + parser.format(dt) + "'");
                     break;
                 default:
                     System.out.println("i dunno this type yet, tell harry");
