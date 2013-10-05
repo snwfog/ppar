@@ -1,10 +1,3 @@
-/*
- * Copyright 2013 8D Technologies, Inc. All Rights Reserved.
- *
- * This software is the proprietary information of 8D Technologies, Inc.
- * Use is subject to license terms.
- */
-
 package com.sunnyd.database;
 
 import org.slf4j.Logger;
