@@ -18,6 +18,7 @@ public class Person extends Base implements ModelInterface {
 	
 	@tableAttr
 	private String status;
+	
 	public static final String tableName = "persons";
 
 	public Person(HashMap<Object, Object> HM) {

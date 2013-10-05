@@ -47,7 +47,6 @@ public class Base
 	                //2nd Verification: Verify method belong to a dbAttribute using annotaitons
 	                //TODO verify SOLUTION 1: all getter Setter method = setDBFirstName or use annotations
 	                Annotation ARMethod = method.getAnnotation(Method.class);
-	                
 	                method.invoke(this, fieldType.cast(value));
 	            }
 	            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
