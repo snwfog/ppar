@@ -17,13 +17,13 @@ public class Person extends Base implements ModelInterface {
 
 	public static void main(String[] args) {
 		
-		Person a = Person.find(2);
+		Person a = Person.find(1);
 		
 		System.out.println(a.getId());
 		System.out.println(a.getFirstName());
 		System.out.println(a.getLastName());
 		
-		System.out.println(a.Destroy());
+//		System.out.println(a.Destroy());
 		
 	}
 

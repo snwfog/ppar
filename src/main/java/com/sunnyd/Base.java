@@ -18,15 +18,7 @@ public class Base
     {
         //Get Caller ClassName
         String className = getClassName();
-
-        //Get Current Class
-        Class<?> classObject = null;
-        try {
-            classObject = Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
+        Class<?> classObject = this.getClass();
         //Get all object fields
         Field[] fields = classObject.getDeclaredFields();
         for (Field field : fields)
@@ -42,15 +34,7 @@ public class Base
 	            try
 	            {
 	                try
-	                {
-	                    /*Expect all DB attribute to have mutator methods and is named
-	                        getAttributeName
-	                        setAttributeName
-	                        ex: attribute id
-	                            getId()
-	                            setId()
-	                     */
-	                	
+	                {                	
 	                    method = classObject.getDeclaredMethod("set" + capitalizeField, field.getType());
 	                }
 	                catch (NoSuchMethodException e)
@@ -102,9 +86,13 @@ public class Base
     	return null;
     }
     
+    public boolean update(){
+//    	Manager(this.getId(), this.tableName,)
+    	return false;
+    }
+    
     public Boolean Destroy(){
-    	Manager.destroy(this.getId(), getClassDBTableName(getClassName()));
-    	return true;
+    	return Manager.destroy(this.getId(), getClassDBTableName(getClassName()));
     }
     
     
@@ -130,7 +118,5 @@ public class Base
 		}
     	return name;
     }
-
-
 }
 
