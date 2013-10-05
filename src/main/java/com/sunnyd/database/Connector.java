@@ -15,7 +15,7 @@ public class Connector
   final static String driverClass = "com.mysql.jdbc.Driver";
   private static String database = "ppardb";
   private static String host = "127.0.0.1";
-  private static String port = "8889";
+  private static String port = "3306";
   private static String username = "root";
   private static String password = "root";
   private static String url;
