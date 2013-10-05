@@ -1,6 +1,6 @@
 package com.sunnyd;
 
-import com.sunnyd.annotations.Method;
+import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
 import java.lang.annotation.Annotation;
@@ -8,12 +8,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class Base
 {
 	private Integer id;
 	private String tableName = null;
+	private Boolean updateFlag = false;
     public Base(HashMap<Object, Object> HM)
     {
         //Get Caller ClassName
@@ -87,15 +89,31 @@ public class Base
     }
     
     public boolean update(){
-//    	Manager(this.getId(), this.tableName,)
-    	return false;
+    	if(this.updateFlag){
+	    	HashMap<Object, Object> updateAttributes = new HashMap<Object, Object>();
+	    	Field[] classFields = this.getClass().getDeclaredFields();
+	    	for(Field field : classFields){
+	    		Annotation tableAttr = field.getAnnotation(tableAttr.class);
+	    		if(tableAttr != null){
+	    			try {
+						updateAttributes.put(field.getName(), field.get(null));
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						e.printStackTrace();
+					}
+	    		}
+	    		System.out.println(Arrays.asList(updateAttributes).toString());
+	    	}
+	    	
+    	}
+    	
+    	return true;
     }
     
     public Boolean Destroy(){
     	return Manager.destroy(this.getId(), getClassDBTableName(getClassName()));
     }
     
-    
+    //Mutator
 	public Integer getId() {
 		return this.id;
 	}
@@ -104,7 +122,15 @@ public class Base
 		this.id = id;
 	}
     
+    public Boolean getUpdateFlag(){
+    	return this.updateFlag;
+    }
     
+    public void setUpdateFlag(Boolean flag){
+    	this.updateFlag = flag;
+    }
+	
+	//Private
     private String getClassName(){
     	return this.getClass().getName();
     }

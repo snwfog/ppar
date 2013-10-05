@@ -2,13 +2,22 @@ package com.sunnyd.models;
 
 import com.sunnyd.Base;
 import com.sunnyd.ModelInterface;
-import com.sunnyd.annotations.Method;
+import com.sunnyd.annotations.*;
 
 import java.util.HashMap;
 
 public class Person extends Base implements ModelInterface {
-	private String firstName, lastName, status;
-	private Integer id;
+	@tableAttr
+	private String firstName;
+	
+	@tableAttr
+	private String lastName;
+	
+	@tableAttr
+	private Integer id;	
+	
+	@tableAttr
+	private String status;
 	public static final String tableName = "persons";
 
 	public Person(HashMap<Object, Object> HM) {
