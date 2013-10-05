@@ -111,9 +111,16 @@ public class Base {
         return Manager.destroy(this.getId(), getTableName());
     }
 
-    public int save() {
-        HashMap<String, Object> attrToPersist = Base.getTableAttributeNameAndValue(this);
-        return Manager.save(getClassTableName(this.getClassName()), attrToPersist);
+    public boolean save() {
+        if(this.getId()!=null && this.getId() != 0){
+            HashMap<String, Object> attrToPersist = Base.getTableAttributeNameAndValue(this);
+            int id = Manager.save(getClassTableName(this.getClassName()), attrToPersist);
+            if(id != 0){
+                this.setId(id);
+                return true;
+            }
+        }
+        return false;
     }
 
     /****** MUTATOR ****************************************************/
