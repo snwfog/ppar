@@ -1,73 +1,79 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.ModelInterface;
-import com.sunnyd.annotations.*;
+import com.sunnyd.IModel;
+import com.sunnyd.annotations.tableAttr;
 
 import java.util.HashMap;
 
-public class Person extends Base implements ModelInterface {
-	public static final String tableName = "persons";
-	
-	@tableAttr
-	private String firstName;
-	
-	@tableAttr
-	private String lastName;
-	
-	private String status;
+public class Person extends Base implements IModel
+{
+  public static final String tableName = "persons";
+  @tableAttr
+  private String firstName;
+  @tableAttr
+  private String lastName;
+  private String status;
 
-	public Person(HashMap<String, Object> HM) {
-		super(HM);
-	}
+  public Person(HashMap<String, Object> HM)
+  {
+    super(HM);
+  }
 
-	public static void main(String[] args) {
-		
-		Person a = Person.find(1);
-		
-		System.out.println(a.getId());
-		System.out.println(a.getFirstName());
-		System.out.println(a.getLastName());
-		a.setFirstName("john");
+  public static void main(String[] args)
+  {
 
-		
-		Person b = Person.find(2);
-		
-		System.out.println(b.getId());
-		System.out.println(b.getFirstName());
-		System.out.println(b.getLastName());
-		b.setFirstName("oaisjdoaijdoa");
+    Person a = Person.find(1);
 
-		b.update();
-		a.update();
+    System.out.println(a.getId());
+    System.out.println(a.getFirstName());
+    System.out.println(a.getLastName());
+    a.setFirstName("john");
+
+
+    Person b = Person.find(2);
+
+    System.out.println(b.getId());
+    System.out.println(b.getFirstName());
+    System.out.println(b.getLastName());
+    b.setFirstName("oaisjdoaijdoa");
+
+    b.update();
+    a.update();
 //		System.out.println(a.Destroy());
-		
-	}
-	
-	public String getFirstName() {
-		return firstName;
-	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-		setUpdateFlag(true);
-	}
+  }
 
-	public String getLastName() {
-		return lastName;
-	}
-	
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-		setUpdateFlag(true);
-	}
+  public String getFirstName()
+  {
+    return firstName;
+  }
 
-	public String getStatus() {
-		return status;
-	}
+  public void setFirstName(String firstName)
+  {
+    this.firstName = firstName;
+    setUpdateFlag(true);
+  }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+  public String getLastName()
+  {
+    return lastName;
+  }
+
+  public void setLastName(String lastName)
+  {
+    this.lastName = lastName;
+    setUpdateFlag(true);
+  }
+
+  public String getStatus()
+  {
+    return status;
+  }
+
+  public void setStatus(String status)
+  {
+    this.status = status;
+  }
 
 }

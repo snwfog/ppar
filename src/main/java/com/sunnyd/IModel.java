@@ -1,6 +1,6 @@
 package com.sunnyd;
 
-interface IModel
+public interface IModel
 {
   Integer getId();
 
