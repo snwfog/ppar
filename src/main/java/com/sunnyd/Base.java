@@ -81,7 +81,6 @@ public class Base {
     }
 
     public static <T> T findAll() {
-
         return null;
     }
 
@@ -110,6 +109,7 @@ public class Base {
         return false;
     }
 
+    
     /****** MUTATOR ****************************************************/
     // Common Mutator in all child class.
 
@@ -129,6 +129,7 @@ public class Base {
         this.updateFlag = flag;
     }
 
+    
     /******** Private ***********************************************/
     private String getClassName() {
         return this.getClass().getName();

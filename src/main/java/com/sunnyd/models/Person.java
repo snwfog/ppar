@@ -15,6 +15,9 @@ public class Person extends Base implements IModel {
     @tableAttr
     private String lastName;
 
+    @hasMany
+    private Resume[] resumes;
+    
     private String status;
 
     public Person(){
