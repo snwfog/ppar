@@ -1,13 +1,7 @@
 package com.sunnyd.database;
 
-//Step 1: Use interfaces from java.sql package
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,7 +15,7 @@ public class Connector
   final static String driverClass = "com.mysql.jdbc.Driver";
   private static String database = "ppardb";
   private static String host = "127.0.0.1";
-  private static String port = "8889";
+  private static String port = "3306";
   private static String username = "root";
   private static String password = "root";
   private static String url;

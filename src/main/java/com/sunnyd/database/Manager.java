@@ -28,14 +28,14 @@ public class Manager
 
         // sample test for CRUD below:
         HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("firstName", "ppp");
-        map.put("lastName", "pppp");
+        map.put("firstName", "guuuuu");
+        map.put("lastName", "wwwww");
 
         // FIND:
         // System.out.println(find(1, "persons"));
 
         // SAVE:
-        // System.out.println(save("persons", map));
+        System.out.println(save("persons", map));
 
         // DESTROY:
         // System.out.println(destroy(2, "persons"));
@@ -85,7 +85,7 @@ public class Manager
     public static int save(String tableName, HashMap<String, Object> hashmap)
     {
         Connection connection = null;
-        PreparedStatement stmt = null;
+        Statement stmt = null;
         ResultSet rs = null;
 
         String columns = "";
@@ -115,10 +115,17 @@ public class Manager
             columns = columns.replaceAll(",$", "");
             values = values.replaceAll(",$", "");
 
-            stmt = connection.prepareStatement("INSERT INTO " + tableName
-                    + " (" + columns + ") VALUES (" + values + ")",
-                    new String[] { "id" });
-            stmt.executeUpdate();
+            stmt = connection.createStatement();
+            stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns
+                    + ") VALUES (" + values + ")",
+                    Statement.RETURN_GENERATED_KEYS);
+
+            /**
+             * stmt = connection.prepareStatement("INSERT INTO " + tableName +
+             * " (" + columns + ") VALUES (" + values + ")", new String[] { "id"
+             * });
+             */
+
             rs = stmt.getGeneratedKeys();
             rs.next();
             id = rs.getInt(1);
