@@ -4,11 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Manager
@@ -21,14 +21,21 @@ public class Manager
 
         // sample test for CRUD below:
         HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("firstName", "guuuuu");
-        map.put("lastName", "wwwww");
+        map.put("firstName", "save");
+        map.put("lastName", "asd");
 
         // FIND:
         // System.out.println(find(1, "persons"));
+        ArrayList<HashMap<String, Object>> r = findAll("persons", map);
+        for (HashMap<String, Object> h : r){
+            for (String key : h.keySet()){
+                System.out.println(key + ":" + h.get(key));
+            }
+        }
+        
 
         // SAVE:
-        System.out.println(save("persons", map));
+        // System.out.println(save("persons", map));
 
         // DESTROY:
         // System.out.println(destroy(2, "persons"));
@@ -38,6 +45,7 @@ public class Manager
 
     }
 
+    // find by id, return single row
     public static HashMap<String, Object> find(int id, String tableName)
     {
         Connection connection = null;
@@ -70,9 +78,65 @@ public class Manager
         return null;
     }
 
-    public static HashMap<String, Object> findAll(String tableName)
+    
+    // find multiple by criteria
+    public static ArrayList<HashMap<String, Object>> findAll(String tableName, HashMap<String, Object> conditions)
     {
-        return null;
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+        
+  
+        String where = "";
+        
+        for (String key : conditions.keySet())
+        {
+            Class<?> fieldType = conditions.get(key).getClass();
+
+            if (fieldType.getName().indexOf("String") > 0)
+            {
+                where += key + " = '" + conditions.get(key) + "' AND ";
+            } else
+            {
+                where += key + " = " + conditions.get(key) + " AND ";
+            }
+        }
+        
+        // remove trailing comma
+        where = where.replaceAll(" AND $", ""); // col1, col2, col3
+       
+        if (!where.equals("")){
+            where = " WHERE " + where;
+        }
+        
+
+        try
+        {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int columnCount = rsmd.getColumnCount();
+
+            rs.beforeFirst(); //go to beginning
+            while (rs.next())
+            {
+                HashMap<String, Object> row = new HashMap<String, Object>();
+                for (int i = 1; i < columnCount + 1; i++)
+                {
+                    String columnName = rsmd.getColumnName(i);
+                    Object value = rs.getObject(columnName);
+                    row.put(columnName, value);
+                }
+                results.add(row);
+            }
+        } catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        return results;
+        
     }
 
     public static int save(String tableName, HashMap<String, Object> hashmap)
