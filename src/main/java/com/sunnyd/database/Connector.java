@@ -2,51 +2,72 @@ package com.sunnyd.database;
 
 //Step 1: Use interfaces from java.sql package
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class Connector
 {
-  public static final String URL = "jdbc:mysql://127.0.0.1:8889/ppardb?connectTimeout=3000&socketTimeout=3000";
-  public static final String USER = "root";
-  public static final String PASSWORD = "root";
-  public static final String DRIVER_CLASS = "com.mysql.jdbc.Driver";
+  static final Logger logger = LoggerFactory.getLogger(Connector.class);
+
+  final static String driverClass = "com.mysql.jdbc.Driver";
+  private static String database = "ppardb";
+  private static String host = "127.0.0.1";
+  private static String port = "8889";
+  private static String username = "root";
+  private static String password = "root";
+  private static String url;
   //static reference to itself
   private static Connector instance = new Connector();
 
   //private constructor
   private Connector()
   {
+    // Initiate the URL from properties files or fall back to default
+    Properties prop = new Properties();
     try
     {
-      //Step 2: Load MySQL Java driver
-      Class.forName(DRIVER_CLASS);
+      // Load the files from the default path
+      // Which is located at resources/config
+      prop.load(ClassLoader.getSystemResourceAsStream("config/database.properties"));
+
+      // Statically init the JDBC class
+      Class.forName(driverClass);
+
+      // Set the URL string for the JDBC connection
+      database = prop.getProperty("database", database);
+      host = prop.getProperty("host", host);
+      port = prop.getProperty("port", port);
+      username = prop.getProperty("username", username);
+      password = prop.getProperty("password", password);
+      url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
+    }
+    catch (IOException e)
+    {
+      logger.error("Could not load the database.properties file.");
     }
     catch (ClassNotFoundException e)
     {
-      e.printStackTrace();
+      logger.error("Could not find the JDBC library.");
     }
   }
 
-  public static Connection getConnection()
+  public static Connection getConnection() throws SQLException
   {
     return instance.createConnection();
   }
 
-  private Connection createConnection()
+  private Connection createConnection() throws SQLException
   {
 
-    Connection connection = null;
-    try
-    {
-      //Step 3: Establish Java MySQL connection
-      connection = DriverManager.getConnection(URL, USER, PASSWORD);
-    }
-    catch (SQLException e)
-    {
-      System.out.println("ERROR: Unable to Connect to Database.");
-    }
-    return connection;
+    return DriverManager.getConnection(url, username, password);
   }
 }
