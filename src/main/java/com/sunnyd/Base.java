@@ -111,10 +111,9 @@ public class Base {
         return Manager.destroy(this.getId(), getTableName());
     }
 
-    public Boolean save() {
+    public int save() {
         HashMap<String, Object> attrToPersist = Base.getTableAttributeNameAndValue(this);
-        System.out.println(Arrays.asList(attrToPersist).toString());
-        return true;
+        return Manager.save(getClassTableName(this.getClassName()), attrToPersist);
     }
 
     /****** MUTATOR ****************************************************/
