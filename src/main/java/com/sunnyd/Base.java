@@ -6,6 +6,7 @@ import com.sunnyd.database.Manager;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,9 +19,9 @@ public class Base {
     private Integer id;
 
     private Boolean updateFlag = false;
-    
-    public Base(){
-        
+
+    public Base() {
+
     }
 
     public Base(HashMap<String, Object> HM) {
@@ -50,7 +51,8 @@ public class Base {
                 }
 
             }
-        }
+        }    
+        this.setUpdateFlag(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -79,28 +81,13 @@ public class Base {
     }
 
     public static <T> T findAll() {
+
         return null;
     }
 
     public boolean update() {
-        if (getUpdateFlag()) {
-            HashMap<String, Object> updateAttributes = new HashMap<String, Object>();
-            Field[] classFields = this.getClass().getDeclaredFields();
-            for (Field field : classFields) {
-                Annotation tableAttr = field.getAnnotation(tableAttr.class);
-                if (tableAttr != null) {
-                    try {
-                        String fieldName = field.getName();
-                        java.lang.reflect.Method method;
-                        method = this.getClass().getDeclaredMethod("get" + capitalize(fieldName));
-                        updateAttributes.put(fieldName, method.invoke(this));
-                    } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException
-                            | SecurityException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
+        if(this.getUpdateFlag()) {
+            HashMap<String, Object> updateAttributes = getTableAttributeNameAndValue(this);
             this.setUpdateFlag(false);
             return Manager.update(this.getId(), getTableName(), updateAttributes);
         }
@@ -112,10 +99,10 @@ public class Base {
     }
 
     public boolean save() {
-        if(this.getId()==null){
+        if (this.getId() == null) {
             HashMap<String, Object> attrToPersist = Base.getTableAttributeNameAndValue(this);
             int id = Manager.save(getClassTableName(this.getClassName()), attrToPersist);
-            if(id != 0){
+            if (id != 0) {
                 this.setId(id);
                 return true;
             }
@@ -171,20 +158,18 @@ public class Base {
     private static String capitalize(String s) {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
-    
-    private static HashMap<String, Object> getTableAttributeNameAndValue(Object classObject){
+
+    private static HashMap<String, Object> getTableAttributeNameAndValue(Object classObject) {
         Field[] classFields = classObject.getClass().getDeclaredFields();
-        HashMap<String, Object> tableAttributes = new HashMap<String,Object>();
-        for(int i=0; i<classFields.length; i++){
+        HashMap<String, Object> tableAttributes = new HashMap<String, Object>();
+        for (int i = 0; i < classFields.length; i++) {
             Field field = classFields[i];
             Annotation attrAnnotation = field.getAnnotation(tableAttr.class);
             if (attrAnnotation != null) {
                 try {
                     String fieldName = field.getName();
-                    java.lang.reflect.Method method;
-                    Object value;
-                        method = classObject.getClass().getDeclaredMethod("get" + capitalize(fieldName));
-                        value = method.invoke(classObject);
+                    Method method = classObject.getClass().getDeclaredMethod("get" + capitalize(fieldName));
+                    Object value = method.invoke(classObject);
                     tableAttributes.put(field.getName(), value);
                 } catch (IllegalArgumentException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
@@ -193,11 +178,11 @@ public class Base {
         }
         return tableAttributes;
     }
-    
-    private static Field[] getTableField(Class<?> classObject){
+
+    private static Field[] getTableField(Class<?> classObject) {
         Field[] classFields = classObject.getDeclaredFields();
         List<Field> tableAttributes = new ArrayList<Field>();
-        for(int i=0; i<classFields.length; i++){
+        for (int i = 0; i < classFields.length; i++) {
             Field field = classFields[i];
             Annotation attrAnnotation = field.getAnnotation(tableAttr.class);
             if (attrAnnotation != null) {
