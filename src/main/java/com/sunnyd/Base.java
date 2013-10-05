@@ -112,7 +112,7 @@ public class Base {
     }
 
     public boolean save() {
-        if(this.getId()!=null && this.getId() != 0){
+        if(this.getId()==null){
             HashMap<String, Object> attrToPersist = Base.getTableAttributeNameAndValue(this);
             int id = Manager.save(getClassTableName(this.getClassName()), attrToPersist);
             if(id != 0){
