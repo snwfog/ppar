@@ -36,7 +36,7 @@ public class Person extends Base implements ModelInterface {
 		System.out.println(b.getId());
 		System.out.println(b.getFirstName());
 		System.out.println(b.getLastName());
-		b.setFirstName("lucas");
+		b.setFirstName("oaisjdoaijdoa");
 
 		b.update();
 		a.update();

@@ -69,7 +69,7 @@ public class Base
         String className = ste[2].getClassName();
         try
         {
-        	String tableName = getClassDBTableName(className);
+        	String tableName = getClassTableName(className);
         	HashMap<String, Object> HM = Manager.find(id, tableName); 
         	if (HM == null)
 	        {
@@ -108,14 +108,14 @@ public class Base
 	    	}
 	    	
 	    	this.setUpdateFlag(false);
-	    	Manager.update(this.getId(), getClassDBTableName(getClassName()), updateAttributes);
+	    	Manager.update(this.getId(), getTableName(), updateAttributes);
     	}
     	
     	return true;
     }
     
     public Boolean Destroy(){
-    	return Manager.destroy(this.getId(), getClassDBTableName(getClassName()));
+    	return Manager.destroy(this.getId(), getTableName());
     }
     
     /******MUTATOR****************************************************/
@@ -137,12 +137,14 @@ public class Base
     	this.updateFlag = flag;
     }
 	
+    
+    
 	/********Private***********************************************/
     private String getClassName(){
     	return this.getClass().getName();
     }
     
-    private static String getClassDBTableName(String className){
+    private static String getClassTableName(String className){
     	String name = null;
     	try {
 			name = Class.forName(className).getDeclaredField("tableName").get(null).toString();
@@ -150,6 +152,19 @@ public class Base
 			e.printStackTrace();
 		}
     	return name;
+    }
+    
+    
+    
+    private String getTableName(){
+    	try {
+			return this.getClass().getDeclaredField("tableName").get(null).toString();
+		} catch (IllegalArgumentException | IllegalAccessException
+				| NoSuchFieldException | SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return null;
     }
     
     
