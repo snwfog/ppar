@@ -4,7 +4,6 @@ import com.googlecode.flyway.core.Flyway;
 
 public class App {
 	public static void main(String[] args) {
-		// System.out.println( "Hello World!" );
 
 		// Create the Flyway instance
 		Flyway flyway = new Flyway();
