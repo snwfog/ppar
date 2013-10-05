@@ -33,7 +33,7 @@ public class Person extends Base implements IModel {
         a.setFirstName("bobby");
         a.setLastName("yit");
         a.save();
-          
+
 //        Person a = Person.find(1);
 //
 //        System.out.println(a.getId());

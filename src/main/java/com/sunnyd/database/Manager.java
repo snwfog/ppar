@@ -160,6 +160,8 @@ public class Manager
                 columns += key + ",";
                 Class<?> fieldType = hashmap.get(key).getClass();
                 // type is string, add single quote
+
+                // REVIEW (@harry): This should be >= 0
                 if (fieldType.getName().indexOf("String") > 0)
                 {
                     values += "'" + hashmap.get(key) + "',";

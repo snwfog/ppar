@@ -5,11 +5,13 @@ import java.sql.Connection;
 import com.sunnyd.database.fixtures.Prep;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,20 +20,41 @@ import java.sql.Statement;
  * Time: 8:20 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ManagerTest
+public class ManagerTest extends DatabaseSetup
 {
   private static final String tableName = "database_manager_test";
-  private Connection conn;
-  private Statement stmt;
 
   @BeforeClass
   public void init() throws SQLException
   {
-    conn = Connector.getConnection();
-    stmt = conn.createStatement();
-
-    // Prep a database table for testing
     Prep.init(tableName);
+  }
+
+  @BeforeTest
+  public void prepTable() throws SQLException
+  {
+    Prep.purgeAllRecord(tableName);
+    Prep.resetPrimaryKey(tableName);
+  }
+
+  @Test
+  public void saveTest() throws SQLException
+  {
+    HashMap<String, Object> hashMap = new HashMap<String, Object>()
+    {
+      {
+        put("NAME", "Charles");
+      }
+    };
+
+    Manager.save(tableName, hashMap);
+    Manager.save(tableName, hashMap);
+    Manager.save(tableName, hashMap);
+
+//    for (String key : hashMap.keySet())
+//    {
+//      Manager.save(tableName, )
+//    }
   }
 
   @Test
