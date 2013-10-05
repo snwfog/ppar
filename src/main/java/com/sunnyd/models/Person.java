@@ -1,12 +1,12 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.ModelInterface;
+import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 
 import java.util.HashMap;
 
-public class Person extends Base implements ModelInterface {
+public class Person extends Base implements IModel {
     public static final String tableName = "persons";
 
     @tableAttr
