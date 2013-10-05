@@ -43,12 +43,12 @@ public class Manager
 
   
   
-  public static HashMap<Object, Object> find(int id, String tableName){
+  public static HashMap<String, Object> find(int id, String tableName){
 	  	Connection connection = null;
 		Statement stmt = null;
 		ResultSet rs = null;
 		
-		HashMap<Object, Object> result = new HashMap<Object, Object>();
+		HashMap<String, Object> result = new HashMap<String, Object>();
 		try {
 			connection = Connector.getConnection();
 			stmt = connection.createStatement();
@@ -71,7 +71,7 @@ public class Manager
   }
   
   
-  public static HashMap<Object, Object> findAll(String tableName){
+  public static HashMap<String, Object> findAll(String tableName){
 	  return null;
   }
   

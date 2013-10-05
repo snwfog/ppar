@@ -13,50 +13,52 @@ import java.util.Map;
 
 public class Base
 {
+	@tableAttr
 	private Integer id;
-	private String tableName = null;
+	
 	private Boolean updateFlag = false;
-    public Base(HashMap<Object, Object> HM)
+	
+    public Base(HashMap<String, Object> HM)
     {
+        this.setId((Integer)HM.get("id"));
+        
         //Get Caller ClassName
         String className = getClassName();
         Class<?> classObject = this.getClass();
         //Get all object fields
+
+        
         Field[] fields = classObject.getDeclaredFields();
         for (Field field : fields)
         {
-            String fieldName = field.getName();
-            Class<?> fieldType = field.getType();
-            
-            if(HM.containsKey(fieldName)){
-	            Object value = HM.get(fieldName);
-	            String capitalizeField = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-	
-	            java.lang.reflect.Method method;
-	            try
-	            {
+        	Annotation tableAttr = field.getAnnotation(tableAttr.class);
+
+        	if(tableAttr != null){
+        		
+	            String fieldName = field.getName();
+	            Class<?> fieldType = field.getType();
+	            if(HM.containsKey(fieldName)){
+		            Object value = HM.get(fieldName);
+		            String capitalizeField = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+		
+		            java.lang.reflect.Method method;
 	                try
 	                {                	
-	                    method = classObject.getDeclaredMethod("set" + capitalizeField, field.getType());
+	                    method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
+		                method.invoke(this, fieldType.cast(value));
 	                }
-	                catch (NoSuchMethodException e)
+	                catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
 	                {
+	                	e.printStackTrace();
 	                    break;// If method does not have setMethod then it is not a db Attribute
 	                }
-	
-	                //2nd Verification: Verify method belong to a dbAttribute using annotaitons
-	                //TODO verify SOLUTION 1: all getter Setter method = setDBFirstName or use annotations
-	                Annotation ARMethod = method.getAnnotation(Method.class);
-	                method.invoke(this, fieldType.cast(value));
+
 	            }
-	            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-	            {
-	                e.printStackTrace();
-	            }
-            }
+        	}
         }
     }
 
+    
     @SuppressWarnings("unchecked")
     public static <T> T find(int id)
     {
@@ -68,7 +70,7 @@ public class Base
         try
         {
         	String tableName = getClassDBTableName(className);
-        	HashMap<Object, Object> HM = Manager.find(id, tableName); 
+        	HashMap<String, Object> HM = Manager.find(id, tableName); 
         	if (HM == null)
 	        {
 	            return null;
@@ -88,21 +90,25 @@ public class Base
     }
     
     public boolean update(){
-    	if(this.updateFlag){
-	    	HashMap<Object, Object> updateAttributes = new HashMap<Object, Object>();
+    	if(getUpdateFlag()){
+	    	HashMap<String, Object> updateAttributes = new HashMap<String, Object>();
 	    	Field[] classFields = this.getClass().getDeclaredFields();
 	    	for(Field field : classFields){
 	    		Annotation tableAttr = field.getAnnotation(tableAttr.class);
 	    		if(tableAttr != null){
 	    			try {
-						updateAttributes.put(field.getName(), field.get(null));
-					} catch (IllegalArgumentException | IllegalAccessException e) {
+	    				String fieldName = field.getName();
+	    				java.lang.reflect.Method method;
+	    				method = this.getClass().getDeclaredMethod("get" + capitalize(fieldName));
+						updateAttributes.put(fieldName, method.invoke(this));
+					} catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
 						e.printStackTrace();
 					}
 	    		}
-	    		System.out.println(Arrays.asList(updateAttributes).toString());
 	    	}
 	    	
+	    	this.setUpdateFlag(false);
+	    	Manager.update(this.getId(), getClassDBTableName(getClassName()), updateAttributes);
     	}
     	
     	return true;
@@ -112,7 +118,9 @@ public class Base
     	return Manager.destroy(this.getId(), getClassDBTableName(getClassName()));
     }
     
-    //Mutator
+    /******MUTATOR****************************************************/
+    //Must have Mutator in all child class.
+    
 	public Integer getId() {
 		return this.id;
 	}
@@ -129,7 +137,7 @@ public class Base
     	this.updateFlag = flag;
     }
 	
-	//Private
+	/********Private***********************************************/
     private String getClassName(){
     	return this.getClass().getName();
     }
@@ -142,6 +150,11 @@ public class Base
 			e.printStackTrace();
 		}
     	return name;
+    }
+    
+    
+    private static String capitalize(String s){
+    	return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 }
 

@@ -7,21 +7,17 @@ import com.sunnyd.annotations.*;
 import java.util.HashMap;
 
 public class Person extends Base implements ModelInterface {
+	public static final String tableName = "persons";
+	
 	@tableAttr
 	private String firstName;
 	
 	@tableAttr
 	private String lastName;
 	
-	@tableAttr
-	private Integer id;	
-	
-	@tableAttr
 	private String status;
-	
-	public static final String tableName = "persons";
 
-	public Person(HashMap<Object, Object> HM) {
+	public Person(HashMap<String, Object> HM) {
 		super(HM);
 	}
 
@@ -32,20 +28,20 @@ public class Person extends Base implements ModelInterface {
 		System.out.println(a.getId());
 		System.out.println(a.getFirstName());
 		System.out.println(a.getLastName());
+		a.setFirstName("john");
+
 		
+		Person b = Person.find(2);
+		
+		System.out.println(b.getId());
+		System.out.println(b.getFirstName());
+		System.out.println(b.getLastName());
+		b.setFirstName("lucas");
+
+		b.update();
+		a.update();
 //		System.out.println(a.Destroy());
 		
-	}
-
-	
-	@Override
-	public Integer getId() {
-		return this.id;
-	}
-
-	@Override
-	public void setId(Integer id) {
-		this.id = id;
 	}
 	
 	@Override
@@ -54,24 +50,22 @@ public class Person extends Base implements ModelInterface {
 	}
 	
 	
-	@Method(attribute = false)
 	public String getFirstName() {
 		return firstName;
 	}
 
-	@Method(attribute = false)
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
+		setUpdateFlag(true);
 	}
 
-	@Method(attribute = false)
 	public String getLastName() {
 		return lastName;
 	}
-
-	@Method(attribute = false)
+	
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+		setUpdateFlag(true);
 	}
 
 	public String getStatus() {
