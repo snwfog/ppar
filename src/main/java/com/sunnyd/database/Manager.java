@@ -49,59 +49,69 @@ public class Manager
     }
     return null;
   }
-  
-  
-  public static HashMap<Object, Object> findAll(String tableName){
-	  return null;
-  }
-  
-  public static void save(int id, String tableName){
-	  	// "INSERT INTO " + tableName + " (`+ col1 + ` + ", "`" + col2 + "`) VALUES (" + val1 + ", " + val2 + ");"
-  }
-  
-  
-  public static boolean destroy(int id, String tableName){
-	  	Connection connection = null;
-		Statement stmt = null;
-		boolean isDestroyed = true;
-	
-		try {
-			connection = Connector.getConnection();
-			stmt = connection.createStatement();
-			stmt.execute("DELETE FROM " + tableName + " WHERE ID = " + id);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			isDestroyed = false;
-		}
-		return isDestroyed;
-  }
-  
- // update 1 or more fields of a single row 
-  public static boolean update(int id, String tableName, HashMap<String, Object> hashmap){
-	  	Connection connection = null;
-		Statement stmt = null;
-		boolean isUpdated = true;
-		
-		try {
-			connection = Connector.getConnection();
-			stmt = connection.createStatement();
-			for (Object key : hashmap.keySet()) {
-				String column = (String)key;
-				Object newvalue = hashmap.get(key);
-				Class<?> fieldType = hashmap.get(key).getClass();
-				newvalue = fieldType.cast(hashmap.get(key));
-				stmt.execute("UPDATE " + tableName + " SET " + column + " = '" + newvalue + "' WHERE ID = " + id);
 
-		    }
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-			isUpdated = false;
-		}
-		return isUpdated;
+  public static HashMap<Object, Object> findAll(String tableName)
+  {
+    return null;
   }
-  
-  public static void create(){
-	  	// create obj
+
+  public static void save(int id, String tableName)
+  {
+    // "INSERT INTO " + tableName + " (`+ col1 + ` + ", "`" + col2 + "`) VALUES (" + val1 + ", " + val2 + ");"
+  }
+
+  public static boolean destroy(int id, String tableName)
+  {
+    Connection connection = null;
+    Statement stmt = null;
+    boolean isDestroyed = true;
+
+    try
+    {
+      connection = Connector.getConnection();
+      stmt = connection.createStatement();
+      stmt.execute("DELETE FROM " + tableName + " WHERE ID = " + id);
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+      isDestroyed = false;
+    }
+    return isDestroyed;
+  }
+
+  // update 1 or more fields of a single row
+  public static boolean update(int id, String tableName, HashMap<String, Object> hashmap)
+  {
+    Connection connection = null;
+    Statement stmt = null;
+    boolean isUpdated = true;
+
+    try
+    {
+      connection = Connector.getConnection();
+      stmt = connection.createStatement();
+      for (Object key : hashmap.keySet())
+      {
+        String column = (String) key;
+        Object newvalue = hashmap.get(key);
+        Class<?> fieldType = hashmap.get(key).getClass();
+        newvalue = fieldType.cast(hashmap.get(key));
+        stmt.execute("UPDATE " + tableName + " SET " + column + " = '" + newvalue + "' WHERE ID = " + id);
+
+      }
+
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+      isUpdated = false;
+    }
+    return isUpdated;
+  }
+
+  public static void create()
+  {
+    // create obj
   }
 }
