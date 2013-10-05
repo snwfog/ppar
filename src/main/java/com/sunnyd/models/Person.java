@@ -44,12 +44,6 @@ public class Person extends Base implements ModelInterface {
 		
 	}
 	
-	@Override
-	public String getTableName() {
-		return tableName;
-	}
-	
-	
 	public String getFirstName() {
 		return firstName;
 	}

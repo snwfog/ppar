@@ -108,10 +108,9 @@ public class Base
 	    	}
 	    	
 	    	this.setUpdateFlag(false);
-	    	Manager.update(this.getId(), getTableName(), updateAttributes);
+	    	return Manager.update(this.getId(), getTableName(), updateAttributes);
     	}
-    	
-    	return true;
+    	return false;
     }
     
     public Boolean Destroy(){
@@ -119,7 +118,7 @@ public class Base
     }
     
     /******MUTATOR****************************************************/
-    //Must have Mutator in all child class.
+    //Common Mutator in all child class.
     
 	public Integer getId() {
 		return this.id;
@@ -137,7 +136,6 @@ public class Base
     	this.updateFlag = flag;
     }
 	
-    
     
 	/********Private***********************************************/
     private String getClassName(){
