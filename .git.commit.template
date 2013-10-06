@@ -1,1 +1,17 @@
-/Users/snw/bin/dotfiles/jira.git.commit.template
+CAP-<#> #comment <#comment> #<transition-name> <commit message>
+
+# 1. Add the issue number from the commit
+# i.e., CAP-22
+# i.e., CAP-99 CAP-100
+#
+# 2. Add a comment to the commit with #comment
+# i.e., CAP-22 #comment Fix this bug
+#
+# i.e., CAP-22 #comment Fix this bug #time 2w 1d 2h 20m
+#
+# 4. Move the issue into another state
+# i.e., CAP-22 #comment Fix this bug #time 2w 1d 2h 20m #resolved
+# Possible transition names are:
+#   open, resolve, close, reopen, start-progress, stop-progress
+
+
