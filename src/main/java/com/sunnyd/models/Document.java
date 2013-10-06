@@ -8,7 +8,10 @@ import com.sunnyd.annotations.tableAttr;
 
 public class Document extends Base implements IModel {
     public static final String tableName = "documents";
-
+    
+    @tableAttr
+    private Integer id;
+    
     @tableAttr
     private String docName;
 
@@ -27,6 +30,8 @@ public class Document extends Base implements IModel {
     
     private enum type{resume,coverletter}; 
     
+    private String thumbnailPath;
+    
     public Document(){
         super();
     }
@@ -41,6 +46,22 @@ public class Document extends Base implements IModel {
 
     public void setDocName(String docName) {
         this.docName = docName;
+    }
+    
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getThumbnailPath() {
+        return thumbnailPath;
+    }
+
+    public void setThumbnailPath(String thumbnailPath) {
+        this.thumbnailPath = thumbnailPath;
     }
 
 }
