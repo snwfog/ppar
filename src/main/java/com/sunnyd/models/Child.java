@@ -20,7 +20,6 @@ public class Child extends Person {
         super(HM);
     }
     
-    
     public static void main(String[] args) {
         Child a = Child.find(1);
         System.out.println(a.getChildName());

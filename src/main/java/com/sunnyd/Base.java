@@ -37,7 +37,7 @@ public class Base {
 
         // Get Caller ClassName
         Class<?> classObject = this.getClass();
-        setAttributes(classObject, this, HM);
+        Base.setAttributes(classObject, this, HM);
   
         this.setUpdateFlag(false);
     }
@@ -123,7 +123,7 @@ public class Base {
 
     
     /******** Private ***********************************************/
-    private void setAttributes(Class<?> classObject, Object objectOfInterest, HashMap<String, Object> data){   
+    private static void setAttributes(Class<?> classObject, Object objectOfInterest, HashMap<String, Object> data){
         //Get all table attribute from this class
         Field[] fields = Base.getTableField(classObject);
         for (Field field : fields) {
@@ -137,7 +137,7 @@ public class Base {
                 java.lang.reflect.Method method;
                 try {
                     method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
-                    method.invoke(this, fieldType.cast(value));
+                    method.invoke(objectOfInterest, fieldType.cast(value));
                 } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException e) {
                     e.printStackTrace();
@@ -148,10 +148,9 @@ public class Base {
             }
         }
         
-        
        //Verify if model inherit another model
        if(classObject.getAnnotation(inherit.class) !=null){
-           setAttributes(classObject.getSuperclass(), this, data);
+           setAttributes(classObject.getSuperclass(), objectOfInterest, data);
        }
         
     }

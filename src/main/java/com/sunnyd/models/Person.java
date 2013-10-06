@@ -15,8 +15,8 @@ public class Person extends Base implements IModel {
     @tableAttr
     private String lastName;
 
-    @hasMany
-    private Resume[] resumes;
+//    @hasMany
+//    private Resume[] resumes;
     
     private String status;
 
@@ -81,6 +81,13 @@ public class Person extends Base implements IModel {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+    
+    @Override
+    public boolean save(){
+        if(firstName.isEmpty())
+            return false;
+        return super.save();
     }
 
 }
