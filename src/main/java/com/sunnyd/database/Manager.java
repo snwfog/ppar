@@ -316,6 +316,9 @@ public class Manager
                 case "INT UNSIGNED":
                     converted.put(columnName, (int)((long) resultset.getObject(columnName)));
                     break;
+                case "INT":
+                    converted.put(columnName, (Integer) resultset.getObject(columnName));
+                    break;
                 case "TINYINT": //boolean
                     converted.put(columnName, (Boolean) resultset.getObject(columnName));
                     break;
@@ -324,7 +327,7 @@ public class Manager
                     break;
                 case "DATETIME":
                     converted.put(columnName, (Date) resultset.getObject(columnName));
-                    break;
+                    break;     
                 default:
                     System.out.println("i dunno this type yet, tell harry about it");
                     break;
