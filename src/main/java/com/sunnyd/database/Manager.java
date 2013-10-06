@@ -26,9 +26,10 @@ public class Manager
         // sample test for CRUD below:
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("firstName", "newguy");
+        //map.put("id", 3);
 
         // FIND:
-         System.out.println(find(1, "persons"));
+        // System.out.println(find(0, "persons"));
 
         // FIND ALL:
 
@@ -37,21 +38,21 @@ public class Manager
 //         System.out.println(key + ":" + h.get(key)); } }
 
         // SAVE:
-        // System.out.println(save("persons", map));
+        //System.out.println(save("persons", map));
 
         // DESTROY:
-        // System.out.println(destroy(2, "persons"));
+         // System.out.println(destroy(3, "persons"));
 
         // UPDATE:
-        // System.out.println(update(3, "persons", map));
+         // System.out.println(update(0, "persons", map));
 
         // converter Java to SQL:
-        /**
-         * HashMap<String,String> c = convertJavaSQL(map); for (Object key :
-         * c.keySet()) { System.out.println(key + " " + c.get(key));
-         * 
-         * }
-         */
+       
+//          HashMap<String,String> c = convertJavaSQL(map); for (Object key :
+//          c.keySet()) { System.out.println(key + " " + c.get(key));
+//          
+//          }
+         
         
 
 
@@ -97,11 +98,8 @@ public class Manager
 
         for (String key : SQLConditions.keySet())
         {
-
             where += key + " = " + SQLConditions.get(key) + " AND ";
-
         }
-
         // remove trailing comma
         where = where.replaceAll(" AND $", ""); // col1, col2, col3
 
@@ -115,24 +113,10 @@ public class Manager
             connection = Connector.getConnection();
             stmt = connection.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
-            ResultSetMetaData rsmd = rs.getMetaData();
-            
-            //int columnCount = rsmd.getColumnCount();
-
-
             while (rs.next())
-            {
-                
+            { 
                 HashMap<String, Object> row = new HashMap<String, Object>();
                 row = convertSQLJava(rs);
-                /**
-                for (int i = 1; i < columnCount + 1; i++)
-                {
-                    String columnName = rsmd.getColumnName(i);
-                    Object value = rs.getObject(columnName);
-                    row.put(columnName, value);
-                }*/
-                
                 results.add(row);
             }
         } catch (SQLException e)
@@ -166,17 +150,6 @@ public class Manager
             {
                 columns += key + ",";
                 values += SQLHashmap.get(key) + ",";
-                Class<?> fieldType = hashmap.get(key).getClass();
-                // type is string, add single quote
-
-                // REVIEW (@harry): This should be >= 0?
-                if (fieldType.getName().indexOf("String") > 0)
-                {
-                    values += "'" + hashmap.get(key) + "',";
-                } else
-                {
-                    values += hashmap.get(key) + ",";
-                }
             }
             // remove trailing comma
             columns = columns.replaceAll(",$", "");
@@ -194,8 +167,10 @@ public class Manager
              */
 
             rs = stmt.getGeneratedKeys();
-            rs.next();
-            id = rs.getInt(1);
+            if (rs.next()){
+                id = rs.getInt(1);
+            }
+            
         } catch (SQLException e)
         {
             e.printStackTrace();
