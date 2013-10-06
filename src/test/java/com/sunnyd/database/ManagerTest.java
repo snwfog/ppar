@@ -43,18 +43,13 @@ public class ManagerTest extends DatabaseSetup
     HashMap<String, Object> hashMap = new HashMap<String, Object>()
     {
       {
-        put("NAME", "Charles");
+        put("NAME", 34);
       }
     };
 
     Manager.save(tableName, hashMap);
     Manager.save(tableName, hashMap);
     Manager.save(tableName, hashMap);
-
-//    for (String key : hashMap.keySet())
-//    {
-//      Manager.save(tableName, )
-//    }
   }
 
   @Test

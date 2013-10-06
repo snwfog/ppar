@@ -6,13 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 
-/**
- * Created with IntelliJ IDEA.
- * User: snw
- * Date: 2013-10-04
- * Time: 8:45 PM
- * To change this template use File | Settings | File Templates.
- */
 public class Prep
 {
   final static Logger logger = LoggerFactory.getLogger(Prep.class);

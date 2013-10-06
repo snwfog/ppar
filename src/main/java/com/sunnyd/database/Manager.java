@@ -1,5 +1,6 @@
 package com.sunnyd.database;
 
+import com.sunnyd.database.query.QueryExecutorHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,6 +149,7 @@ public class Manager
 
     public static int save(String tableName, HashMap<String, Object> hashmap)
     {
+      QueryExecutorHook.beforeSave(hashmap);
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -168,6 +170,17 @@ public class Manager
             {
                 columns += key + ",";
                 values += SQLHashmap.get(key) + ",";
+                Class<?> fieldType = hashmap.get(key).getClass();
+                // type is string, add single quote
+
+                // REVIEW (@harry): This should be >= 0?
+                if (fieldType.getName().indexOf("String") > 0)
+                {
+                    values += "'" + hashmap.get(key) + "',";
+                } else
+                {
+                    values += hashmap.get(key) + ",";
+                }
             }
             // remove trailing comma
             columns = columns.replaceAll(",$", "");
