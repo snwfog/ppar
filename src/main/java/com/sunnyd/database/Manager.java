@@ -25,19 +25,16 @@ public class Manager
 
         // sample test for CRUD below:
         HashMap<String, Object> map = new HashMap<String, Object>();
-
         map.put("firstName", "newguy");
-        map.put("lastName", "newguy");
 
         // FIND:
-        // System.out.println(find(1, "persons"));
+         System.out.println(find(1, "persons"));
 
         // FIND ALL:
-        
-//          ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
-//          (HashMap<String, Object> h : r){ for (String key : h.keySet()){
-//          System.out.println(key + ":" + h.get(key)); } }
-         
+
+//         ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
+//         (HashMap<String, Object> h : r){ for (String key : h.keySet()){
+//         System.out.println(key + ":" + h.get(key)); } }
 
         // SAVE:
         // System.out.println(save("persons", map));
@@ -55,6 +52,8 @@ public class Manager
          * 
          * }
          */
+        
+
 
     }
 
@@ -65,25 +64,17 @@ public class Manager
         Statement stmt = null;
         ResultSet rs = null;
 
-        HashMap<String, Object> result = new HashMap<String, Object>();
         try
         {
             connection = Connector.getConnection();
             stmt = connection.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + tableName
                     + " WHERE ID = " + id);
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
-
-            // The column count starts from 1
-            rs.next(); //
-            for (int i = 1; i < columnCount + 1; i++)
-            {
-                String columnName = rsmd.getColumnName(i);
-                Object value = rs.getObject(columnName);
-                result.put(columnName, value);
+            
+            if (rs.next()){
+                return convertSQLJava(rs);
             }
-            return result;
+            
         } catch (SQLException e)
         {
             e.printStackTrace();
@@ -125,18 +116,23 @@ public class Manager
             stmt = connection.createStatement();
             rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
             ResultSetMetaData rsmd = rs.getMetaData();
-            int columnCount = rsmd.getColumnCount();
+            
+            //int columnCount = rsmd.getColumnCount();
 
-            rs.beforeFirst(); // go to beginning
+
             while (rs.next())
             {
+                
                 HashMap<String, Object> row = new HashMap<String, Object>();
+                row = convertSQLJava(rs);
+                /**
                 for (int i = 1; i < columnCount + 1; i++)
                 {
                     String columnName = rsmd.getColumnName(i);
                     Object value = rs.getObject(columnName);
                     row.put(columnName, value);
-                }
+                }*/
+                
                 results.add(row);
             }
         } catch (SQLException e)
@@ -149,7 +145,7 @@ public class Manager
 
     public static int save(String tableName, HashMap<String, Object> hashmap)
     {
-      QueryExecutorHook.beforeSave(hashmap);
+        QueryExecutorHook.beforeSave(hashmap);
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -302,6 +298,40 @@ public class Manager
                     break;
             }
         }
+        return converted;
+    }
+
+    // convert result got from sql to java type
+    private static HashMap<String, Object> convertSQLJava(ResultSet resultset) throws SQLException
+    {
+        HashMap<String, Object> converted = new HashMap<String, Object>();
+        ResultSetMetaData rsmd = resultset.getMetaData();
+        int columnCount = rsmd.getColumnCount();
+        for (int i = 1; i < columnCount + 1; i++)
+        {
+            String columnName = rsmd.getColumnName(i);
+            String type = rsmd.getColumnTypeName(i);
+            // System.out.println(columnName + " -> " + type);
+            switch(type){
+                case "INT UNSIGNED":
+                    converted.put(columnName, (int)((long) resultset.getObject(columnName)));
+                    break;
+                case "TINYINT": //boolean
+                    converted.put(columnName, (Boolean) resultset.getObject(columnName));
+                    break;
+                case "VARCHAR":
+                    converted.put(columnName, resultset.getObject(columnName).toString());
+                    break;
+                case "DATETIME":
+                    converted.put(columnName, (Date) resultset.getObject(columnName));
+                    break;
+                default:
+                    System.out.println("i dunno this type yet, tell harry about it");
+                    break;
+            }
+            
+        }
+        
         return converted;
     }
 
