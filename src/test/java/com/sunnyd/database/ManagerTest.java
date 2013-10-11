@@ -133,4 +133,17 @@ public class ManagerTest extends DatabaseTestSetup
       Assert.assertEquals(rt.countAllRecord(), names.length - i, msg);
     }
   }
+
+  @Test
+  public void toCamelCaseTest()
+  {
+    Assert.assertEquals(Manager.toCamelCase("hello_world"), "helloWorld");
+  }
+
+  @Test
+  public void toUnderscoreCaseTest()
+  {
+    Assert.assertEquals(Manager.toUnderscoreCase("helloWorld"), "hello_world");
+    Assert.assertEquals(Manager.toUnderscoreCase("ByeWorld"), "bye_world");
+  }
 }
