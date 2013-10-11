@@ -53,7 +53,8 @@ public class Manager
 //          
 //          }
          
-        
+        System.out.println(toCamelCase("first_name_else"));
+        System.out.println(toUnderscoreCase("firstNameField"));
 
 
     }
@@ -309,6 +310,23 @@ public class Manager
         }
         
         return converted;
+    }
+    
+    // first_name_field --> firstNameField
+    private static String toCamelCase(String underscore_case){
+	String[] parts = underscore_case.split("_");
+	String camel = "";
+	// convert the 1st character of all part (separated by '_') to upper case
+	for (String part: parts){
+	    camel = camel + part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase();
+	}
+	// except the 1st char
+	return camel.substring(0,1).toLowerCase() + camel.substring(1);
+    }
+    
+    // firstNameField --> first_name_field
+    private static String toUnderscoreCase(String camel){
+	return camel.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
     }
 
 }
