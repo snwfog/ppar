@@ -27,6 +27,7 @@ public class GrandChild extends Child{
         b.setFirstName("GrandD");
         b.setLastName("GrandLuffy");
         b.save();
+        
         System.out.println(b.getId());
         GrandChild a = GrandChild.find(b.getId());
         System.out.println(a.getGrandChildName());
