@@ -28,7 +28,7 @@ public class Document extends Base implements IModel {
         }
     };  */
     
-    private enum type{resume,coverletter}; 
+   // private enum type{resume,coverletter}; 
     
     private String thumbnailPath;
     
