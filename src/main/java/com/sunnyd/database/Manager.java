@@ -22,19 +22,19 @@ public class Manager
     // sample test for CRUD below:
     HashMap<String, Object> map = new HashMap<String, Object>();
     map.put("firstName", "newguy");
-    //map.put("id", 3);
+    // map.put("id", 3);
 
     // FIND:
     // System.out.println(find(0, "persons"));
 
     // FIND ALL:
 
-//         ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
-//         (HashMap<String, Object> h : r){ for (String key : h.keySet()){
-//         System.out.println(key + ":" + h.get(key)); } }
+    // ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
+    // (HashMap<String, Object> h : r){ for (String key : h.keySet()){
+    // System.out.println(key + ":" + h.get(key)); } }
 
     // SAVE:
-    //System.out.println(save("persons", map));
+    // System.out.println(save("persons", map));
 
     // DESTROY:
     // System.out.println(destroy(3, "persons"));
@@ -45,15 +45,14 @@ public class Manager
     // converter Java to SQL:
 
     HashMap<String, String> c = convertJavaSQL(map);
-    for (Object key :
-        c.keySet())
-    { //System.out.println(key + " " + c.get(key));
+    for (Object key : c.keySet())
+    { // System.out.println(key + " " +
+      // c.get(key));
 
     }
 
-//        System.out.println(toCamelCase("first_name_else"));
-//        System.out.println(toUnderscoreCase("firstNameField"));
-
+    // System.out.println(toCamelCase("first_name_else"));
+    // System.out.println(toUnderscoreCase("firstNameField"));
 
   }
 
@@ -68,8 +67,7 @@ public class Manager
     {
       connection = Connector.getConnection();
       stmt = connection.createStatement();
-      rs = stmt.executeQuery("SELECT * FROM " + tableName
-          + " WHERE ID = " + id);
+      rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE ID = " + id);
 
       if (rs.next())
       {
@@ -85,8 +83,7 @@ public class Manager
   }
 
   // find multiple by criteria
-  public static ArrayList<HashMap<String, Object>> findAll(String tableName,
-      HashMap<String, Object> conditions)
+  public static ArrayList<HashMap<String, Object>> findAll(String tableName, HashMap<String, Object> conditions)
   {
     Connection connection = null;
     Statement stmt = null;
@@ -158,20 +155,27 @@ public class Manager
       values = values.replaceAll(",$", "");
 
       stmt = connection.createStatement();
-      stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns
-          + ") VALUES (" + values + ")",
-          Statement.RETURN_GENERATED_KEYS);
 
-      /**
-       * stmt = connection.prepareStatement("INSERT INTO " + tableName +
-       * " (" + columns + ") VALUES (" + values + ")", new String[] { "id"
-       * });
-       */
-
-      rs = stmt.getGeneratedKeys();
-      if (rs.next())
+      if (!hashmap.containsKey("id"))
       {
-        id = rs.getInt(1);
+        stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")",
+            Statement.RETURN_GENERATED_KEYS);
+
+        /**
+         * stmt = connection.prepareStatement("INSERT INTO " + tableName +
+         * " (" + columns + ") VALUES (" + values + ")", new String[] { "id"
+         * });
+         */
+        rs = stmt.getGeneratedKeys();
+        if (rs.next())
+        {
+          id = rs.getInt(1);
+        }
+      }
+      else
+      {
+        System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
+        id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")") != 0 ? (int) hashmap.get("id") : 0;
       }
 
     }
@@ -203,8 +207,7 @@ public class Manager
   }
 
   // update 1 or more fields of a single row
-  public static boolean update(int id, String tableName,
-      HashMap<String, Object> hashmap)
+  public static boolean update(int id, String tableName, HashMap<String, Object> hashmap)
   {
     Connection connection = null;
     Statement stmt = null;
@@ -221,8 +224,7 @@ public class Manager
       {
         String column = (String) key;
         String newvalue = SQLHashmap.get(key);
-        stmt.execute("UPDATE " + tableName + " SET " + column + " = "
-            + newvalue + " WHERE ID = " + id);
+        stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
       }
 
     }
@@ -235,8 +237,7 @@ public class Manager
   }
 
   // java (firstName:"bob") --> sql (first_name: "bob")
-  private static HashMap<String, String> convertJavaSQL(
-      HashMap<String, Object> original)
+  private static HashMap<String, String> convertJavaSQL(HashMap<String, Object> original)
   {
     HashMap<String, String> converted = new HashMap<String, String>();
 
@@ -248,25 +249,21 @@ public class Manager
       switch (type)
       {
       case "Boolean":
-        converted
-            .put(key_underscore, "'" + original.get(key).toString() + "'");
+        converted.put(key_underscore, "'" + original.get(key).toString() + "'");
         break;
       case "Integer":
-        converted.put(key_underscore,
-            Integer.toString((int) original.get(key)));
+        converted.put(key_underscore, Integer.toString((int) original.get(key)));
         break;
       case "Double":
-        converted.put(key_underscore,
-            Double.toString((double) original.get(key)));
+        converted.put(key_underscore, Double.toString((double) original.get(key)));
         break;
       case "String":
         converted.put(key_underscore, "'" + original.get(key) + "'");
-        //System.out.println(key_underscore + key + original.get(key));
+        // System.out.println(key_underscore + key + original.get(key));
         break;
       case "Date":
         Date dt = (Date) original.get(key);
-        DateFormat parser = new SimpleDateFormat(
-            "yyyy-mm-dd hh:mm:ss");
+        DateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
         converted.put(key_underscore, "'" + parser.format(dt) + "'");
         break;
       default:
@@ -286,7 +283,8 @@ public class Manager
     for (int i = 1; i < columnCount + 1; i++)
     {
       String columnName = rsmd.getColumnName(i); // underscore_case
-      String columnName_camel = toCamelCase(columnName); // columnName in java var style
+      String columnName_camel = toCamelCase(columnName); // columnName in
+      // java var style
 
       String type = rsmd.getColumnTypeName(i);
 
@@ -298,7 +296,7 @@ public class Manager
       case "INT":
         converted.put(columnName_camel, (Integer) resultset.getInt(columnName));
         break;
-      case "TINYINT": //boolean
+      case "TINYINT": // boolean
         converted.put(columnName_camel, resultset.getBoolean(columnName));
         break;
       case "VARCHAR":
@@ -311,7 +309,8 @@ public class Manager
         converted.put(columnName_camel, (Date) resultset.getTimestamp(columnName));
         break;
       default:
-        System.out.println("Manager.java doesnt know this type: " + columnName + "=" + type + "=" + resultset.getObject(columnName));
+        System.out.println("Manager.java doesnt know this type: " + columnName + "=" + type + "="
+            + resultset.getObject(columnName));
         break;
       }
 
@@ -321,11 +320,12 @@ public class Manager
   }
 
   // first_name_field --> firstNameField
-  private static String toCamelCase(String underscore_case)
+  public static String toCamelCase(String underscore_case)
   {
     String[] parts = underscore_case.split("_");
     String camel = "";
-    // convert the 1st character of all part (separated by '_') to upper case
+    // convert the 1st character of all part (separated by '_') to upper
+    // case
     for (String part : parts)
     {
       camel = camel + part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase();
@@ -335,7 +335,7 @@ public class Manager
   }
 
   // firstNameField --> first_name_field
-  private static String toUnderscoreCase(String camel)
+  public static String toUnderscoreCase(String camel)
   {
     return camel.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
   }

@@ -85,7 +85,7 @@ public class Person extends Base implements IModel {
     
     @Override
     public boolean save(){
-        if(firstName.isEmpty())
+        if(firstName != null && firstName.isEmpty())
             return false;
         return super.save();
     }
