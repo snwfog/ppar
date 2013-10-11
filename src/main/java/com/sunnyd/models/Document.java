@@ -1,5 +1,6 @@
 package com.sunnyd.models;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import com.sunnyd.Base;
@@ -10,27 +11,15 @@ public class Document extends Base implements IModel {
     public static final String tableName = "documents";
     
     @tableAttr
-    private Integer id;
-    
-    @tableAttr
     private String docName;
-
-   /* private enum type {
-        resume("resume"), coverletter("coverletter");
-        private type(String value) {
-            this.value = value;
-        }
-
-        private final String value;
-
-        public String getValue() {
-            return value;
-        }
-    };  */
-    
-    private enum type{resume,coverletter}; 
-    
+    @tableAttr
     private String thumbnailPath;
+    @tableAttr
+    private Date lastModifiedDate;
+    @tableAttr
+    private Date creationDate;
+    @tableAttr
+    private Integer peerId;
     
     public Document(){
         super();
@@ -48,20 +37,45 @@ public class Document extends Base implements IModel {
         this.docName = docName;
     }
     
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+   
 
     public String getThumbnailPath() {
         return thumbnailPath;
     }
+    
+    public Integer getPeerId(){
+	return peerId;
+    }
 
+    public void setPeerId(Integer peerId){
+    this.peerId = peerId;
+    }
+    
     public void setThumbnailPath(String thumbnailPath) {
         this.thumbnailPath = thumbnailPath;
     }
 
+    public static void main(String[] args) {
+        Document d = Document.find(1);
+        System.out.println(d.getDocName());
+        System.out.println(d.getLastModifiedDate());
+        System.out.println(d.getThumbnailPath());
+        System.out.println(d.getCreationDate());
+    }
+
+    public Date getLastModifiedDate() {
+	return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(Date lastModifiedDate) {
+	this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 }
