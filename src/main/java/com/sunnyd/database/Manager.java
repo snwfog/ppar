@@ -228,11 +228,6 @@ public class Manager
         return isUpdated;
     }
 
-    public static void create()
-    {
-        // create obj
-    }
-
     // helper method to convert java type (string, int, date) to mysql type
     // written in str
     private static HashMap<String, String> convertJavaSQL(
