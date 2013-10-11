@@ -264,7 +264,7 @@ public class Manager
                     converted.put(key, "'" + parser.format(dt) + "'");
                     break;
                 default:
-                    System.out.println("i dunno this type yet, tell harry");
+                    System.out.println("Manager.java doesnt know this type: " + key + "=" + original.get(key));
                     break;
             }
         }
@@ -281,25 +281,28 @@ public class Manager
         {
             String columnName = rsmd.getColumnName(i);
             String type = rsmd.getColumnTypeName(i);
-            // System.out.println(columnName + " -> " + type);
+           
             switch(type){
                 case "INT UNSIGNED":
-                    converted.put(columnName, (int)((long) resultset.getObject(columnName)));
+                    converted.put(columnName, (int) resultset.getLong(columnName));
                     break;
                 case "INT":
-                    converted.put(columnName, (Integer) resultset.getObject(columnName));
+                    converted.put(columnName, (Integer) resultset.getInt(columnName));
                     break;
                 case "TINYINT": //boolean
-                    converted.put(columnName, (Boolean) resultset.getObject(columnName));
+                    converted.put(columnName, resultset.getBoolean(columnName));
                     break;
                 case "VARCHAR":
-                    converted.put(columnName, resultset.getObject(columnName).toString());
+                    converted.put(columnName, resultset.getString(columnName));
                     break;
                 case "DATETIME":
-                    converted.put(columnName, (Date) resultset.getObject(columnName));
-                    break;     
+                    converted.put(columnName, (Date) resultset.getDate(columnName));
+                    break;
+                case "TIMESTAMP":
+                    converted.put(columnName, (Date) resultset.getTimestamp(columnName));
+                    break;
                 default:
-                    System.out.println("i dunno this type yet, tell harry about it");
+                    System.out.println("Manager.java doesnt know this type: " + columnName + "=" + type + "=" + resultset.getObject(columnName));
                     break;
             }
             
