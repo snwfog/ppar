@@ -96,21 +96,38 @@ public class Base {
         return Manager.update(((Base)instanceObject).getId(), BaseHelper.getClassTableName(classObject.getName()), updateAttributes);
     }
 
+    
     public Boolean Destroy() {
         return Manager.destroy(this.getId(), getTableName());
     }
 
     public boolean save() {
         //TODO BUG:BROKEN for model inheritance
+        int newId = 0;
         if (this.getId() == null) {
-            HashMap<String, Object> attrToPersist = BaseHelper.getTableAttributeNameAndValue(this);
-            int id = Manager.save(BaseHelper.getClassTableName(this.getClassName()), attrToPersist);
-            if (id != 0) {
-                this.setId(id);
+            newId = save(this.getClass(), this);
+            if (newId != 0) {
+                this.setId(newId);
                 return true;
             }
         }
         return false;
+    }
+    
+    
+    private static Integer save(Class<?> classObject, Object objectInstance){
+        HashMap<String, Object> attrToPersist = BaseHelper.getTableAttributeNameAndValue(classObject, objectInstance);
+        System.out.println(classObject.getName());
+        int id = 0;
+        if(classObject.getAnnotation(inherit.class) != null){
+           id = Base.save(classObject.getSuperclass(), objectInstance);
+           System.out.println(id);
+        }
+        if(id != 0){
+            attrToPersist.put("id", id);
+            System.out.println(Arrays.asList(attrToPersist).toString());
+        }
+        return Manager.save(BaseHelper.getClassTableName(classObject.getName()), attrToPersist); 
     }
 
     

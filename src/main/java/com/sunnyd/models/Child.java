@@ -21,13 +21,19 @@ public class Child extends Person {
     }
     
     public static void main(String[] args) {
-        Child a = Child.find(1);
-        System.out.println(a.getId());
-        System.out.println(a.getChildName());
-        System.out.println(a.getFirstName());
-        System.out.println(a.getLastName());
-        a.setLastName("yitty");
-        a.update();
+        Child a = new Child();
+        a.setChildName("Monday");
+        a.setFirstName("D");
+        a.setLastName("Luffy");
+        a.save();
+        
+        Child b = Child.find(a.getId());
+        System.out.println(b.getId());
+        System.out.println(b.getChildName());
+        System.out.println(b.getFirstName());
+        System.out.println(b.getLastName());
+        
+        
     }
 
     

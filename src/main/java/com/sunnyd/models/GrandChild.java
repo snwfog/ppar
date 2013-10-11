@@ -21,7 +21,14 @@ public class GrandChild extends Child{
     }
     
     public static void main(String[] args) {
-        GrandChild a = GrandChild.find(1);
+        GrandChild b = new GrandChild();
+        b.setGrandChildName("GrandChild");
+        b.setChildName("grandMoney");
+        b.setFirstName("GrandD");
+        b.setLastName("GrandLuffy");
+        b.save();
+        System.out.println(b.getId());
+        GrandChild a = GrandChild.find(b.getId());
         System.out.println(a.getGrandChildName());
         System.out.println(a.getChildName());
         System.out.println(a.getFirstName());
