@@ -102,7 +102,6 @@ public class Base {
     }
 
     public boolean save() {
-        //TODO BUG:BROKEN for model inheritance
         int newId = 0;
         if (this.getId() == null) {
             newId = save(this.getClass(), this);
