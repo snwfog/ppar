@@ -48,13 +48,13 @@ public class Manager
 
         // converter Java to SQL:
        
-//          HashMap<String,String> c = convertJavaSQL(map); for (Object key :
-//          c.keySet()) { System.out.println(key + " " + c.get(key));
-//          
-//          }
+          HashMap<String,String> c = convertJavaSQL(map); for (Object key :
+          c.keySet()) { //System.out.println(key + " " + c.get(key));
+          
+          }
          
-        System.out.println(toCamelCase("first_name_else"));
-        System.out.println(toUnderscoreCase("firstNameField"));
+//        System.out.println(toCamelCase("first_name_else"));
+//        System.out.println(toUnderscoreCase("firstNameField"));
 
 
     }
@@ -229,8 +229,8 @@ public class Manager
         return isUpdated;
     }
 
-    // helper method to convert java type (string, int, date) to mysql type
-    // written in str
+    
+    // java (firstName:"bob") --> sql (first_name: "bob")
     private static HashMap<String, String> convertJavaSQL(
             HashMap<String, Object> original)
     {
@@ -240,29 +240,30 @@ public class Manager
         {
             Class<?> fieldType = original.get(key).getClass();
             String type = fieldType.getSimpleName();
-
+            String key_underscore = toUnderscoreCase(key);
             switch (type)
             {
                 case "Boolean":
                     converted
-                            .put(key, "'" + original.get(key).toString() + "'");
+                            .put(key_underscore, "'" + original.get(key).toString() + "'");
                     break;
                 case "Integer":
-                    converted.put(key,
+                    converted.put(key_underscore,
                             Integer.toString((int) original.get(key)));
                     break;
                 case "Double":
-                    converted.put(key,
+                    converted.put(key_underscore,
                             Double.toString((double) original.get(key)));
                     break;
                 case "String":
-                    converted.put(key, "'" + original.get(key) + "'");
+                    converted.put(key_underscore, "'" + original.get(key) + "'");
+                    //System.out.println(key_underscore + key + original.get(key));
                     break;
                 case "Date":
                     Date dt = (Date) original.get(key);
                     DateFormat parser = new SimpleDateFormat(
                             "yyyy-mm-dd hh:mm:ss");
-                    converted.put(key, "'" + parser.format(dt) + "'");
+                    converted.put(key_underscore, "'" + parser.format(dt) + "'");
                     break;
                 default:
                     System.out.println("Manager.java doesnt know this type: " + key + "=" + original.get(key));
@@ -272,7 +273,7 @@ public class Manager
         return converted;
     }
 
-    // convert result got from sql to java type
+    // sql (first_name: "bob" varchar) --> java (firstName: "bob" as string)
     private static HashMap<String, Object> convertSQLJava(ResultSet resultset) throws SQLException
     {
         HashMap<String, Object> converted = new HashMap<String, Object>();
@@ -280,27 +281,29 @@ public class Manager
         int columnCount = rsmd.getColumnCount();
         for (int i = 1; i < columnCount + 1; i++)
         {
-            String columnName = rsmd.getColumnName(i);
+            String columnName = rsmd.getColumnName(i); // underscore_case
+            String columnName_camel = toCamelCase(columnName); // columnName in java var style
+            
             String type = rsmd.getColumnTypeName(i);
            
             switch(type){
                 case "INT UNSIGNED":
-                    converted.put(columnName, (int) resultset.getLong(columnName));
+                    converted.put(columnName_camel, (int) resultset.getLong(columnName));
                     break;
                 case "INT":
-                    converted.put(columnName, (Integer) resultset.getInt(columnName));
+                    converted.put(columnName_camel, (Integer) resultset.getInt(columnName));
                     break;
                 case "TINYINT": //boolean
-                    converted.put(columnName, resultset.getBoolean(columnName));
+                    converted.put(columnName_camel, resultset.getBoolean(columnName));
                     break;
                 case "VARCHAR":
-                    converted.put(columnName, resultset.getString(columnName));
+                    converted.put(columnName_camel, resultset.getString(columnName));
                     break;
                 case "DATETIME":
-                    converted.put(columnName, (Date) resultset.getDate(columnName));
+                    converted.put(columnName_camel, (Date) resultset.getDate(columnName));
                     break;
                 case "TIMESTAMP":
-                    converted.put(columnName, (Date) resultset.getTimestamp(columnName));
+                    converted.put(columnName_camel, (Date) resultset.getTimestamp(columnName));
                     break;
                 default:
                     System.out.println("Manager.java doesnt know this type: " + columnName + "=" + type + "=" + resultset.getObject(columnName));
