@@ -21,15 +21,18 @@ public class GrandChild extends Child{
     }
     
     public static void main(String[] args) {
-//        GrandChild b = new GrandChild();
-//        b.setGrandChildName("GrandChild");
-//        b.setChildName("grandMoney");
-//        b.setFirstName("GrandD");
-//        b.setLastName("GrandLuffy");
-//        b.save();
-//        
-//        System.out.println(b.getId());
-        GrandChild a = GrandChild.find(2);
+        GrandChild b = new GrandChild();
+        b.setGrandChildName("GrandChild");
+        b.setChildName("grandMoney");
+        b.setFirstName("GrandD");
+        b.setLastName("GrandLuffy");
+        b.save();
+        
+        System.out.println(b.getId());
+        GrandChild a = GrandChild.find(b.getId());
+//        a.setChildName("grandch1ld");
+//        a.update();
+//        a = GrandChild.find(b.getId());
         System.out.println(a.getGrandChildName());
         System.out.println(a.getChildName());
         System.out.println(a.getFirstName());
@@ -44,5 +47,6 @@ public class GrandChild extends Child{
 
     public void setGrandChildName(String grandChildName) {
         this.grandChildName = grandChildName;
+        setUpdateFlag(true);
     }
 }

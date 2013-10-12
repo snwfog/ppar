@@ -43,6 +43,7 @@ public class Child extends Person {
     
     public void setChildName(String childName){
         this.childName = childName;
+        setUpdateFlag(true);
     }
     
 

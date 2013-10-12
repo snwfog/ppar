@@ -112,7 +112,7 @@ public class Manager {
     }
 
     public static int save(String tableName, HashMap<String, Object> hashmap) {
-        QueryExecutorHook.beforeSave(hashmap);
+//        QueryExecutorHook.beforeSave(hashmap);
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -124,13 +124,10 @@ public class Manager {
 
         try {
             connection = Connector.getConnection();
-            // generate and fill the creation datetime and fill the db col
-            // everytime the save method is called
-            String creationDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
-            hashmap.put("CreationDate", creationDate);
-
             HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
-
+            SQLHashmap.put("creation_date", "NOW()");
+            SQLHashmap.put("last_modified_date", "NOW()");
+            
             // get column value pairs from hashmap as val,val,val...
             for (String key : SQLHashmap.keySet()) {
                 columns += key + ",";
@@ -196,6 +193,7 @@ public class Manager {
                 String newvalue = SQLHashmap.get(key);
                 stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
             }
+            stmt.execute("UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id);
 
         } catch (SQLException e) {
             e.printStackTrace();
