@@ -1,6 +1,7 @@
 package com.sunnyd.database;
 
 import com.sunnyd.database.query.QueryExecutorHook;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,46 +9,51 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 public class Manager {
 
     public static void main(String[] args) {
-        final Logger logger = LoggerFactory.getLogger(Manager.class);
-        logger.info("Hello world");
-
-        // sample test for CRUD below:
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("firstName", null);
-        // map.put("id", 3);
-
-        // FIND:
-        // System.out.println(find(0, "persons"));
-
-        // FIND ALL:
-
-        // ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
-        // (HashMap<String, Object> h : r){ for (String key : h.keySet()){
-        // System.out.println(key + ":" + h.get(key)); } }
-
-        // SAVE:
-        System.out.println(save("peers", map));
-
-        // DESTROY:
-        // System.out.println(destroy(2, "peers"));
-
-        // UPDATE:
-        // System.out.println(update(0, "persons", map));
-
-        // converter Java to SQL:
-        HashMap<String, String> c = convertJavaSQL(map);
-        for (Object key : c.keySet()) { // System.out.println(key + " " +
-                                        // c.get(key));
-
-        }
-
+//        final Logger logger = LoggerFactory.getLogger(Manager.class);
+//        logger.info("Hello world");
+//
+//        // sample test for CRUD below:
+//        HashMap<String, Object> map = new HashMap<String, Object>();
+//        map.put("firstName", null);
+//        // map.put("id", 3);
+//
+//        // FIND:
+//        // System.out.println(find(0, "persons"));
+//
+//        // FIND ALL:
+//
+//        // ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
+//        // (HashMap<String, Object> h : r){ for (String key : h.keySet()){
+//        // System.out.println(key + ":" + h.get(key)); } }
+//
+//        // SAVE:
+//        System.out.println(save("peers", map));
+//
+//        // DESTROY:
+//        // System.out.println(destroy(2, "peers"));
+//
+//        // UPDATE:
+//        // System.out.println(update(0, "persons", map));
+//
+//        // converter Java to SQL:
+//        HashMap<String, String> c = convertJavaSQL(map);
+//        for (Object key : c.keySet()) { // System.out.println(key + " " +
+//                                        // c.get(key));
+//
+//        }
+        
+        //Mikes
+        System.out.println(Arrays.asList(find("persons", "last_name", "GrandLuffy")).toString());
+        
         // System.out.println(toCamelCase("first_name_else"));
         // System.out.println(toUnderscoreCase("firstNameField"));
 
@@ -68,6 +74,30 @@ public class Manager {
                 return convertSQLJava(rs);
             }
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // find by id, return single row
+    public static Integer[] find(String tableName, String column, Object value) {
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        value = convertJavaToSql(value);
+        try {
+            ArrayList<Integer> result = new ArrayList<Integer>();
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            System.out.println("SELECT id FROM " + tableName + " WHERE " + column + "= " + value);
+            rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE " + column + "=" + value);
+            
+            while(rs.next()){
+                result.add(rs.getInt("id"));
+            }
+            return (Integer[]) result.toArray(new Integer[result.size()]);
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -249,6 +279,33 @@ public class Manager {
             }
         }
         return converted;
+    }
+    
+    
+    public static Object convertJavaToSql(Object value){
+        String type = "";
+        if (value != null) {
+            type = value.getClass().getSimpleName();
+        }
+        switch (type) {
+            case "": // null
+                break;
+            case "Boolean":
+                return "'" + value.toString() + "'";
+            case "Integer":
+                return Integer.toString((int) value);
+            case "Double":
+                return Double.toString((double) value);
+            case "String":
+                return "'" + value + "'";
+            case "Date":
+                Date dt = (Date) value;
+                DateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                return "'" + parser.format(dt) + "'";
+            default:
+                System.out.println("Manager.java doesnt know this type:" + value);
+        }
+        return null;
     }
 
     // sql (first_name: "bob" varchar) --> java (firstName: "bob" as string)
