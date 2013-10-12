@@ -1,3 +1,5 @@
+database.properties
+bin
 target/
 *.class
 
