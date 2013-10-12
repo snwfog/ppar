@@ -8,6 +8,7 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -21,7 +22,7 @@ public class Manager
 
     // sample test for CRUD below:
     HashMap<String, Object> map = new HashMap<String, Object>();
-    map.put("firstName", "newguy");
+    map.put("firstName", "asdsadasasda");
     // map.put("id", 3);
 
     // FIND:
@@ -34,7 +35,7 @@ public class Manager
     // System.out.println(key + ":" + h.get(key)); } }
 
     // SAVE:
-    // System.out.println(save("persons", map));
+     System.out.println(save("peers", map));
 
     // DESTROY:
     // System.out.println(destroy(3, "persons"));
@@ -43,7 +44,6 @@ public class Manager
     // System.out.println(update(0, "persons", map));
 
     // converter Java to SQL:
-
     HashMap<String, String> c = convertJavaSQL(map);
     for (Object key : c.keySet())
     { // System.out.println(key + " " +
@@ -141,7 +141,10 @@ public class Manager
     try
     {
       connection = Connector.getConnection();
-
+      // generate and fill the creation datetime and fill the db col everytime the save method is called
+      String creationDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
+      hashmap.put("CreationDate", creationDate);
+      
       HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
 
       // get column value pairs from hashmap as val,val,val...
@@ -156,23 +159,18 @@ public class Manager
 
       stmt = connection.createStatement();
 
+      // no id is provided (means auto-gen id)
       if (!hashmap.containsKey("id"))
       {
         stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")",
             Statement.RETURN_GENERATED_KEYS);
-
-        /**
-         * stmt = connection.prepareStatement("INSERT INTO " + tableName +
-         * " (" + columns + ") VALUES (" + values + ")", new String[] { "id"
-         * });
-         */
         rs = stmt.getGeneratedKeys();
         if (rs.next())
         {
           id = rs.getInt(1);
         }
       }
-      else
+      else // id is provided (means 
       {
         System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
         id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")") != 0 ? (int) hashmap.get("id") : 0;
