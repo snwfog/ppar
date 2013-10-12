@@ -5,6 +5,7 @@ import com.sunnyd.database.Manager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -20,6 +21,12 @@ public class Base {
 
     @tableAttr
     private Integer id;
+    
+    @tableAttr
+    private Date creationDate;
+    
+    @tableAttr
+    private Date lastModifiedDate;
 
     private Boolean updateFlag = false;
 
@@ -28,11 +35,13 @@ public class Base {
     }
 
     public Base(HashMap<String, Object> HM) {
-        this.setId((Integer) HM.get("id"));
+        id = (Integer) HM.get("id");
+        creationDate = (Date) HM.get("creationDate");
+        lastModifiedDate = (Date) HM.get("lastModifiedDate");
         
         // Get Caller ClassName
         Class<?> classObject = this.getClass();
-       
+      
         //Set Attribute
         BaseHelper.setAttributes(classObject, this, HM);
         
@@ -49,7 +58,6 @@ public class Base {
         StackTraceElement[] ste = Thread.currentThread().getStackTrace();
         String className = ste[2].getClassName();
         try {
-            
             //Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
             HashMap<String, Object> HM = Manager.find(id, tableName);
@@ -58,7 +66,7 @@ public class Base {
             HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer)HM.get("id"), Class.forName(className));
             
             if(parentDatas != null){
-                //Merge parent's table datas into map
+                //Merge parent's table data's into map
                 HM.putAll(parentDatas);
             }
             return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
@@ -102,7 +110,6 @@ public class Base {
     }
 
     public boolean save() {
-        //TODO BUG:BROKEN for model inheritance
         int newId = 0;
         if (this.getId() == null) {
             newId = save(this.getClass(), this);
@@ -121,11 +128,11 @@ public class Base {
         int id = 0;
         if(classObject.getAnnotation(inherit.class) != null){
            id = Base.save(classObject.getSuperclass(), objectInstance);
-           System.out.println(id);
+//           System.out.println(id);
         }
         if(id != 0){
             attrToPersist.put("id", id);
-            System.out.println(Arrays.asList(attrToPersist).toString());
+//            System.out.println(Arrays.asList(attrToPersist).toString());
         }
         return Manager.save(BaseHelper.getClassTableName(classObject.getName()), attrToPersist); 
     }
@@ -150,7 +157,14 @@ public class Base {
         this.updateFlag = flag;
     }
     
+    public Date getCreationDate() {
+        return creationDate;
+    }
 
+    public Date getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+    
     /******** Private ***********************************************/
     private String getClassName() {
         return this.getClass().getName();
@@ -165,4 +179,6 @@ public class Base {
         }
         return null;
     }
+
+
 }

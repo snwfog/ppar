@@ -69,7 +69,7 @@ public class BaseHelper {
             if (data.containsKey(fieldName)) {
                 Object value = data.get(fieldName);
                 String capitalizeField = fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-    
+                
                 java.lang.reflect.Method method;
                 try {
                     method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
