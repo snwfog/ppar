@@ -39,51 +39,16 @@ public class Document extends Base implements IModel {
 
     public Peer getPeer(){
         HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
-        peer = new Peer();
-        for (String attribute: foundPeer.keySet()){  
-            Object value = foundPeer.get(attribute); //value could be null
-            if (value != null){
-                switch(attribute){               
-                case "firstName":
-                    peer.setFirstName((String) value);
-                    break;
-                case "lastName":
-                    peer.setLastName((String) value);
-                    break;
-                case "email":
-                    peer.setEmail((String) value);
-                    break;
-                case "userName":
-                    peer.setUserName((String) value);
-                    break;
-                case "password":
-                    peer.setPassword((String) value);
-                    break;
-                case "point":
-                    peer.setPoint((Integer) value);
-                    break;
-                case "personalWebsite":
-                    peer.setPersonalWebsite((String) value);
-                    break;
-                case "rankId":
-                    peer.setRankId((Integer) value);
-                    break;
-                case "creationDate":
-                    peer.setCreationDate((Date) value);
-                    break;
-                case "lastModifiedDate":
-                    peer.setLastModifiedDate((Date) value);
-                    break;
-                default:
-                    break;
-                } 
-            }
-        }
+        peer = new Peer(foundPeer);
         return peer;
     }
     
     public void setPeerId(Integer peerId){
         this.peerId = peerId;
+    }
+    
+    public int getPeerId(){
+        return this.peerId;
     }
     
     public void setDocName(String docName) {
@@ -101,12 +66,12 @@ public class Document extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        //Document d = new Document();
-//        d.setDocName("mydoc");
-//        d.setPeerId(18); // why this setPeerId is not working @mike?
-//        System.out.println(d.save());
+        Document d = new Document();
+        d.setDocName("mydoc");
+        d.setPeerId(3); // why this setPeerId is not working @mike?
+        System.out.println(d.save());
         
-        Document d = Document.find(4);
+//        Document d = Document.find(4);
         System.out.println(d.getPeer().getFirstName());
         System.out.println(d.getPeer().getLastName());
         System.out.println(d.getPeer().getCreationDate());

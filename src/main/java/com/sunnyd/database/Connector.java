@@ -31,7 +31,7 @@ public class Connector
     {
       // Load the files from the default path
       // Which is located at resources/config
-      //prop.load(ClassLoader.getSystemResourceAsStream("config/database.properties"));
+      prop.load(ClassLoader.getSystemResourceAsStream("config/database.properties"));
 
       // Statically init the JDBC class
       Class.forName(driverClass);
@@ -47,6 +47,9 @@ public class Connector
     catch (ClassNotFoundException e)
     {
       logger.error("Could not find the JDBC library.");
+    } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
     }
   }
 
