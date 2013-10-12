@@ -2,10 +2,11 @@ package com.sunnyd.models;
 
 import java.util.Date;
 import java.util.HashMap;
-
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
+import com.sunnyd.annotations.hasOne;
 import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.database.Manager;
 
 public class Document extends Base implements IModel {
     public static final String tableName = "documents";
@@ -18,7 +19,12 @@ public class Document extends Base implements IModel {
     private Date lastModifiedDate;
     @tableAttr
     private Date creationDate;
-
+    @hasOne
+    private Peer peer;
+    @tableAttr
+    private Integer peerId;
+    
+    
     public Document() {
         super();
     }
@@ -31,6 +37,55 @@ public class Document extends Base implements IModel {
         return docName;
     }
 
+    public Peer getPeer(){
+        HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
+        peer = new Peer();
+        for (String attribute: foundPeer.keySet()){  
+            Object value = foundPeer.get(attribute); //value could be null
+            if (value != null){
+                switch(attribute){               
+                case "firstName":
+                    peer.setFirstName((String) value);
+                    break;
+                case "lastName":
+                    peer.setLastName((String) value);
+                    break;
+                case "email":
+                    peer.setEmail((String) value);
+                    break;
+                case "userName":
+                    peer.setUserName((String) value);
+                    break;
+                case "password":
+                    peer.setPassword((String) value);
+                    break;
+                case "point":
+                    peer.setPoint((Integer) value);
+                    break;
+                case "personalWebsite":
+                    peer.setPersonalWebsite((String) value);
+                    break;
+                case "rankId":
+                    peer.setRankId((Integer) value);
+                    break;
+                case "creationDate":
+                    peer.setCreationDate((Date) value);
+                    break;
+                case "lastModifiedDate":
+                    peer.setLastModifiedDate((Date) value);
+                    break;
+                default:
+                    break;
+                } 
+            }
+        }
+        return peer;
+    }
+    
+    public void setPeerId(Integer peerId){
+        this.peerId = peerId;
+    }
+    
     public void setDocName(String docName) {
         this.docName = docName;
         setUpdateFlag(true);
@@ -44,13 +99,12 @@ public class Document extends Base implements IModel {
         this.thumbnailPath = thumbnailPath;
         setUpdateFlag(true);
     }
-
+    
     public static void main(String[] args) {
-        Document d = Document.find(1);
-        System.out.println(d.getDocName());
-        System.out.println(d.getLastModifiedDate());
-        System.out.println(d.getThumbnailPath());
-        System.out.println(d.getCreationDate());
+        Document d = Document.find(2);
+        System.out.println(d.getPeer().getFirstName());
+        System.out.println(d.getPeer().getLastName());
+        System.out.println(d.getPeer().getCreationDate());
     }
 
     public Date getLastModifiedDate() {
@@ -70,4 +124,5 @@ public class Document extends Base implements IModel {
         this.creationDate = creationDate;
         setUpdateFlag(true);
     }
+
 }
