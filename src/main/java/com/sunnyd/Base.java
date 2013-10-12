@@ -77,6 +77,38 @@ public class Base {
         return null;
     }
 
+    
+    @SuppressWarnings("unchecked")
+    // test find for hasOne
+    public static <T> T find_hasOne(int id) {
+        // Since this is a static method, to get caller of method we must look in stack
+        // At this point stack should look like this:
+        // [java.lang.Thread.getStackTrace(Unknown Source), com.sunnyd.Base.find(Base.java:79), com.sunnyd.models.Person.main(Person.java:20), .....so on]
+        // TODO:Need a better solution than stack to get caller class
+        StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+        String className = ste[2].getClassName();
+        try {
+            //Get class attribute from database
+            String tableName = BaseHelper.getClassTableName(className);
+            HashMap<String, Object> HM = Manager.find(id, tableName);
+            
+            //Get inherited values from parent table
+            HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer)HM.get("id"), Class.forName(className));
+            
+            if(parentDatas != null){
+                //Merge parent's table data's into map
+                HM.putAll(parentDatas);
+            }
+            return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    
+    
     public static <T> T findAll() {
         return null;
     }
@@ -160,9 +192,17 @@ public class Base {
     public Date getCreationDate() {
         return creationDate;
     }
-
+    
+    public void setCreationDate(Date creationDate){
+        this.creationDate = creationDate;
+    }
+    
     public Date getLastModifiedDate() {
         return lastModifiedDate;
+    }
+    
+    public void setLastModifiedDate(Date lastModifiedDate){
+        this.lastModifiedDate = lastModifiedDate;
     }
     
     /******** Private ***********************************************/
