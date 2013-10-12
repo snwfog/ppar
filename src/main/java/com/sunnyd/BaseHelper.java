@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.sunnyd.annotations.hasOne;
 import com.sunnyd.annotations.inherit;
 import com.sunnyd.annotations.tableAttr;
 import com.sunnyd.database.Manager;
@@ -129,6 +130,28 @@ public class BaseHelper {
                     tableAttributes.add(field);
                 } catch (IllegalArgumentException e) {
                     // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return tableAttributes.toArray(new Field[tableAttributes.size()]);
+    }
+    
+    
+    ///harry
+    
+    
+    // given a caller class name, returns all the @hasOne attributes in that class
+    static Field[] getHasOneField(Class<?> classObject) {
+        Field[] classFields = classObject.getDeclaredFields();
+        List<Field> tableAttributes = new ArrayList<Field>();
+        for (int i = 0; i < classFields.length; i++) {
+            Field field = classFields[i];
+            Annotation attrAnnotation = field.getAnnotation(hasOne.class);
+            if (attrAnnotation != null) {
+                try {
+                    tableAttributes.add(field);
+                } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                 }
             }
