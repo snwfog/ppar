@@ -31,7 +31,7 @@ public class Connector
     {
       // Load the files from the default path
       // Which is located at resources/config
-      prop.load(ClassLoader.getSystemResourceAsStream("config/database.properties"));
+      //prop.load(ClassLoader.getSystemResourceAsStream("config/database.properties"));
 
       // Statically init the JDBC class
       Class.forName(driverClass);
@@ -43,10 +43,6 @@ public class Connector
       username = prop.getProperty("username", username);
       password = prop.getProperty("password", password);
       url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
-    }
-    catch (IOException e)
-    {
-      logger.error("Could not load the database.properties file.");
     }
     catch (ClassNotFoundException e)
     {
