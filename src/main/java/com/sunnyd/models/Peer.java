@@ -112,5 +112,14 @@ public class Peer extends Base implements IModel {
         this.personalWebsite = personalWebsite;
         setUpdateFlag(true);
     }
+    
+    public static void main (String[] args){
+        Peer p = new Peer();
+        p.setFirstName("harry");
+        p.setLastName("Zhang");
+        p.setEmail("mail");
+        p.setPoint(0);
+        System.out.println(p.save());
+    }
 
 }
