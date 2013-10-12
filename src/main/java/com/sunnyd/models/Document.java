@@ -101,7 +101,12 @@ public class Document extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Document d = Document.find(2);
+        //Document d = new Document();
+//        d.setDocName("mydoc");
+//        d.setPeerId(18); // why this setPeerId is not working @mike?
+//        System.out.println(d.save());
+        
+        Document d = Document.find(4);
         System.out.println(d.getPeer().getFirstName());
         System.out.println(d.getPeer().getLastName());
         System.out.println(d.getPeer().getCreationDate());
