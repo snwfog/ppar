@@ -172,7 +172,7 @@ public class Manager
       }
       else // id is provided (means 
       {
-        System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
+//        System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
         id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")") != 0 ? (int) hashmap.get("id") : 0;
       }
 
