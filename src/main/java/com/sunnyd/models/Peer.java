@@ -47,6 +47,7 @@ public class Peer extends Base implements IModel {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
+        setUpdateFlag(true);
     }
 
     public String getLastName() {
@@ -55,6 +56,7 @@ public class Peer extends Base implements IModel {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+        setUpdateFlag(true);
     }
 
     public String getEmail() {
@@ -63,6 +65,7 @@ public class Peer extends Base implements IModel {
 
     public void setEmail(String email) {
         this.email = email;
+        setUpdateFlag(true);
     }
 
     public String getUserName() {
@@ -71,6 +74,7 @@ public class Peer extends Base implements IModel {
 
     public void setUserName(String userName) {
         this.userName = userName;
+        setUpdateFlag(true);
     }
 
     public String getPassword() {
@@ -79,6 +83,7 @@ public class Peer extends Base implements IModel {
 
     public void setPassword(String password) {
         this.password = password;
+        setUpdateFlag(true);
     }
 
     public Integer getPoint() {
@@ -87,6 +92,7 @@ public class Peer extends Base implements IModel {
 
     public void setPoint(Integer point) {
         this.point = point;
+        setUpdateFlag(true);
     }
 
     public Integer getRankId() {
@@ -95,6 +101,7 @@ public class Peer extends Base implements IModel {
 
     public void setRankId(Integer rankId) {
         this.rankId = rankId;
+        setUpdateFlag(true);
     }
 
     public String getPersonalWebsite() {
@@ -103,6 +110,7 @@ public class Peer extends Base implements IModel {
 
     public void setPersonalWebsite(String personalWebsite) {
         this.personalWebsite = personalWebsite;
+        setUpdateFlag(true);
     }
 
 }

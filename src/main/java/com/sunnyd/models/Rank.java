@@ -30,6 +30,7 @@ public class Rank extends Base implements IModel {
 
     public void setRankName(String rankName) {
         this.rankName = rankName;
+        setUpdateFlag(true);
     }
 
     public Integer getMinPoint() {
@@ -38,6 +39,7 @@ public class Rank extends Base implements IModel {
 
     public void setMinPoint(Integer minPoint) {
         this.minPoint = minPoint;
+        setUpdateFlag(true);
     }
 
 }
