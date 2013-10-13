@@ -38,8 +38,10 @@ public class Document extends Base implements IModel {
     }
 
     public Peer getPeer(){
-        HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
-        peer = new Peer(foundPeer);
+        if(peer == null){
+            HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
+            this.peer = new Peer(foundPeer);
+        }
         return peer;
     }
     
