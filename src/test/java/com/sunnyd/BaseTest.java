@@ -28,7 +28,6 @@ public class BaseTest {
         Assert.assertEquals(id, a.getId());
         Assert.assertEquals(creationDate, a.getCreationDate());
         Assert.assertEquals(lastModifiedDate, a.getLastModifiedDate());
-        
     }
 
 }

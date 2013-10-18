@@ -6,11 +6,15 @@ import com.sunnyd.annotations.*;
 import com.sunnyd.database.fixtures.Prep;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 public class PersonTest extends Base implements IModel {
@@ -74,8 +78,7 @@ public class PersonTest extends Base implements IModel {
     public void init() throws SQLException {
         Prep.init(tableName);
     }
-
-    @BeforeTest
+    
     public void prepTable() throws SQLException {
         Prep.purgeAllRecord(tableName);
         Prep.resetPrimaryKey(tableName);
@@ -83,13 +86,18 @@ public class PersonTest extends Base implements IModel {
 
     @Test
     public void TestSave() {
-        Person a = new Person();
+        try {
+            prepTable();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        PersonTest a = new PersonTest();
         Assert.assertNull(a.getId());
         Assert.assertNull(a.getCreationDate());
         Assert.assertNull(a.getLastModifiedDate());
         Assert.assertNull(a.getFirstName());
         Assert.assertNull(a.getLastName());
-        Assert.assertNull(a.getLastModifiedDate());
         Assert.assertNull(a.getStatus());
         Assert.assertFalse(a.getUpdateFlag());
         a.setStatus("aoidjaoidja");
@@ -98,6 +106,21 @@ public class PersonTest extends Base implements IModel {
         Assert.assertTrue(a.save());
         Integer id = 1;
         Assert.assertEquals(id.intValue(), a.getId().intValue());
+       
+    }
+    
+    
+    //Depends on TestSave()
+    @Test
+    public static void TestFind(){
+        PersonTest a = PersonTest.find(1);
+        Date today = new Date();
+        Assert.assertNull(a.getStatus());
+        Assert.assertEquals("a", a.getFirstName());
+        Assert.assertEquals("b", a.getLastName());
+        Integer id = 1;
+        Assert.assertEquals(id.intValue(), a.getId().intValue());
+
     }
 
 }

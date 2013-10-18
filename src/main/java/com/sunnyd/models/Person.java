@@ -29,20 +29,21 @@ public class Person extends Base implements IModel {
 
     public static void main(String[] args) {
 
-//        Person a = new Person();
-//        System.out.println(a.getId());
-//        System.out.println(a.getFirstName());
-//        System.out.println(a.getLastName());
-//        a.setFirstName("bobby");
-//        a.setLastName("yit");
-//        a.save();
-
-        Person a = Person.find(1);
-
+        Person a = new Person();
         System.out.println(a.getId());
         System.out.println(a.getFirstName());
         System.out.println(a.getLastName());
-        a.setFirstName("john");
+        a.setFirstName("bobby");
+        a.setLastName("yit");
+        a.save();
+
+        Person b = Person.find(a.getId());
+
+        System.out.println(b.getId());
+        System.out.println(b.getFirstName());
+        System.out.println(b.getLastName());
+        b.setFirstName("john");
+        b.update();
 //
 //        Person b = Person.find(2);
 //
