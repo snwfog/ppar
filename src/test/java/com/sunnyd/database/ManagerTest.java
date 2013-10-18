@@ -70,18 +70,12 @@ public class ManagerTest extends DatabaseTestSetup
     for (int id = 1; id <= names.length; id++)
     {
       HashMap<String, Object> result = Manager.find(id, tableName);
-      System.out.println("result returned" + result);
       for (String field : result.keySet())
       {
-        System.out.println("field" + field);
+        
         if (field.equalsIgnoreCase("id")){
-            System.out.println("heeere" + id + "therer" + result.get(field));
-            System.out.println("heeere" + id + "therer" + result.get(field));
-            System.out.println(result.get(field).getClass());
           // Check that the id are the same
-          Assert.assertEquals(result.get(field), id);
-          System.out.println("continue");
-          
+          Assert.assertEquals(result.get(field), id);          
         }else{
           Assert.assertEquals(table.get(field, id), names[id-1]);
         }
