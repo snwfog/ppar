@@ -44,12 +44,13 @@ public class Connector
       password = prop.getProperty("password", password);
       url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
     }
+    catch (IOException e)
+    {
+      logger.error("Could not find the JDBC library");
+    }
     catch (ClassNotFoundException e)
     {
-      logger.error("Could not find the JDBC library.");
-    } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+      logger.error("Could not load the database.properties file");
     }
   }
 

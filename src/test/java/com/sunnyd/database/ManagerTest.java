@@ -3,6 +3,8 @@ package com.sunnyd.database;
 import com.google.common.collect.Table;
 import com.sunnyd.database.fixtures.Prep;
 import com.sunnyd.database.query.ResultTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
@@ -15,21 +17,18 @@ import java.util.Map;
 
 public class ManagerTest extends DatabaseTestSetup
 {
+
+  final Logger logger = LoggerFactory.getLogger(ManagerTest.class);
   private static final String tableName = "database_manager_test";
   private static final boolean purgeExistingRecord = true;
   private static final boolean resetIncrement = true;
   private static final String[] names = { "Charles", "Joe", "Robson", "Saud", "Harry" };
 
-  @BeforeClass
-  public void init() throws SQLException
-  {
-    Prep.init(tableName);
-  }
-
   @BeforeTest
   public void prepTable() throws SQLException
   {
-    logger.info("Cleaning records and reset increment key.");
+    logger.info("Cleaning records and reset increment key...");
+    Prep.init(tableName);
     Prep.purgeAllRecord(tableName);
     Prep.resetPrimaryKey(tableName);
   }
@@ -69,14 +68,23 @@ public class ManagerTest extends DatabaseTestSetup
 
     for (int id = 1; id <= names.length; id++)
     {
-      Map<String, Object> result = Manager.find(id, tableName);
+      HashMap<String, Object> result = Manager.find(id, tableName);
       for (String field : result.keySet())
       {
-        if (field.equalsIgnoreCase("id"))
-          // Check that the id are the same
+        switch(field)
+        {
+        case "id":
           Assert.assertEquals(result.get(field), id);
-        else
+          break;
+        case "name":
           Assert.assertEquals(table.get(field, id), names[id-1]);
+          break;
+        case "creation_date":
+        case "last_modified_date":
+          break;
+        default:
+          break;
+        }
       }
     }
   }
@@ -104,16 +112,25 @@ public class ManagerTest extends DatabaseTestSetup
     ResultTable rt = new ResultTable(rs);
     Table<String, Integer, String> table = rt.getTable();
 
-    for (int id = 1; id <= newNames.length; id++)
+    for (int id = 1; id <= names.length; id++)
     {
-      Map<String, Object> result = Manager.find(id, tableName);
+      HashMap<String, Object> result = Manager.find(id, tableName);
       for (String field : result.keySet())
       {
-        if (field.equalsIgnoreCase("id"))
-          // Check that the id are the same
+        switch(field)
+        {
+        case "id":
           Assert.assertEquals(result.get(field), id);
-        else
+          break;
+        case "name":
           Assert.assertEquals(table.get(field, id), newNames[id-1]);
+          break;
+        case "creation_date":
+        case "last_modified_date":
+          break;
+        default:
+          break;
+        }
       }
     }
   }

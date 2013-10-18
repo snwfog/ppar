@@ -21,10 +21,10 @@ public class Manager {
 //        final Logger logger = LoggerFactory.getLogger(Manager.class);
 //        logger.info("Hello world");
 //
-//        // sample test for CRUD below:
+        // sample test for CRUD below:
 //        HashMap<String, Object> map = new HashMap<String, Object>();
-//        map.put("firstName", null);
-//        // map.put("id", 3);
+//        map.put("firstName", "asdsadsa");
+//         map.put("id", 3);
 //
 //        // FIND:
 //        // System.out.println(find(0, "persons"));
@@ -151,9 +151,14 @@ public class Manager {
         try {
             connection = Connector.getConnection();
             HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
-            SQLHashmap.put("creation_date", "NOW()");
-            SQLHashmap.put("last_modified_date", "NOW()");
             
+            DatabaseMetaData md = connection.getMetaData();
+            if (md.getColumns(null, null, tableName, "creation_date").next() ){
+                SQLHashmap.put("creation_date", "NOW()");
+                SQLHashmap.put("last_modified_date", "NOW()");
+            }
+            
+
             // get column value pairs from hashmap as val,val,val...
             for (String key : SQLHashmap.keySet()) {
                 columns += key + ",";
@@ -218,7 +223,14 @@ public class Manager {
                 String newvalue = SQLHashmap.get(key);
                 stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
             }
-            stmt.execute("UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id);
+            
+            DatabaseMetaData md = connection.getMetaData();
+            if (md.getColumns(null, null, tableName, "creation_date").next() ){
+                stmt.execute("UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id);
+            }
+            
+            
+            
 
         } catch (SQLException e) {
             e.printStackTrace();

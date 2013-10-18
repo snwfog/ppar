@@ -1,7 +1,5 @@
 package com.sunnyd;
 
-
-
 import java.util.Date;
 import java.util.HashMap;
 
@@ -32,4 +30,5 @@ public class BaseTest {
         Assert.assertEquals(lastModifiedDate, a.getLastModifiedDate());
         
     }
+
 }
