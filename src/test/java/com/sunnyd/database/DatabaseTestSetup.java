@@ -29,7 +29,7 @@ public class DatabaseTestSetup
   @AfterClass
   public void tearDown() throws SQLException
   {
-    logger.info("⏳ Closing JDBC active connection. Good Bye!");
+    logger.info(" Closing JDBC active connection. Good Bye!");
     conn.close();
   }
 
