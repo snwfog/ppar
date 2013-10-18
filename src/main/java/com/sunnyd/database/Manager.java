@@ -22,8 +22,8 @@ public class Manager {
 //        logger.info("Hello world");
 //
         // sample test for CRUD below:
-        HashMap<String, Object> map = new HashMap<String, Object>();
-        map.put("firstName", "asdsadsa");
+//        HashMap<String, Object> map = new HashMap<String, Object>();
+//        map.put("firstName", "asdsadsa");
 //         map.put("id", 3);
 //
 //        // FIND:
@@ -36,7 +36,7 @@ public class Manager {
 //        // System.out.println(key + ":" + h.get(key)); } }
 //
 //        // SAVE:
-        System.out.println(save("peers", map));
+//        System.out.println(save("peers", map));
 //
 //        // DESTROY:
 //        // System.out.println(destroy(2, "peers"));

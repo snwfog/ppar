@@ -46,11 +46,11 @@ public class Connector
     }
     catch (IOException e)
     {
-      logger.error("✗ Could not find the JDBC library");
+      logger.error("Could not find the JDBC library");
     }
     catch (ClassNotFoundException e)
     {
-      logger.error("✗ Could not load the database.properties file");
+      logger.error("Could not load the database.properties file");
     }
   }
 

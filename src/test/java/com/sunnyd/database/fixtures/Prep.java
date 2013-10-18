@@ -37,21 +37,21 @@ public class Prep
     if (!rs.first())
     {
 
-      String msg = String.format("✗ Could not find table %s", tableName);
+      String msg = String.format("Could not find table %s", tableName);
       logger.error(msg);
-      logger.error("✗ You probably need to create the table %s", tableName);
+      logger.error("You probably need to create the table %s", tableName);
       throw new SQLException(msg);
     }
     else
     {
-      logger.info(String.format("✔ Found table %s", tableName));
+      logger.info(String.format(" Found table %s", tableName));
     }
   }
 
   public static void resetPrimaryKey(String tableName)
       throws SQLException
   {
-    logger.info(String.format("✔ Resetting primary key id for table %s", tableName));
+    logger.info(String.format(" Resetting primary key id for table %s", tableName));
     stmt.executeUpdate(String.format("ALTER TABLE `%s` AUTO_INCREMENT = 1", tableName));
 
   }
@@ -59,7 +59,7 @@ public class Prep
   public static void purgeAllRecord(String tableName)
       throws SQLException
   {
-    logger.info(String.format("✔ Removing all record from %s", tableName));
+    logger.info(String.format("Removing all record from %s", tableName));
     stmt.executeUpdate(String.format("DELETE FROM `%s`", tableName));
   }
 
@@ -69,7 +69,7 @@ public class Prep
     if (withPurge) Prep.purgeAllRecord(tableName);
     if (withResetIncrement) Prep.resetPrimaryKey(tableName);
 
-    logger.info("✔ Inserting %i elements into table %s", amount, tableName);
+    logger.info("Inserting %i elements into table %s", amount, tableName);
     for (int i = 0; i < amount; i++)
     {
       stmt.executeUpdate(
