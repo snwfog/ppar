@@ -4,7 +4,7 @@ public interface IModel
 {
   Integer getId();
 
-  void setId(Integer id);
+//  void setId(Integer id);
 
   Boolean getUpdateFlag();
 

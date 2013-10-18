@@ -19,6 +19,7 @@ public class BaseHelper {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
+    //Get classObject attribute and value
     static HashMap<String, Object> getTableAttributeNameAndValue(Object classObject) {
         Field[] classFields = classObject.getClass().getDeclaredFields();
         HashMap<String, Object> tableAttributes = new HashMap<String, Object>();
@@ -39,6 +40,7 @@ public class BaseHelper {
         return tableAttributes;
     }
     
+    //For inheritance, get parent field and value
     static HashMap<String, Object> getTableAttributeNameAndValue(Class<?> parentClass, Object classObject) {
         Field[] classFields = parentClass.getDeclaredFields();
         HashMap<String, Object> tableAttributes = new HashMap<String, Object>();

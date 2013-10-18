@@ -51,9 +51,6 @@ public class Manager {
 //
 //        }
         
-        //Mikes
-        System.out.println(Arrays.asList(find("persons", "last_name", "GrandLuffy")).toString());
-        
         // System.out.println(toCamelCase("first_name_else"));
         // System.out.println(toUnderscoreCase("firstNameField"));
 
@@ -90,7 +87,6 @@ public class Manager {
             ArrayList<Integer> result = new ArrayList<Integer>();
             connection = Connector.getConnection();
             stmt = connection.createStatement();
-            System.out.println("SELECT id FROM " + tableName + " WHERE " + column + "= " + value);
             rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE " + column + "=" + value);
             
             while(rs.next()){
@@ -179,7 +175,6 @@ public class Manager {
                 }
             } else // id is provided (means
             {
-                System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
                 id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")") != 0 ? (int) hashmap
                         .get("id") : 0;
             }

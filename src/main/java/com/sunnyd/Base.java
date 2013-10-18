@@ -108,7 +108,6 @@ public class Base {
     }
 
     
-    
     public static <T> T findAll() {
         return null;
     }
@@ -123,7 +122,7 @@ public class Base {
         }
         return false;
     }
-    
+
     private static boolean update(Class<?> classObject, Object instanceObject){
         HashMap<String, Object> updateAttributes = BaseHelper.getTableAttributeNameAndValue(classObject, instanceObject);
         if(classObject.getAnnotation(inherit.class) !=null){
@@ -138,8 +137,19 @@ public class Base {
 
     
     public Boolean Destroy() {
-        return Manager.destroy(this.getId(), getTableName());
+        return destroyHierarchy(this.getClass(), this.getId());
     }
+    
+    //Delete Parent Data after child has been deleted
+    private static boolean destroyHierarchy(Class<?> classObject, Integer id){
+        String tableName = BaseHelper.getClassTableName(classObject.getName());
+        boolean success = Manager.destroy(id, tableName);
+        if(classObject.getAnnotation(inherit.class) !=null){
+            success = Base.destroyHierarchy(classObject.getSuperclass(), id);
+        }
+        return success;
+    }
+
 
     public boolean save() {
         int newId = 0;
@@ -156,7 +166,7 @@ public class Base {
     
     private static Integer save(Class<?> classObject, Object objectInstance){
         HashMap<String, Object> attrToPersist = BaseHelper.getTableAttributeNameAndValue(classObject, objectInstance);
-        System.out.println(classObject.getName());
+//        System.out.println(classObject.getName());
         int id = 0;
         if(classObject.getAnnotation(inherit.class) != null){
            id = Base.save(classObject.getSuperclass(), objectInstance);
@@ -177,7 +187,7 @@ public class Base {
         return this.id;
     }
 
-    public void setId(Integer id) {
+    private void setId(Integer id) {
         this.id = id;
     }
 

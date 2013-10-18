@@ -24,7 +24,6 @@ public class ManagerTest extends DatabaseTestSetup
   public void init() throws SQLException
   {
     Prep.init(tableName);
-
   }
 
   @BeforeTest

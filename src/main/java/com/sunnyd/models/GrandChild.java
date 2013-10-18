@@ -27,18 +27,22 @@ public class GrandChild extends Child{
         b.setFirstName("GrandD");
         b.setLastName("GrandLuffy");
         b.save();
+        System.out.println(b.Destroy());
+//        Integer id = b.getId();
+//        System.out.println(id);
+//        GrandChild a = GrandChild.find(id);
+////        a.setChildName("grandch1ld");
+////        a.update();
+////        a = GrandChild.find(b.getId());
+//        System.out.println(a.getGrandChildName());
+//        System.out.println(a.getChildName());
+//        System.out.println(a.getFirstName());
+//        System.out.println(a.getLastName());
+//        System.out.println(a.getCreationDate().toString());
+//        System.out.println(a.getLastModifiedDate().toString());
+
         
-        System.out.println(b.getId());
-        GrandChild a = GrandChild.find(b.getId());
-//        a.setChildName("grandch1ld");
-//        a.update();
-//        a = GrandChild.find(b.getId());
-        System.out.println(a.getGrandChildName());
-        System.out.println(a.getChildName());
-        System.out.println(a.getFirstName());
-        System.out.println(a.getLastName());
-        System.out.println(a.getCreationDate().toString());
-        System.out.println(a.getLastModifiedDate().toString());    
+        
     }
 
     public String getGrandChildName() {
