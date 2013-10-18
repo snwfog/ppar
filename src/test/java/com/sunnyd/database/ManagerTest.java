@@ -112,16 +112,25 @@ public class ManagerTest extends DatabaseTestSetup
     ResultTable rt = new ResultTable(rs);
     Table<String, Integer, String> table = rt.getTable();
 
-    for (int id = 1; id <= newNames.length; id++)
+    for (int id = 1; id <= names.length; id++)
     {
-      Map<String, Object> result = Manager.find(id, tableName);
+      HashMap<String, Object> result = Manager.find(id, tableName);
       for (String field : result.keySet())
       {
-        if (field.equalsIgnoreCase("id"))
-          // Check that the id are the same
+        switch(field)
+        {
+        case "id":
           Assert.assertEquals(result.get(field), id);
-        else
+          break;
+        case "name":
           Assert.assertEquals(table.get(field, id), newNames[id-1]);
+          break;
+        case "creation_date":
+        case "last_modified_date":
+          break;
+        default:
+          break;
+        }
       }
     }
   }
