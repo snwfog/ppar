@@ -32,12 +32,12 @@ public class SQLClassMap
     return instance;
   }
 
-  public Class convertToJavaClass(String sqlType)
+  public Class getJavaType(String sqlType)
   {
     return classMap.inverse().get(sqlType);
   }
 
-  public String convertToSQLType(Class klazz)
+  public String getSQLType(Class klazz)
   {
     return classMap.get(klazz);
   }

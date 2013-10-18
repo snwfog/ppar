@@ -50,7 +50,6 @@
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.apache.maven.wagon:wagon-ssh:1.0-beta-2" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: com.jcraft:jsch:0.1.27" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-exec:1.1" level="project" />
-    <orderEntry type="library" name="Maven: com.googlecode.flyway:flyway-core:2.2.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.testng:testng:6.1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.beanshell:bsh:2.0b4" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: com.beust:jcommander:1.12" level="project" />
