@@ -91,6 +91,7 @@ public class ChildTest extends PersonTest {
         Assert.assertEquals(id.intValue(), c.getId().intValue());
     }
     
+    /**
     @Test
     public void TestFind(){
         ChildTest ch = ChildTest.find(1);
@@ -99,6 +100,7 @@ public class ChildTest extends PersonTest {
         System.out.println(ch.getFirstName());
         System.out.println(ch.getLastName());
     }
+    */
 
 
 
