@@ -7,17 +7,17 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.sunnyd.annotations.inherit;
-import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.annotations.ActiveRecordInheritFrom;
+import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.fixtures.Prep;
 
-@inherit(childClassof = "ChildTest")
+@ActiveRecordInheritFrom(childClassof = "ChildTest")
 public class GrandChildTest extends ChildTest {
     public static final String tableName = "grand_childs";
     public static final String parentTableName = "childs";
     public static final String grandParentTableName = "persons";
 
-    @tableAttr
+    @ActiveRecordField
     private String grandChildName;
 
     public GrandChildTest() {

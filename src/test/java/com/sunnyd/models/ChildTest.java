@@ -5,18 +5,18 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import com.sunnyd.annotations.inherit;
-import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.annotations.ActiveRecordInheritFrom;
+import com.sunnyd.annotations.ActiveRecordField;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 
-@inherit(childClassof = "PersonTest")
+@ActiveRecordInheritFrom(childClassof = "PersonTest")
 public class ChildTest extends PersonTest {
     public static final String tableName = "childs";
     public static final String parentTableName = "persons";
 
-    @tableAttr
+    @ActiveRecordField
     private String childName;
 
     public ChildTest() {
