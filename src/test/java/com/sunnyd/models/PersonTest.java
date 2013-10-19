@@ -19,7 +19,7 @@ import java.util.HashMap;
 
 public class PersonTest extends Base implements IModel {
 
-    //public static final String tableName = "persons";
+    public static final String tableName = "person_tests";
 
     @ActiveRecordField
     private String firstName;
