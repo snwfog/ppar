@@ -3,7 +3,9 @@ package com.sunnyd.models;
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
+import com.sunnyd.database.Manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Peer extends Base implements IModel {
@@ -32,6 +34,9 @@ public class Peer extends Base implements IModel {
 
     @ActiveRecordField
     private String personalWebsite;
+
+    @ActiveRelationHasMany
+    private Document[] documents;
 
     public Peer() {
         super();
@@ -112,8 +117,23 @@ public class Peer extends Base implements IModel {
         this.personalWebsite = personalWebsite;
         setUpdateFlag(true);
     }
-    
-    public static void main (String[] args){
+
+    public Document[] getDocuments(){
+        HashMap<String, Object> condition = new HashMap<String, Object>();
+        condition.put("peerId", this.getId());
+        
+        ArrayList<HashMap<String, Object>> foundDocuments = Manager.findAll("documents", condition);
+        int size = foundDocuments.size();
+        documents = new Document[size-1];
+        
+        for (int i=0; i<size;i++){
+            Document d = new Document(foundDocuments.get(i));
+            documents[i] = d;
+        }
+        return documents;
+    }
+
+    public static void main(String[] args) {
         Peer p = new Peer();
         p.setFirstName("asoidjasoidjaisjdioj");
         p.setLastName("Zhang");
