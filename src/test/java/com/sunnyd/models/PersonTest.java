@@ -80,6 +80,10 @@ public class PersonTest extends Base implements IModel {
     }
     
     public void prepTable() throws SQLException {
+        Prep.purgeAllRecord("grand_child_tests");
+        Prep.resetPrimaryKey("grand_child_tests");
+        Prep.purgeAllRecord("child_tests");
+        Prep.resetPrimaryKey("child_tests");
         Prep.purgeAllRecord(tableName);
         Prep.resetPrimaryKey(tableName);
     }

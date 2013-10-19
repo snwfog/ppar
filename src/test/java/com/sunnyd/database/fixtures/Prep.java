@@ -56,11 +56,23 @@ public class Prep
 
   }
 
-  public static void purgeAllRecord(String tableName)
+  public static void purgeAllRecord(String tableName, boolean checkConstraint)
       throws SQLException
   {
+    if (!checkConstraint)
+    {
+      logger.info("Disable foreign key constraints check.");
+      stmt.execute("SET foreign_key_checks = 0");
+    }
+
     logger.info(String.format("Removing all record from %s", tableName));
     stmt.executeUpdate(String.format("DELETE FROM `%s`", tableName));
+
+    if (!checkConstraint)
+    {
+      logger.info("Reenable foreign key constraints check.");
+      stmt.execute("SET foreign_key_checks = 1");
+    }
   }
 
   public static void insertTestRecord(int amount, String tableName, boolean withPurge, boolean withResetIncrement)
