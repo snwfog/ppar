@@ -13,7 +13,7 @@ import java.util.HashMap;
  * All Children isa relation/children of a model primary key is the parent's primary key
  */
 
-public class Base {
+public class Base implements IModel {
 
     @ActiveRecordField
     private Integer id;
@@ -25,6 +25,8 @@ public class Base {
     private Date lastModifiedDate;
 
     private Boolean updateFlag = false;
+
+
 
     public Base() {
     }

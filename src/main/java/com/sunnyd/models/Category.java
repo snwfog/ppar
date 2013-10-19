@@ -5,6 +5,7 @@ import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import java.util.HashMap;
 
+@ActiveRecordModel
 public class Category extends Base implements IModel {
 
     public static final String tableName = "categories";

@@ -16,6 +16,7 @@ import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
+import org.apache.commons.lang3.StringUtils;
 
 public class BaseHelper {
     
@@ -24,13 +25,6 @@ public class BaseHelper {
         System.out.println(BaseHelper.getClassTableName(a.getClass()));
     }
 
-    static String capitalize(String s) {
-        return s.substring(0, 1).toUpperCase() + s.substring(1);
-    }
-    
-    static String unCapitalize(String s) {
-        return s.substring(0, 1).toLowerCase() + s.substring(1);
-    }
 
     //Get classObject attribute and value
     static HashMap<String, Object> getTableFieldNameAndValue(Object classObject) {
@@ -47,7 +41,7 @@ public class BaseHelper {
             if (attrAnnotation != null) {
                 try {
                     String fieldName = field.getName();
-                    Method method = parentClass.getDeclaredMethod("get" + capitalize(fieldName));
+                    Method method = parentClass.getDeclaredMethod("get" + StringUtils.capitalize(fieldName));
                     Object value = method.invoke(classObject);
                     tableAttributes.put(field.getName(), value);
                 } catch (IllegalArgumentException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
@@ -68,8 +62,8 @@ public class BaseHelper {
             
             if (data.containsKey(fieldName)) {
                 Object value = data.get(fieldName);
-                String capitalizeField = capitalize(fieldName);
-                
+                String capitalizeField = StringUtils.capitalize(fieldName);
+
                 java.lang.reflect.Method method;
                 try {
                     method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
