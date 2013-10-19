@@ -2,10 +2,10 @@ package com.sunnyd.models;
 
 import java.util.HashMap;
 
-import com.sunnyd.annotations.inherit;
-import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.annotations.ActiveRecordInheritFrom;
+import com.sunnyd.annotations.ActiveRecordField;
 
-@inherit(childClassof = "Document")
+@ActiveRecordInheritFrom(childClassof = "Document")
 public class Resume extends Document {
 
     public static final String tableName = "resumes";

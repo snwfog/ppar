@@ -9,28 +9,28 @@ import java.util.HashMap;
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
 
-    @tableAttr
+    @ActiveRecordField
     private String firstName;
 
-    @tableAttr
+    @ActiveRecordField
     private String lastName;
 
-    @tableAttr
+    @ActiveRecordField
     private String email;
 
-    @tableAttr
+    @ActiveRecordField
     private String userName;
 
-    @tableAttr
+    @ActiveRecordField
     private String password;
 
-    @tableAttr
+    @ActiveRecordField
     private Integer point;
 
-    @tableAttr
+    @ActiveRecordField
     private Integer rankId;
 
-    @tableAttr
+    @ActiveRecordField
     private String personalWebsite;
 
     public Peer() {

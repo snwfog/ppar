@@ -10,7 +10,7 @@ public class Comment extends Base implements IModel {
 
     public static final String tableName = "comments";
 
-    @tableAttr
+    @ActiveRecordField
     private String message;
 
     public Comment() {

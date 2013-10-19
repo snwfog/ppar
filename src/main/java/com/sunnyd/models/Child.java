@@ -2,14 +2,14 @@ package com.sunnyd.models;
 
 import java.util.HashMap;
 
-import com.sunnyd.annotations.inherit;
-import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.annotations.ActiveRecordInheritFrom;
+import com.sunnyd.annotations.ActiveRecordField;
 
-@inherit(childClassof = "Person")
+@ActiveRecordInheritFrom(childClassof = "Person")
 public class Child extends Person {
     public static final String tableName = "childs";
     
-    @tableAttr
+    @ActiveRecordField
     private String childName;
     
     public Child(){

@@ -4,12 +4,8 @@ import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-
-
 /*****
  * 
  * 
@@ -19,19 +15,18 @@ import java.util.Iterator;
 
 public class Base {
 
-    @tableAttr
+    @ActiveRecordField
     private Integer id;
     
-    @tableAttr
+    @ActiveRecordField
     private Date creationDate;
     
-    @tableAttr
+    @ActiveRecordField
     private Date lastModifiedDate;
 
     private Boolean updateFlag = false;
 
     public Base() {
-
     }
 
     public Base(HashMap<String, Object> HM) {
@@ -124,15 +119,15 @@ public class Base {
     }
 
     private static boolean update(Class<?> classObject, Object instanceObject){
-        HashMap<String, Object> updateAttributes = BaseHelper.getTableAttributeNameAndValue(classObject, instanceObject);
-        if(classObject.getAnnotation(inherit.class) !=null){
+        HashMap<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);
+        if(classObject.getAnnotation(ActiveRecordInheritFrom.class) !=null){
             boolean updated = Base.update(classObject.getSuperclass(), instanceObject);
             if(!updated){
                 System.out.println("Could not update "+((Base)instanceObject).getId()+" "+classObject.getName());
                 return false;
             }
         }
-        return Manager.update(((Base)instanceObject).getId(), BaseHelper.getClassTableName(classObject.getName()), updateAttributes);
+        return Manager.update(((Base)instanceObject).getId(), BaseHelper.getClassTableName(classObject), updateAttributes);
     }
 
     
@@ -142,9 +137,9 @@ public class Base {
     
     //Delete Parent Data after child has been deleted
     private static boolean destroyHierarchy(Class<?> classObject, Integer id){
-        String tableName = BaseHelper.getClassTableName(classObject.getName());
+        String tableName = BaseHelper.getClassTableName(classObject);
         boolean success = Manager.destroy(id, tableName);
-        if(classObject.getAnnotation(inherit.class) !=null){
+        if(classObject.getAnnotation(ActiveRecordInheritFrom.class) !=null){
             success = Base.destroyHierarchy(classObject.getSuperclass(), id);
         }
         return success;
@@ -156,7 +151,7 @@ public class Base {
         if (this.getId() == null) {
             newId = save(this.getClass(), this);
             if (newId != 0) {
-                this.setId(newId);
+                id = newId;
                 return true;
             }
         }
@@ -165,10 +160,10 @@ public class Base {
     
     
     private static Integer save(Class<?> classObject, Object objectInstance){
-        HashMap<String, Object> attrToPersist = BaseHelper.getTableAttributeNameAndValue(classObject, objectInstance);
+        HashMap<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue(classObject, objectInstance);
 //        System.out.println(classObject.getName());
         int id = 0;
-        if(classObject.getAnnotation(inherit.class) != null){
+        if(classObject.getAnnotation(ActiveRecordInheritFrom.class) != null){
            id = Base.save(classObject.getSuperclass(), objectInstance);
 //           System.out.println(id);
         }
@@ -176,7 +171,7 @@ public class Base {
             attrToPersist.put("id", id);
 //            System.out.println(Arrays.asList(attrToPersist).toString());
         }
-        return Manager.save(BaseHelper.getClassTableName(classObject.getName()), attrToPersist); 
+        return Manager.save(BaseHelper.getClassTableName(classObject), attrToPersist); 
     }
 
     

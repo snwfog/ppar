@@ -21,10 +21,10 @@ public class PersonTest extends Base implements IModel {
 
     public static final String tableName = "persons";
 
-    @tableAttr
+    @ActiveRecordField
     private String firstName;
 
-    @tableAttr
+    @ActiveRecordField
     private String lastName;
 
     private String status;

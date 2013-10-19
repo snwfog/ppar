@@ -9,10 +9,10 @@ public class Group extends Base implements IModel {
 
     public static final String tableName = "comments";
 
-    @tableAttr
+    @ActiveRecordField
     private String groupName;
 
-    @tableAttr
+    @ActiveRecordField
     private String description;
 
     public Group() {

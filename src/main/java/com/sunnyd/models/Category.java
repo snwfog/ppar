@@ -9,10 +9,10 @@ public class Category extends Base implements IModel {
 
     public static final String tableName = "categories";
 
-    @tableAttr
+    @ActiveRecordField
     private String categoryName;
 
-    @tableAttr
+    @ActiveRecordField
     private String description;
 
     public Category() {

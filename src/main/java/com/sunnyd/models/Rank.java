@@ -10,10 +10,10 @@ public class Rank extends Base implements IModel {
 
     public static final String tableName = "ranks";
 
-    @tableAttr
+    @ActiveRecordField
     private String rankName;
 
-    @tableAttr
+    @ActiveRecordField
     private Integer minPoint;
 
     public Rank() {

@@ -4,24 +4,24 @@ import java.util.Date;
 import java.util.HashMap;
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
-import com.sunnyd.annotations.hasOne;
-import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.annotations.ActiveRelationHasOne;
+import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
 
 public class Document extends Base implements IModel {
     public static final String tableName = "documents";
 
-    @tableAttr
+    @ActiveRecordField
     private String docName;
-    @tableAttr
+    @ActiveRecordField
     private String thumbnailPath;
-    @tableAttr
+    @ActiveRecordField
     private Date lastModifiedDate;
-    @tableAttr
+    @ActiveRecordField
     private Date creationDate;
-    @hasOne
+    @ActiveRelationHasOne
     private Peer peer;
-    @tableAttr
+    @ActiveRecordField
     private Integer peerId;
     
     
