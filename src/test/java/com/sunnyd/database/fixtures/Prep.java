@@ -78,7 +78,7 @@ public class Prep
   public static void insertTestRecord(int amount, String tableName, boolean withPurge, boolean withResetIncrement)
       throws SQLException
   {
-    if (withPurge) Prep.purgeAllRecord(tableName);
+    if (withPurge) Prep.purgeAllRecord(tableName, true);
     if (withResetIncrement) Prep.resetPrimaryKey(tableName);
 
     logger.info("Inserting %i elements into table %s", amount, tableName);
