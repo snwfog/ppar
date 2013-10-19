@@ -3,9 +3,13 @@ package com.sunnyd;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
+
+import org.apache.commons.lang3.StringUtils;
 /*****
  * 
  * 
@@ -40,7 +44,7 @@ public class Base implements IModel {
         Class<?> classObject = this.getClass();
       
         //Set Attribute
-        BaseHelper.setAttributes(classObject, this, HM);
+        Base.setAttributes(classObject, this, HM);
         
         //Set updateDateFlag to false after setter methods
         this.setUpdateFlag(false);
@@ -229,6 +233,38 @@ public class Base implements IModel {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void setAttributes(Class<?> classObject, Object instanceObject, HashMap<String, Object> data){
+        //Get all table attribute from this class
+        Field[] fields = BaseHelper.getTableField(classObject);
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            Class<?> fieldType = field.getType();
+            
+            if (data.containsKey(fieldName)) {
+                Object value = data.get(fieldName);
+                String capitalizeField = StringUtils.capitalize(fieldName);
+                //System.out.println("+pppppppppppppppppppppppppppppppppppppp"+capitalizeField);                
+                java.lang.reflect.Method method;
+                try {
+                    method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
+                    method.invoke(instanceObject, fieldType.cast(value));
+                } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+                        | InvocationTargetException e) {
+                    e.printStackTrace();
+                    break;// If method does not have setMethod then it is
+                          // not a db Attribute
+                }
+    
+            }
+        }
+        
+       //Verify if model inherit another model
+       if(classObject.getAnnotation(ActiveRecordInheritFrom.class) !=null){
+           setAttributes(classObject.getSuperclass(), instanceObject, data);
+       }
+        
     }
 
 

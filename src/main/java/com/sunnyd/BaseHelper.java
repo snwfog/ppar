@@ -53,38 +53,6 @@ public class BaseHelper {
     }
 
 
-    static void setAttributes(Class<?> classObject, Object instanceObject, HashMap<String, Object> data){
-        //Get all table attribute from this class
-        Field[] fields = BaseHelper.getTableField(classObject);
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            Class<?> fieldType = field.getType();
-            
-            if (data.containsKey(fieldName)) {
-                Object value = data.get(fieldName);
-                String capitalizeField = StringUtils.capitalize(fieldName);
-
-                java.lang.reflect.Method method;
-                try {
-                    method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
-                    method.invoke(instanceObject, fieldType.cast(value));
-                } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
-                        | InvocationTargetException e) {
-                    e.printStackTrace();
-                    break;// If method does not have setMethod then it is
-                          // not a db Attribute
-                }
-    
-            }
-        }
-        
-       //Verify if model inherit another model
-       if(classObject.getAnnotation(ActiveRecordInheritFrom.class) !=null){
-           setAttributes(classObject.getSuperclass(), instanceObject, data);
-       }
-        
-    }
-
     static HashMap<String, Object> getSuperDatas(Integer id, Class<?> classObject){
         HashMap<String,Object> parentResult = null;
         if(classObject.getAnnotation(ActiveRecordInheritFrom.class) != null ){
