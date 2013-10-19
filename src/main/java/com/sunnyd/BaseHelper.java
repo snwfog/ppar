@@ -16,6 +16,7 @@ import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
+import org.codehaus.plexus.util.StringUtils;
 
 public class BaseHelper {
     
@@ -47,7 +48,7 @@ public class BaseHelper {
             if (attrAnnotation != null) {
                 try {
                     String fieldName = field.getName();
-                    Method method = parentClass.getDeclaredMethod("get" + capitalize(fieldName));
+                    Method method = parentClass.getDeclaredMethod("get" + StringUtils.capitalise(fieldName));
                     Object value = method.invoke(classObject);
                     tableAttributes.put(field.getName(), value);
                 } catch (IllegalArgumentException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
