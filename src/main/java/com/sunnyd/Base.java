@@ -132,7 +132,11 @@ public class Base {
 
     
     public Boolean Destroy() {
-        return destroyHierarchy(this.getClass(), this.getId());
+        boolean success = destroyHierarchy(this.getClass(), this.getId());
+        if(success){
+            id = null;
+        }
+        return success;
     }
     
     //Delete Parent Data after child has been deleted
