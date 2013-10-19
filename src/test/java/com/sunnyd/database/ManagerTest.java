@@ -151,10 +151,10 @@ public class ManagerTest extends DatabaseTestSetup {
 
     @Test
     public void convertJavaSQLTest() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date d = null;
         try {
-            d = sdf.parse("2013-8-15 01:24:43");
+            d = sdf.parse("2013-08-15 01:24:43");
             //System.out.println("here" + d.toString());
         } catch (ParseException e) {
             // TODO Auto-generated catch block
@@ -165,7 +165,7 @@ public class ManagerTest extends DatabaseTestSetup {
         input.put("k1", "somestring");
         input.put("k2", false);
         input.put("k3", 123);
-        //input.put("k4", d);
+        input.put("k4", d);
 
         HashMap<String, String> output;
         output = Manager.convertJavaSQL(input);
@@ -173,7 +173,7 @@ public class ManagerTest extends DatabaseTestSetup {
         Assert.assertEquals(output.get("k1"), "'somestring'");
         Assert.assertEquals(output.get("k2"), "'false'");
         Assert.assertEquals(output.get("k3"), "123");
-        //Assert.assertEquals(output.get("k4"), "'2013-8-15 01:24:43'");
+        Assert.assertEquals(output.get("k4"), "'2013-08-15 01:24:43'");
 
     }
 }

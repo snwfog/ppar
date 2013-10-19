@@ -21,11 +21,10 @@ public class Manager {
 //        final Logger logger = LoggerFactory.getLogger(Manager.class);
 //        logger.info("Hello world");
 //
-        // sample test for CRUD below:
-//        HashMap<String, Object> map = new HashMap<String, Object>();
-//        map.put("firstName", "asdsadsa");
-//         map.put("id", 3);
-//
+         //sample test for CRUD below:
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("firstName", "asdsadsa");
+
 //        // FIND:
 //        // System.out.println(find(0, "persons"));
 //
@@ -36,7 +35,7 @@ public class Manager {
 //        // System.out.println(key + ":" + h.get(key)); } }
 //
 //        // SAVE:
-//        System.out.println(save("peers", map));
+        System.out.println(save("peers", map));
 //
 //        // DESTROY:
 //        // System.out.println(destroy(2, "peers"));
@@ -240,7 +239,7 @@ public class Manager {
     }
 
     // java (firstName:"bob") --> sql (first_name: "bob")
-    private static HashMap<String, String> convertJavaSQL(HashMap<String, Object> original) {
+    public static HashMap<String, String> convertJavaSQL(HashMap<String, Object> original) {
         boolean DEBUG = true;
         HashMap<String, String> converted = new HashMap<String, String>();
 
@@ -271,7 +270,7 @@ public class Manager {
                 break;
             case "Date":
                 Date dt = (Date) value;
-                DateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                DateFormat parser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 converted.put(key_underscore, "'" + parser.format(dt) + "'");
                 break;
             default:
@@ -307,7 +306,7 @@ public class Manager {
                 return "'" + value + "'";
             case "Date":
                 Date dt = (Date) value;
-                DateFormat parser = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                DateFormat parser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 return "'" + parser.format(dt) + "'";
             default:
                 System.out.println("Manager.java doesnt know this type:" + value);
