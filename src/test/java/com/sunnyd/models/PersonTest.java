@@ -109,9 +109,8 @@ public class PersonTest extends Base implements IModel {
        
     }
     
-    
-    //Depends on TestSave()
-    @Test
+   
+    @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind(){
         PersonTest a = PersonTest.find(1);
         Date today = new Date();
@@ -122,5 +121,38 @@ public class PersonTest extends Base implements IModel {
         Assert.assertEquals(id.intValue(), a.getId().intValue());
 
     }
+    
+    @Test
+    public void TestUpdate() {
+        PersonTest p = PersonTest.find(1);
+        Assert.assertEquals("a", p.getFirstName());
+        Assert.assertEquals("b", p.getLastName());
+        p.setFirstName("john");
+        p.setLastName("malkovich");
+        Assert.assertTrue(p.update());
+        Integer id = 1;
+        Assert.assertEquals(id.intValue(), p.getId().intValue());
+
+    }
+    
+    @Test
+    public void TestDestroy() {
+        PersonTest p = PersonTest.find(1);
+        p.setFirstName("b");
+        p.setLastName("c");
+        p.update();
+       
+        Assert.assertTrue(p.Destroy());
+        Assert.assertNull(p.getId());
+        Assert.assertNull(p.getCreationDate());
+        Assert.assertNull(p.getLastModifiedDate());
+        Assert.assertNull(p.getFirstName());
+        Assert.assertNull(p.getLastName());
+        Assert.assertNull(p.getStatus());
+        Assert.assertTrue(p.getUpdateFlag());
+        //Integer id = 1;
+        //Assert.assertEquals(id.intValue(), gc.getId().intValue());
+    }
+
 
 }

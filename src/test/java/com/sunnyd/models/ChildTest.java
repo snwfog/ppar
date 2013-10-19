@@ -1,6 +1,5 @@
 package com.sunnyd.models;
 
-
 import com.sunnyd.database.fixtures.Prep;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -16,27 +15,27 @@ import java.util.HashMap;
 public class ChildTest extends PersonTest {
     public static final String tableName = "childs";
     public static final String parentTableName = "persons";
-    
+
     @tableAttr
     private String childName;
-    
-    public ChildTest(){
+
+    public ChildTest() {
         super();
     }
-    
+
     public ChildTest(HashMap<String, Object> HM) {
         super(HM);
     }
-    
-    public String getChildName(){
+
+    public String getChildName() {
         return childName;
     }
-    
-    public void setChildName(String childName){
+
+    public void setChildName(String childName) {
         this.childName = childName;
         setUpdateFlag(true);
     }
-    
+
     @Override
     public boolean save() {
         if (childName != null && childName.isEmpty())
@@ -44,10 +43,6 @@ public class ChildTest extends PersonTest {
         return super.save();
     }
 
-   
-    
-   
-    
     /****************************** TEST ********************************************************/
 
     private static final boolean purgeExistingRecord = true;
@@ -57,7 +52,6 @@ public class ChildTest extends PersonTest {
         Prep.init(tableName);
     }
 
-    
     public void prepTable() throws SQLException {
         Prep.purgeAllRecord(tableName);
         Prep.purgeAllRecord(parentTableName);
@@ -83,25 +77,58 @@ public class ChildTest extends PersonTest {
         Assert.assertNull(c.getStatus());
         Assert.assertFalse(c.getUpdateFlag());
         c.setStatus("aoidjaoidja");
-        c.setFirstName("y");
-        c.setLastName("y");
-        c.setChildName("y");
+        c.setFirstName("monkey");
+        c.setLastName("d");
+        c.setChildName("luffy");
         Assert.assertTrue(c.save());
         Integer id = 1;
         Assert.assertEquals(id.intValue(), c.getId().intValue());
     }
-    
-    /**
-    @Test
-    public void TestFind(){
-        ChildTest ch = ChildTest.find(1);
-        System.out.println(ch.getId());
-        System.out.println(ch.getChildName());
-        System.out.println(ch.getFirstName());
-        System.out.println(ch.getLastName());
+
+    @Test (dependsOnMethods = { "TestSave" })
+    public static void TestFind() {
+        ChildTest c = ChildTest.find(1);
+        Assert.assertEquals("luffy", c.getChildName());
+        Assert.assertEquals("monkey", c.getFirstName());
+        Assert.assertEquals("d", c.getLastName());
+        Integer id = 1;
+        Assert.assertEquals(id.intValue(), c.getId().intValue());
     }
-    */
 
+    @Test
+    public void TestUpdate() {
+        ChildTest c = ChildTest.find(1);
+        Assert.assertEquals("luffy", c.getChildName());
+        Assert.assertEquals("monkey", c.getFirstName());
+        Assert.assertEquals("d", c.getLastName());
+        c.setChildName("mark");
+        c.setFirstName("john");
+        c.setLastName("malkovich");
+        Assert.assertTrue(c.update());
+        Integer id = 1;
+        Assert.assertEquals(id.intValue(), c.getId().intValue());
 
+    }
+    
+    @Test
+    public void TestDestroy() {
+        ChildTest c = ChildTest.find(1);
+        c.setChildName("a");
+        c.setFirstName("b");
+        c.setLastName("c");
+        c.update();
+       
+        Assert.assertTrue(c.Destroy());
+        Assert.assertNull(c.getId());
+        Assert.assertNull(c.getCreationDate());
+        Assert.assertNull(c.getLastModifiedDate());
+        Assert.assertNull(c.getChildName());
+        Assert.assertNull(c.getFirstName());
+        Assert.assertNull(c.getLastName());
+        Assert.assertNull(c.getStatus());
+        Assert.assertTrue(c.getUpdateFlag());
+        //Integer id = 1;
+        //Assert.assertEquals(id.intValue(), gc.getId().intValue());
+    }
 
 }
