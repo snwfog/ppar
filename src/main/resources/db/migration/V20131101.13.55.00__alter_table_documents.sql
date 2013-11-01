@@ -1,0 +1,1 @@
+alter table documents add class enum('resume','cover_letter');
