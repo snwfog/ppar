@@ -1,0 +1,1 @@
+alter table changesets add content text;
