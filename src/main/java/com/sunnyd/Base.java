@@ -89,10 +89,6 @@ public class Base implements IModel {
         }
         return null;
     }
-    
-   
-    
-    
 
     
     @Deprecated
@@ -254,17 +250,6 @@ public class Base implements IModel {
     }
     private void relationHasOne(Field relation){       
         String relationCanonicalClassName = relation.getType().getCanonicalName();
-        String relationSimpleClassName = relation.getType().getSimpleName();
-        String simpleClassName = this.getClass().getSimpleName();
-  
-        Class<?> relationClass = null;
-        try {
-            relationClass = Class.forName(relationCanonicalClassName);
-        } catch (ClassNotFoundException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        
         Object relationObject = null;
         try {
             Method findMethod = Class.forName(relationCanonicalClassName).getMethod("find", int.class, String.class);
@@ -291,8 +276,7 @@ public class Base implements IModel {
         String simpleClassName = this.getClass().getSimpleName();
         
         relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName.toLowerCase()) : relationTableName;
-        
-        System.out.println(relationTableName);
+       
         Class<?> relationClass = null;
         try {
             relationClass = Class.forName(relationCanonicalClassName);
