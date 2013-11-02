@@ -2,9 +2,9 @@ package com.sunnyd.database.fixtures;
 
 import com.google.common.base.Throwables;
 import com.sunnyd.database.Connector;
+import org.skife.jdbi.v2.Handle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.print.PSStreamPrinterFactory;
 
 import java.sql.*;
 
@@ -12,27 +12,18 @@ public class Prep
 {
   final static Logger logger = LoggerFactory.getLogger(Prep.class);
 
-  private static Connection conn;
+  private static Handle handle;
   private static Statement stmt;
 
   static
   {
-    try
-    {
-      conn = Connector.getConnection();
-      stmt = conn.createStatement();
-    }
-    catch (SQLException e)
-    {
-      logger.error("Error while initiate static JDBC connector.");
-      Throwables.propagate(e);
-    }
+    handle = Connector.getHandleInstance();
   }
 
   public static void init(String tableName) throws SQLException
   {
     // Check if table exists
-    DatabaseMetaData meta = conn.getMetaData();
+    DatabaseMetaData meta = handle.getConnection().getMetaData();
     ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"});
     if (!rs.first())
     {

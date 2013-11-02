@@ -2,6 +2,8 @@ package com.sunnyd.models;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
+
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.ActiveRelationHasOne;
@@ -29,7 +31,7 @@ public class Document extends Base implements IModel {
         super();
     }
 
-    public Document(HashMap<String, Object> HM) {
+    public Document(Map<String, Object> HM) {
         super(HM);
     }
 
@@ -39,7 +41,7 @@ public class Document extends Base implements IModel {
 
     public Peer getPeer(){
         if(peer == null){
-            HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
+            Map<String, Object> foundPeer = Manager.find(peerId, "peers");
             this.peer = new Peer(foundPeer);
         }
         return peer;

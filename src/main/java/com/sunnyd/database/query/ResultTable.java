@@ -13,7 +13,7 @@ import java.util.*;
 
 public class ResultTable
 {
-  static final Logger logger = LoggerFactory.getLogger(QueryExecutor.class);
+  static final Logger logger = LoggerFactory.getLogger(ResultTable.class);
   // HashBasedTable<Column, Row, Value>
   // Columns are the id rows, while rows are the field name
   // Column set is all the records, while row set is all the fields name

@@ -1,5 +1,7 @@
 package com.sunnyd.database;
 
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -20,48 +22,27 @@ public class Connector
   private static String password = "root";
   private static String url;
   //static reference to itself
-  private static Connector instance = new Connector();
+  private static DBI instance;
 
   //private constructor
   private Connector()
   {
-    // Initiate the URL from properties files or fall back to default
-    Properties prop = new Properties();
-    try
-    {
-      // Load the files from the default path
-      // Which is located at resources/config
-      prop.load(ClassLoader.getSystemResourceAsStream("config/database.properties"));
-
-      // Statically init the JDBC class
-      Class.forName(driverClass);
-
-      // Set the URL string for the JDBC connection
-      database = prop.getProperty("database", database);
-      host = prop.getProperty("host", host);
-      port = prop.getProperty("port", port);
-      username = prop.getProperty("username", username);
-      password = prop.getProperty("password", password);
-      url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
-    }
-    catch (IOException e)
-    {
-      logger.error("Could not find the JDBC library");
-    }
-    catch (ClassNotFoundException e)
-    {
-      logger.error("Could not load the database.properties file");
-    }
+    // Set the URL string for the JDBC connection
+//    database = prop.getProperty("database", database);
+//    host = prop.getProperty("host", host);
+//    port = prop.getProperty("port", port);
+//    username = prop.getProperty("username", username);
+//    password = prop.getProperty("password", password);
+//    url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
   }
 
-  public static Connection getConnection() throws SQLException
+  public static Handle getHandleInstance()
   {
-    return instance.createConnection();
-  }
+    if (instance == null)
+      instance = new DBI(url, username, password);
+    String msg = String.format("Creating a database handle @ %s, %s, %s.", url, username, password);
+    logger.info(msg);
 
-  private Connection createConnection() throws SQLException
-  {
-
-    return DriverManager.getConnection(url, username, password);
+    return instance.open();
   }
 }

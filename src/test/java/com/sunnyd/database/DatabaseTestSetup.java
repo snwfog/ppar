@@ -1,6 +1,6 @@
 package com.sunnyd.database;
 
-import com.sunnyd.database.query.QueryExecutor;
+import org.skife.jdbi.v2.Handle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
@@ -14,23 +14,20 @@ public class DatabaseTestSetup
 {
 
   final Logger logger = LoggerFactory.getLogger(DatabaseTestSetup.class);
-  protected Connection conn;
+  protected Handle handle;
   protected Statement stmt;
-  protected QueryExecutor exec;
 
   @BeforeClass
   public void setUp() throws SQLException
   {
-    conn = Connector.getConnection();
-    stmt = conn.createStatement();
-    exec = QueryExecutor.getInstance();
+    handle = Connector.getHandleInstance();
   }
 
   @AfterClass
   public void tearDown() throws SQLException
   {
     logger.info(" Closing JDBC active connection. Good Bye!");
-    conn.close();
+    handle.close();
   }
 
 }

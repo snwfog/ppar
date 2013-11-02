@@ -7,6 +7,8 @@ import com.sunnyd.database.Manager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
@@ -42,7 +44,7 @@ public class Peer extends Base implements IModel {
         super();
     }
 
-    public Peer(HashMap<String, Object> HM) {
+    public Peer(Map<String, Object> HM) {
         super(HM);
     }
 
@@ -122,7 +124,7 @@ public class Peer extends Base implements IModel {
         HashMap<String, Object> condition = new HashMap<String, Object>();
         condition.put("peerId", this.getId());
         
-        ArrayList<HashMap<String, Object>> foundDocuments = Manager.findAll("documents", condition);
+        List<Map<String, Object>> foundDocuments = Manager.findAll("documents", condition);
         int size = foundDocuments.size();
         documents = new Document[size-1];
         

@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 /*****
@@ -35,7 +36,7 @@ public class Base implements IModel {
     public Base() {
     }
 
-    public Base(HashMap<String, Object> HM) {
+    public Base(Map<String, Object> HM) {
         id = (Integer) HM.get("id");
         creationDate = (Date) HM.get("creationDate");
         lastModifiedDate = (Date) HM.get("lastModifiedDate");
@@ -61,11 +62,11 @@ public class Base implements IModel {
         try {
             //Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
-            HashMap<String, Object> HM = Manager.find(id, tableName);
+            Map<String, Object> HM = Manager.find(id, tableName);
             
             //Get inherited values from parent table
-            HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer)HM.get("id"), Class.forName(className));
-            
+            Map<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer)HM.get("id"), Class.forName(className));
+
             if(parentDatas != null){
                 //Merge parent's table data's into map
                 HM.putAll(parentDatas);
@@ -91,10 +92,10 @@ public class Base implements IModel {
         try {
             //Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
-            HashMap<String, Object> HM = Manager.find(id, tableName);
+            Map<String, Object> HM = Manager.find(id, tableName);
             
             //Get inherited values from parent table
-            HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer)HM.get("id"), Class.forName(className));
+            Map<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer)HM.get("id"), Class.forName(className));
             
             if(parentDatas != null){
                 //Merge parent's table data's into map
@@ -235,7 +236,7 @@ public class Base implements IModel {
         return null;
     }
 
-    public static void setAttributes(Class<?> classObject, Object instanceObject, HashMap<String, Object> data){
+    public static void setAttributes(Class<?> classObject, Object instanceObject, Map<String, Object> data){
         //Get all table attribute from this class
         Field[] fields = BaseHelper.getTableField(classObject);
         for (Field field : fields) {
