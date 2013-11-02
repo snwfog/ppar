@@ -1,0 +1,1 @@
+alter table peers add description varchar(256);
