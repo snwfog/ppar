@@ -3,6 +3,8 @@ package com.sunnyd.models;
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
+
+import java.util.Arrays;
 import java.util.HashMap;
 
 @ActiveRecordModel
@@ -15,6 +17,9 @@ public class Category extends Base implements IModel {
 
     @ActiveRecordField
     private String description;
+    
+    @ActiveRelationManyToMany(relationTable = "groups_categories")
+    private Group[] groups;
 
     public Category() {
         super();
@@ -42,4 +47,17 @@ public class Category extends Base implements IModel {
         setUpdateFlag(true);
     }
 
+    public Group[] getGroups() {
+        initRelation("groups");
+        return groups;
+    }
+
+    public void setGroups(Group[] groups) {
+        this.groups = groups;
+    }
+
+    public static void main(String[] args) {
+        Category a = Category.find(1);
+        System.out.println(Arrays.asList(a.getGroups()).toString());
+    }
 }

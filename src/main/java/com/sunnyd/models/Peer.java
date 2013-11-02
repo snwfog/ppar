@@ -6,6 +6,7 @@ import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Peer extends Base implements IModel {
@@ -119,27 +120,25 @@ public class Peer extends Base implements IModel {
     }
 
     public Document[] getDocuments(){
-        HashMap<String, Object> condition = new HashMap<String, Object>();
-        condition.put("peerId", this.getId());
-        
-        ArrayList<HashMap<String, Object>> foundDocuments = Manager.findAll("documents", condition);
-        int size = foundDocuments.size();
-        documents = new Document[size-1];
-        
-        for (int i=0; i<size;i++){
-            Document d = new Document(foundDocuments.get(i));
-            documents[i] = d;
-        }
-        return documents;
+        initRelation("documents");
+        return this.documents;
+//        HashMap<String, Object> condition = new HashMap<String, Object>();
+//        condition.put("peerId", this.getId());
+//        
+//        ArrayList<HashMap<String, Object>> foundDocuments = Manager.findAll("documents", condition);
+//        int size = foundDocuments.size();
+//        documents = new Document[size-1];
+//        
+//        for (int i=0; i<size;i++){
+//            Document d = new Document(foundDocuments.get(i));
+//            documents[i] = d;
+//        }
+//        /return documents;
     }
 
     public static void main(String[] args) {
-        Peer p = new Peer();
-        p.setFirstName("asoidjasoidjaisjdioj");
-        p.setLastName("Zhang");
-        p.setEmail("mail");
-        p.setPoint(0);
-        System.out.println(p.save());
+        Peer a = Peer.find(1);
+        System.out.println(Arrays.asList(a.getDocuments()).toString());
     }
 
 }
