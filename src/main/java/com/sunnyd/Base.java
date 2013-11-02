@@ -73,7 +73,7 @@ public class Base implements IModel {
             // Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
             HashMap<String, Object> HM = Manager.find(id, tableName);
-
+            System.out.println("oiajsdoiajdoia"+className);
             // Get inherited values from parent table
             HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
                     Class.forName(className));
@@ -250,11 +250,14 @@ public class Base implements IModel {
     }
     private void relationHasOne(Field relation){       
         String relationCanonicalClassName = relation.getType().getCanonicalName();
+        String relationSimpleName = relation.getType().getSimpleName();
         Object relationObject = null;
         try {
+            Field relationIdField = this.getClass().getDeclaredField(relationSimpleName.toLowerCase().trim()+"Id");
+            relationIdField.setAccessible(true);
             Method findMethod = Class.forName(relationCanonicalClassName).getMethod("find", int.class, String.class);
-            relationObject = findMethod.invoke(null, this.getId(), relationCanonicalClassName);
-        } catch (NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            relationObject = findMethod.invoke(null, relationIdField.get(this), relationCanonicalClassName);
+        } catch (NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchFieldException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

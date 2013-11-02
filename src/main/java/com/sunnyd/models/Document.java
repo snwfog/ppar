@@ -69,9 +69,9 @@ public class Document extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Document a = Document.find(1);
-        System.out.println(a.getPeer());
-        System.out.println(a.getPeer());
+        Document a = Document.find(2);
+        System.out.println(a.getPeer().getFirstName());
+        System.out.println(a.getPeer().getLastName());
     }
 
     public Date getLastModifiedDate() {
