@@ -1,17 +1,17 @@
 package com.sunnyd;
 
+
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
-import com.sunnyd.models.Document;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,7 +53,6 @@ public class Base implements IModel {
         this.setUpdateFlag(false);
     }
 
-    @SuppressWarnings("unchecked")
     public static <T> T find(int id) {
         // Since this is a static method, to get caller of method we must look
         // in stack
@@ -73,7 +72,6 @@ public class Base implements IModel {
             // Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
             HashMap<String, Object> HM = Manager.find(id, tableName);
-            System.out.println("oiajsdoiajdoia"+className);
             // Get inherited values from parent table
             HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
                     Class.forName(className));
@@ -195,17 +193,69 @@ public class Base implements IModel {
             attrToPersist.put("id", id);
             // System.out.println(Arrays.asList(attrToPersist).toString());
         }
-        return Manager.save(BaseHelper.getClassTableName(classObject), attrToPersist);
+        
+        //Save object before has many or manytomany relation fields
+        id = Manager.save(BaseHelper.getClassTableName(classObject), attrToPersist);
+        saveRelation(classObject, objectInstance, id);
+        return id;
+    } 
+    
+    public static void saveRelation(Class<?> classObject, Object objectInstance, int id){
+        Field[] fields = classObject.getDeclaredFields();
+        for(Field field : fields){
+            Annotation[] annotations = field.getAnnotations();
+            if(annotations.length > 0 && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany")){
+                String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
+                try {        
+                    field.setAccessible(true);
+                    @SuppressWarnings("unchecked")
+                    List<Object> hasManyCollection = (List<Object>) field.get(objectInstance);
+                    for (int i = 0; i<hasManyCollection.size(); i++){
+                        String setterMethod = "set"+StringUtils.capitalize(classObject.getSimpleName())+"Id";
+                        
+                        
+                        //Set objects in the has many collection id to current id
+                        Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(setterMethod, Integer.class);
+                        setRelationIdMethod.invoke(hasManyCollection.get(i), id);
+                        
+                        //Save the objects in has many collection
+                        Method save = Class.forName(relationCanonicalName).getMethod("save");
+                        save.invoke(hasManyCollection.get(i));
+                    }
+                    
+                } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException | ClassNotFoundException | InvocationTargetException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }else if(annotations.length > 0 && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationManyToMany")){
+                //TODO add manager relation saving
+            }
+        }
     }
     
     /*********************************Relations************************************************/
     public void initRelation(String attributeName) {
+        //Conditions
+        // id == null initialize empty list
+        // id != null and relation is loaded exit
+        // if id != null and relation isn't loaded, get collection of objects
+        
         try {
             Field relation = this.getClass().getDeclaredField(attributeName);
             Annotation[] relationAnnotations = relation.getAnnotations();
             
             //LazyLoading
             relation.setAccessible(true);
+            
+            if(this.id == null){
+                try {
+                    relation.set(this, new ArrayList<Object>());
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            
             if(relationLoaded(relation)){
                 return;
             }
@@ -274,8 +324,11 @@ public class Base implements IModel {
     }
     
     private void relationHasMany(Field relation, String relationTableName){
-        String relationCanonicalClassName = relation.getType().getComponentType().getCanonicalName();
-        String relationSimpleClassName = relation.getType().getComponentType().getSimpleName();
+        
+        //Get object class from Arraylist or list generic type
+
+        String relationCanonicalClassName = BaseHelper.getGenericCanonicalClassName(relation); 
+        String relationSimpleClassName = BaseHelper.getGenericSimpleName(relation);;
         String simpleClassName = this.getClass().getSimpleName();
         
         relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName.toLowerCase()) : relationTableName;
@@ -291,17 +344,16 @@ public class Base implements IModel {
         //Condition use current object ID for has many query
         HashMap<String, Object> condition = new HashMap<String, Object>();
         condition.put(simpleClassName.toLowerCase() + "Id", this.getId());
-
         //Get results
         ArrayList<HashMap<String, Object>> results = Manager.findAll(
                 relationTableName, condition);
 
         //Following: create instance of relation class and add to array
         int size = results.size();
-        Object[] collection = (Object[]) Array.newInstance(relationClass, size);
+        List<Object> collection = new ArrayList<Object>();
         for (int i = 0; i < size; i++) {
             try {
-                collection[i] = relationClass.getConstructor(HashMap.class).newInstance(results.get(i));
+                collection.add(relationClass.getConstructor(HashMap.class).newInstance(results.get(i)) );
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
@@ -378,7 +430,6 @@ public class Base implements IModel {
             if (data.containsKey(fieldName)) {
                 Object value = data.get(fieldName);
                 String capitalizeField = StringUtils.capitalize(fieldName);
-                // System.out.println("+pppppppppppppppppppppppppppppppppppppp"+capitalizeField);
                 java.lang.reflect.Method method;
                 try {
                     method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);

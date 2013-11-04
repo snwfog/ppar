@@ -6,6 +6,7 @@ import com.sunnyd.annotations.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 @ActiveRecordModel
 public class Category extends Base implements IModel {
@@ -19,7 +20,7 @@ public class Category extends Base implements IModel {
     private String description;
     
     @ActiveRelationManyToMany(relationTable = "groups_categories")
-    private Group[] groups;
+    private List<Group> groups;
 
     public Category() {
         super();
@@ -47,12 +48,12 @@ public class Category extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public Group[] getGroups() {
+    public List<Group> getGroups() {
         initRelation("groups");
         return groups;
     }
 
-    public void setGroups(Group[] groups) {
+    public void setGroups(List<Group> groups) {
         this.groups = groups;
     }
 

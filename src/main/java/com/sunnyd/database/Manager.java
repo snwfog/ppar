@@ -120,6 +120,7 @@ public class Manager {
             where = " WHERE " + where;
         }
 
+        //TODO: Should you return all result when variable "where" is ""(empty)?
         try {
             connection = Connector.getConnection();
             stmt = connection.createStatement();
