@@ -25,7 +25,9 @@ public class Prep
     // Check if table exists
     DatabaseMetaData meta = handle.getConnection().getMetaData();
     ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"});
-    if (!rs.first())
+    if (rs.first())
+      logger.info(String.format(" Found table %s", tableName));
+    else
     {
 
       String msg = String.format("Could not find table %s", tableName);
@@ -33,18 +35,14 @@ public class Prep
       logger.error("You probably need to create the table %s", tableName);
       throw new SQLException(msg);
     }
-    else
-    {
-      logger.info(String.format(" Found table %s", tableName));
-    }
   }
 
   public static void resetPrimaryKey(String tableName)
       throws SQLException
   {
-    logger.info(String.format(" Resetting primary key id for table %s", tableName));
-    stmt.executeUpdate(String.format("ALTER TABLE `%s` AUTO_INCREMENT = 1", tableName));
-
+    logger.info(String.format("Resetting primary key id for table %s", tableName));
+    String qString = String.format("ALTER TABLE `%s` AUTO_INCREMENT = 1", tableName);
+    handle.createStatement(qString).execute();
   }
 
   public static void purgeAllRecord(String tableName, boolean checkConstraint)
@@ -53,16 +51,18 @@ public class Prep
     if (!checkConstraint)
     {
       logger.info("Disable foreign key constraints check.");
-      stmt.execute("SET foreign_key_checks = 0");
+      String qString = "SET foreign_key_checks = 0";
+      handle.createStatement(qString).execute();
     }
 
     logger.info(String.format("Removing all record from %s", tableName));
-    stmt.executeUpdate(String.format("DELETE FROM `%s`", tableName));
+    handle.createStatement(String.format("DELETE FROM `%s`", tableName)).execute();
 
     if (!checkConstraint)
     {
       logger.info("Reenable foreign key constraints check.");
-      stmt.execute("SET foreign_key_checks = 1");
+      String qString = "SET foreign_key_checks = 0";
+      handle.createStatement(qString).execute();
     }
   }
 

@@ -1,8 +1,6 @@
 package com.sunnyd.database;
 
-import com.google.common.collect.Table;
 import com.sunnyd.database.fixtures.Prep;
-import com.sunnyd.database.query.ResultTable;
 import org.skife.jdbi.v2.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,15 +8,13 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 
 public class ManagerTest extends DatabaseTestSetup
 {
 
-  private static final String tableName = "database_manager_test";
+  private static final String tableName = "peers";
   private static final boolean purgeExistingRecord = true;
   private static final boolean resetIncrement = true;
   private static final String[] names = {"Charles", "Joe", "Robson", "Saud", "Harry"};
@@ -29,8 +25,8 @@ public class ManagerTest extends DatabaseTestSetup
   {
     logger.info("Cleaning records and reset increment key...");
     Prep.init(tableName);
-    Prep.purgeAllRecord(tableName, false);
-    Prep.resetPrimaryKey(tableName);
+//    Prep.purgeAllRecord(tableName, false);
+//    Prep.resetPrimaryKey(tableName);
   }
 
 //  @Test
@@ -66,9 +62,9 @@ public class ManagerTest extends DatabaseTestSetup
     Query<Map<String, Object>> r = Connector.getHandleInstance().createQuery(sql);
 
 
-//    for (int id = 1; id <= names.length; id++)
-//    {
-//      Map<String, Object> result = Manager.find(id, tableName);
+    for (int id = 1; id <= names.length; id++)
+    {
+      Map<String, Object> result = Manager.find(id, Peer.class);
 //      for (String field : result.keySet())
 //      {
 //        switch (field)
@@ -86,7 +82,7 @@ public class ManagerTest extends DatabaseTestSetup
 //          break;
 //        }
 //      }
-//    }
+    }
   }
 
   @Test(enabled = false)

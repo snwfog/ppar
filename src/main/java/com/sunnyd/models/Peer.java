@@ -4,13 +4,18 @@ import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Peer extends Base implements IModel {
+public class Peer extends Base implements IModel, ResultSetMapper<Peer>
+{
     public static final String tableName = "peers";
 
     @ActiveRecordField
@@ -144,4 +149,9 @@ public class Peer extends Base implements IModel {
         System.out.println(p.save());
     }
 
+  @Override
+  public Peer map(int index, ResultSet r, StatementContext ctx) throws SQLException
+  {
+    return new Peer(r.)
+  }
 }

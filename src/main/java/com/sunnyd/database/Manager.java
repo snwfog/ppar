@@ -1,26 +1,33 @@
 package com.sunnyd.database;
 
+import com.sunnyd.Base;
+import com.sunnyd.helper.Inflector;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
-import org.skife.jdbi.v2.Update;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Manager
 {
+  static final Logger logger = LoggerFactory.getLogger(Manager.class);
 
   public static void main(String[] args)
   {
-//        final Logger logger = LoggerFactory.getLogger(Manager.class);
 //        logger.info("Hello world");
 //
     //sample test for CRUD below:
-    HashMap<String, Object> map = new HashMap<String, Object>();
+    Map<String, Object> map = new HashMap<String, Object>();
     map.put("firstName", "asdsadsa");
 
 //        // FIND:
@@ -28,7 +35,7 @@ public class Manager
 //
 //        // FIND ALL:
 //
-//        // ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
+//        // ArrayList<Map<String, Object>> r = findAll("persons", map); for
 //        // (HashMap<String, Object> h : r){ for (String key : h.keySet()){
 //        // System.out.println(key + ":" + h.get(key)); } }
 //
@@ -42,7 +49,7 @@ public class Manager
 //        // System.out.println(update(0, "persons", map));
 //
 //        // converter Java to SQL:
-//        HashMap<String, String> c = convertJavaSQL(map);
+//        Ma<String, String> c = convertJavaSQL(map);
 //        for (Object key : c.keySet()) { // System.out.println(key + " " +
 //                                        // c.get(key));
 //
@@ -53,22 +60,23 @@ public class Manager
 
   }
 
-  // find by id, return single row
   public static Map<String, Object> find(int id, String tableName)
   {
+    return null;
+  }
 
-      Handle h = Connector.getHandleInstance();
-      // Update is nothing but an object that can be method chained
-      // to create the actual SQL query statement
-      // Nothing is run until call Update#execute
-      String qString = MessageFormat.format("SELECT * FROM {0} WHERE id = {1}", tableName, id);
-      Query<Map<String, Object>> q = h.createQuery(qString);
+  // find by id, return single row
+  public static <T extends Base> Map<String, Object> find(int id, Class<T> klazz)
+  {
+    Handle h = Connector.getHandleInstance();
+    // Update is nothing but an object that can be method chained
+    // to create the actual SQL query statement
+    // Nothing is run until call Update#execute
 
-
-//      if (rs.next())
-//      {
-//        return convertSQLJava(rs);
-//      }
+    String tableName = Inflector.plurialize(klazz);
+    String qString = MessageFormat.format("SELECT * FROM {0} WHERE id = {1}", tableName, id);
+    Query<Map<String, Object>> q = h.createQuery(qString);
+    List<T> list = q.map(klazz).list();
 
     return new HashMap<String, Object>();
   }
@@ -102,7 +110,7 @@ public class Manager
   }
 
   // find multiple by criteria
-  public static List<Map<String, Object>> findAll(String tableName, HashMap<String, Object> conditions)
+  public static List<Map<String, Object>> findAll(String tableName, Map<String, Object> conditions)
   {
 //    Connection connection = null;
 //    Statement stmt = null;
@@ -145,7 +153,7 @@ public class Manager
     return null;
   }
 
-  public static int save(String tableName, HashMap<String, Object> hashmap)
+  public static int save(String tableName, Map<String, Object> hashmap)
   {
 ////        QueryExecutorHook.beforeSave(hashmap);
 //    Connection connection = null;
@@ -230,7 +238,7 @@ public class Manager
   }
 
   // update 1 or more fields of a single row
-  public static boolean update(int id, String tableName, HashMap<String, Object> hashmap)
+  public static boolean update(int id, String tableName, Map<String, Object> hashmap)
   {
 //    Connection connection = null;
 //    Statement stmt = null;
@@ -268,10 +276,10 @@ public class Manager
   }
 
   // java (firstName:"bob") --> sql (first_name: "bob")
-  public static Map<String, String> convertJavaSQL(HashMap<String, Object> original)
+  public static Map<String, String> convertJavaSQL(Map<String, Object> original)
   {
     boolean DEBUG = true;
-    HashMap<String, String> converted = new HashMap<String, String>();
+    Map<String, String> converted = new HashMap<String, String>();
 
     for (String key : original.keySet()) // field, value pair
     {
@@ -351,9 +359,9 @@ public class Manager
   }
 
   // sql (first_name: "bob" varchar) --> java (firstName: "bob" as string)
-  private static HashMap<String, Object> convertSQLJava(ResultSet resultset) throws SQLException
+  private static Map<String, Object> convertSQLJava(ResultSet resultset) throws SQLException
   {
-    HashMap<String, Object> converted = new HashMap<String, Object>();
+    Map<String, Object> converted = new HashMap<String, Object>();
     ResultSetMetaData rsmd = resultset.getMetaData();
     int columnCount = rsmd.getColumnCount();
     for (int i = 1; i < columnCount + 1; i++)

@@ -33,16 +33,17 @@ public class Connector
 //    port = prop.getProperty("port", port);
 //    username = prop.getProperty("username", username);
 //    password = prop.getProperty("password", password);
-//    url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
   }
 
   public static Handle getHandleInstance()
   {
+    url = String.format("jdbc:mysql://%s:%s/%s", host, port, database);
+
     if (instance == null)
       instance = new DBI(url, username, password);
     String msg = String.format("Creating a database handle @ %s, %s, %s.", url, username, password);
-    logger.info(msg);
 
+    logger.info(msg);
     return instance.open();
   }
 }
