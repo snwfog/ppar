@@ -1,6 +1,7 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
+import static com.sunnyd.Base.find;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
@@ -145,10 +146,10 @@ public class Peer extends Base implements IModel {
         Peer a = new Peer();
         a.setFirstName("lucas");
         System.out.println(Arrays.asList(a.getDocuments()).toString());
-        Document d = new Document();
-        d.setDocName("teststtst");
+        Document d = new Document().find(2);
         List<Document> docArray = a.getDocuments();
         docArray.add(d);
+        System.out.println(d);
         a.setDocuments(docArray);
         a.save();
     }

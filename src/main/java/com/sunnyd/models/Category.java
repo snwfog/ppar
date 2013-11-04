@@ -58,7 +58,7 @@ public class Category extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-        Category a = Category.find(1);
+        Category a = new Category().find(1);
         System.out.println(Arrays.asList(a.getGroups()).toString());
     }
 }

@@ -48,7 +48,7 @@ public class Group extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Group a = Group.find(1);
+        Group a = new Group().find(1);
         System.out.println(Arrays.asList(a.getCategories()).toString());
     }
 

@@ -90,7 +90,7 @@ public class ChildTest extends PersonTest {
 
     @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind() {
-        ChildTest c = ChildTest.find(1);
+        ChildTest c = new ChildTest().find(1);
         Assert.assertEquals("luffy", c.getChildName());
         Assert.assertEquals("monkey", c.getFirstName());
         Assert.assertEquals("d", c.getLastName());
@@ -100,7 +100,7 @@ public class ChildTest extends PersonTest {
 
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        ChildTest c = ChildTest.find(1);
+        ChildTest c = new ChildTest().find(1);
         Assert.assertEquals("luffy", c.getChildName());
         Assert.assertEquals("monkey", c.getFirstName());
         Assert.assertEquals("d", c.getLastName());
@@ -115,7 +115,7 @@ public class ChildTest extends PersonTest {
     
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        ChildTest c = ChildTest.find(1);
+        ChildTest c = new ChildTest().find(1);
         c.setChildName("a");
         c.setFirstName("b");
         c.setLastName("c");

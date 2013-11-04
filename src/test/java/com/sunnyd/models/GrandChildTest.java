@@ -84,7 +84,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestSave" })
     public static void TestFind() {
-        GrandChildTest gc = GrandChildTest.find(1);
+        GrandChildTest gc = new GrandChildTest().find(1);
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());
         Assert.assertEquals("GrandLuffy", gc.getLastName());
@@ -95,7 +95,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        GrandChildTest gc = GrandChildTest.find(1);
+        GrandChildTest gc = new GrandChildTest().find(1);
         Assert.assertEquals("GrandChild", gc.getGrandChildName());
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());
@@ -112,7 +112,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        GrandChildTest gc = GrandChildTest.find(1);
+        GrandChildTest gc = new GrandChildTest().find(1);
         gc.setGrandChildName("d");
         gc.setChildName("a");
         gc.setFirstName("b");
