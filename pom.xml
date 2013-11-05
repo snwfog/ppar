@@ -122,4 +122,19 @@
     </dependency>
 
   </dependencies>
+
+  <!--
+    Original idea from:
+    http://cemerick.com/2010/08/24/hosting-maven-repos-on-github/
+  -->
+  <distributionManagement>
+    <repository>
+      <id>repo</id>
+      <url>https://github.com/snwfog/mvn-repo/raw/master/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshot-repo</id>
+      <url>https://github.com/snwfog/mvn-repo/raw/master/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 </project>
