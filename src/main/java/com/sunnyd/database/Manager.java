@@ -1,5 +1,8 @@
 package com.sunnyd.database;
 
+import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException;
+import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
+import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.query.DigestHash;
 import com.sunnyd.database.query.HookExecutor;
 import com.sunnyd.database.query.QueryHook;
@@ -22,12 +25,13 @@ public class Manager
 
   public static void main(String[] args)
   {
+    Manager.aquireLock(1, "peers");
 //        final Logger logger = LoggerFactory.getLogger(Manager.class);
 //        logger.info("Hello world");
 //
     //sample test for CRUD below:
-    HashMap<String, Object> map = new HashMap<String, Object>();
-    map.put("firstName", "asdsadsa");
+//    HashMap<String, Object> map = new HashMap<String, Object>();
+//    map.put("firstName", "asdsadsa");
 
 //        // FIND:
 //        // System.out.println(find(0, "persons"));
@@ -39,7 +43,7 @@ public class Manager
 //        // System.out.println(key + ":" + h.get(key)); } }
 //
 //        // SAVE:
-    System.out.println(save("peers", map));
+//    System.out.println(save("peers", map));
 //
 //        // DESTROY:
 //        // System.out.println(destroy(2, "peers"));
@@ -56,6 +60,7 @@ public class Manager
 
     // System.out.println(toCamelCase("first_name_else"));
     // System.out.println(toUnderscoreCase("firstNameField"));
+
 
   }
 
@@ -253,33 +258,36 @@ public class Manager
     Statement stmt = null;
     boolean isUpdated = true;
 
+    Manager.aquireLock(id, tableName);
+
     try
     {
       connection = Connector.getConnection();
       stmt = connection.createStatement();
 
-      HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
+      HashMap<String, String> SQLHashMap = convertJavaSQL(hashmap);
 
-      for (Object key : SQLHashmap.keySet())
+      for (Object key : SQLHashMap.keySet())
       {
         String column = (String) key;
-        String newvalue = SQLHashmap.get(key);
-        stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newvalue + " WHERE ID = " + id);
+        String newValue = SQLHashMap.get(key);
+        stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newValue + " WHERE ID = " + id);
       }
 
       DatabaseMetaData md = connection.getMetaData();
       if (md.getColumns(null, null, tableName, "creation_date").next())
-      {
         stmt.execute("UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id);
-      }
-
-
     }
     catch (SQLException e)
     {
       e.printStackTrace();
       isUpdated = false;
     }
+    finally
+    {
+      Manager.releaseLock(id, tableName);
+    }
+
     return isUpdated;
   }
 
@@ -434,8 +442,47 @@ public class Manager
 
   private static synchronized void aquireLock(int id, String tableName)
   {
+    Connection conn = null;
+    Statement stmt = null;
 
+    try
+    {
+      conn = Connector.getConnection();
+      stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery("SELECT semaphore FROM " + tableName + " WHERE id = " + id);
+      if (!rs.next())
+        throw new NonExistingRecordException(id, tableName);
+      else if (rs.getInt(1) != 0)
+        throw new CannotAcquireSemaphoreException(id, tableName);
+      else
+        stmt.executeUpdate("UPDATE " + tableName + " SET semaphore = 1 WHERE id = " + id);
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
+  }
 
+  private static synchronized void releaseLock(int id, String tableName)
+  {
+    Connection conn = null;
+    Statement stmt = null;
 
+    try
+    {
+      conn = Connector.getConnection();
+      stmt = conn.createStatement();
+      ResultSet rs = stmt.executeQuery("SELECT semaphore FROM " + tableName + " WHERE id = " + id);
+      if (!rs.next())
+        throw new NonExistingRecordException(id, tableName);
+      else if (rs.getInt(1) != 1)
+        throw new CannotReleaseSemaphoreException(id, tableName);
+      else
+        stmt.executeUpdate("UPDATE " + tableName + " SET semaphore = 0 WHERE id = " + id);
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
   }
 }
