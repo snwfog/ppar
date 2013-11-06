@@ -1,14 +1,14 @@
 package com.sunnyd.database;
 
-import com.google.common.hash.Funnel;
+import com.google.common.base.Throwables;
+import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import com.google.common.hash.PrimitiveSink;
 import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException;
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
+import com.sunnyd.database.concurrency.exception.VersionChangedException;
 import com.sunnyd.database.hash.PeerFunnel;
 import com.sunnyd.database.query.DigestHash;
-import com.sunnyd.database.query.ResultTable;
 import com.sunnyd.models.Peer;
 
 import java.sql.*;
@@ -257,11 +257,11 @@ public class Manager
     Statement stmt = null;
     boolean isUpdated = true;
 
-    Manager.aquireLock(id, tableName);
+    Manager.acquireLock(id, tableName);
 
     try
     {
-      Manager.checkIntegrity(id, tableName, hashMap);
+      if (!Manager.checkIntegrity(id, tableName, hashMap)) return false;
 
       connection = Connector.getConnection();
       stmt = connection.createStatement();
@@ -283,6 +283,11 @@ public class Manager
     {
       e.printStackTrace();
       isUpdated = false;
+    }
+    catch (VersionChangedException e)
+    {
+      isUpdated = false;
+      Throwables.propagate(e);
     }
     finally
     {
@@ -441,7 +446,7 @@ public class Manager
     return camel.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
   }
 
-  private static synchronized void aquireLock(int id, String tableName)
+  private static synchronized void acquireLock(int id, String tableName)
   {
     Connection conn = null;
     Statement stmt = null;
@@ -487,7 +492,7 @@ public class Manager
     }
   }
 
-  private static void checkIntegrity(int id, String tableName, Map<String, Object> map)
+  private static boolean checkIntegrity(int id, String tableName, Map<String, Object> map)
   {
     Connection conn = null;
     Statement stmt = null;
@@ -497,15 +502,20 @@ public class Manager
       conn = Connector.getConnection();
       stmt = conn.createStatement();
       Peer latest = new Peer(Manager.find(id, tableName));
-      String hashCode = Hashing.sha256().newHasher()
-          .putObject(latest, new PeerFunnel()).hash().toString();
-      System.out.println(hashCode);
+      Hasher hasher = Hashing.sha256().newHasher();
+      String newHashCode = hasher.putObject(latest, new PeerFunnel()).hash().toString();
+      System.out.println(newHashCode);
+      Peer old = new Peer(map);
+      String oldHashCode = hasher.putObject(old, new PeerFunnel()).hash().toString();
+      System.out.println(oldHashCode);
+      if (!oldHashCode.equalsIgnoreCase(newHashCode))
+        throw new VersionChangedException(id, tableName, newHashCode);
     }
     catch (SQLException e)
     {
       e.printStackTrace();
     }
 
-
+    return true;
   }
 }
