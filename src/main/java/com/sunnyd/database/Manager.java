@@ -1,17 +1,16 @@
 package com.sunnyd.database;
 
+import com.google.common.hash.Funnel;
+import com.google.common.hash.Hashing;
+import com.google.common.hash.PrimitiveSink;
 import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException;
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
+import com.sunnyd.database.hash.PeerFunnel;
 import com.sunnyd.database.query.DigestHash;
-import com.sunnyd.database.query.HookExecutor;
-import com.sunnyd.database.query.QueryHook;
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang3.CharSet;
+import com.sunnyd.database.query.ResultTable;
+import com.sunnyd.models.Peer;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -25,7 +24,7 @@ public class Manager
 
   public static void main(String[] args)
   {
-    Manager.aquireLock(1, "peers");
+    Manager.checkIntegrity(1, "peers", new HashMap<String, Object>());
 //        final Logger logger = LoggerFactory.getLogger(Manager.class);
 //        logger.info("Hello world");
 //
@@ -252,7 +251,7 @@ public class Manager
   }
 
   // update 1 or more fields of a single row
-  public static boolean update(int id, String tableName, Map<String, Object> hashmap)
+  public static boolean update(int id, String tableName, Map<String, Object> hashMap)
   {
     Connection connection = null;
     Statement stmt = null;
@@ -262,11 +261,12 @@ public class Manager
 
     try
     {
+      Manager.checkIntegrity(id, tableName, hashMap);
 
       connection = Connector.getConnection();
       stmt = connection.createStatement();
 
-      Map<String, String> SQLHashMap = convertJavaSQL(hashmap);
+      Map<String, String> SQLHashMap = convertJavaSQL(hashMap);
 
       for (Object key : SQLHashMap.keySet())
       {
@@ -487,8 +487,25 @@ public class Manager
     }
   }
 
-  private static void verifyIntegrity(int id, String tableName, Map<String, Object> map)
+  private static void checkIntegrity(int id, String tableName, Map<String, Object> map)
   {
+    Connection conn = null;
+    Statement stmt = null;
+
+    try
+    {
+      conn = Connector.getConnection();
+      stmt = conn.createStatement();
+      Peer latest = new Peer(Manager.find(id, tableName));
+      String hashCode = Hashing.sha256().newHasher()
+          .putObject(latest, new PeerFunnel()).hash().toString();
+      System.out.println(hashCode);
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
+
 
   }
 }

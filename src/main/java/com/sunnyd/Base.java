@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,7 +38,7 @@ public class Base implements IModel {
     public Base() {
     }
 
-    public Base(HashMap<String, Object> HM) {
+    public Base(Map<String, Object> HM) {
         id = (Integer) HM.get("id");
         creationDate = (Date) HM.get("creationDate");
         lastModifiedDate = (Date) HM.get("lastModifiedDate");
@@ -71,17 +72,17 @@ public class Base implements IModel {
         try {
             // Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
-            HashMap<String, Object> HM = Manager.find(id, tableName);
+            Map<String, Object> HM = Manager.find(id, tableName);
             System.out.println("oiajsdoiajdoia"+className);
             // Get inherited values from parent table
-            HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
+            Map<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
                     Class.forName(className));
 
             if (parentDatas != null) {
                 // Merge parent's table data's into map
                 HM.putAll(parentDatas);
             }
-            return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
+            return (T) Class.forName(className).getConstructor(Map.class).newInstance(HM);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
@@ -106,17 +107,17 @@ public class Base implements IModel {
         try {
             // Get class attribute from database
             String tableName = BaseHelper.getClassTableName(className);
-            HashMap<String, Object> HM = Manager.find(id, tableName);
+            Map<String, Object> HM = Manager.find(id, tableName);
 
             // Get inherited values from parent table
-            HashMap<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
+            Map<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
                     Class.forName(className));
 
             if (parentDatas != null) {
                 // Merge parent's table data's into map
                 HM.putAll(parentDatas);
             }
-            return (T) Class.forName(className).getConstructor(HashMap.class).newInstance(HM);
+            return (T) Class.forName(className).getConstructor(Map.class).newInstance(HM);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             e.printStackTrace();
@@ -140,7 +141,7 @@ public class Base implements IModel {
     }
 
     private static boolean update(Class<?> classObject, Object instanceObject) {
-        HashMap<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);
+        Map<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);
         if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null) {
             boolean updated = Base.update(classObject.getSuperclass(), instanceObject);
             if (!updated) {
@@ -183,7 +184,7 @@ public class Base implements IModel {
     }
 
     private static Integer save(Class<?> classObject, Object objectInstance) {
-        HashMap<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue(classObject, objectInstance);
+        Map<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue(classObject, objectInstance);
         // System.out.println(classObject.getName());
         int id = 0;
         if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null) {
@@ -288,11 +289,11 @@ public class Base implements IModel {
         }
         
         //Condition use current object ID for has many query
-        HashMap<String, Object> condition = new HashMap<String, Object>();
+        Map<String, Object> condition = new HashMap<String, Object>();
         condition.put(simpleClassName.toLowerCase() + "Id", this.getId());
 
         //Get results
-        ArrayList<HashMap<String, Object>> results = Manager.findAll(
+        ArrayList<Map<String, Object>> results = Manager.findAll(
                 relationTableName, condition);
 
         //Following: create instance of relation class and add to array
@@ -300,7 +301,7 @@ public class Base implements IModel {
         Object[] collection = (Object[]) Array.newInstance(relationClass, size);
         for (int i = 0; i < size; i++) {
             try {
-                collection[i] = relationClass.getConstructor(HashMap.class).newInstance(results.get(i));
+                collection[i] = relationClass.getConstructor(Map.class).newInstance(results.get(i));
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
@@ -367,7 +368,7 @@ public class Base implements IModel {
         return null;
     }
 
-    public static void setAttributes(Class<?> classObject, Object instanceObject, HashMap<String, Object> data) {
+    public static void setAttributes(Class<?> classObject, Object instanceObject, Map<String, Object> data) {
         // Get all table attribute from this class
         Field[] fields = BaseHelper.getTableField(classObject);
         for (Field field : fields) {

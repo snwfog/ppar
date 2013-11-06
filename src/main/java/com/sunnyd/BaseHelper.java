@@ -53,14 +53,14 @@ public class BaseHelper {
     }
 
 
-    static HashMap<String, Object> getSuperDatas(Integer id, Class<?> classObject){
-        HashMap<String,Object> parentResult = null;
+    static Map<String, Object> getSuperDatas(Integer id, Class<?> classObject){
+        Map<String,Object> parentResult = null;
         if(classObject.getAnnotation(ActiveRecordInheritFrom.class) != null ){
             //Get Parent class datas
             parentResult = Manager.find(id, BaseHelper.getClassTableName(classObject.getSuperclass().getName()));
             
             //if get Parent's Parent datas
-            HashMap<String, Object> call = getSuperDatas((Integer)parentResult.get("id"), classObject.getSuperclass());
+            Map<String, Object> call = getSuperDatas((Integer)parentResult.get("id"), classObject.getSuperclass());
             if( call !=null){
                 parentResult.putAll(call);
             }

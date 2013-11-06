@@ -66,7 +66,7 @@ public class ManagerTest extends DatabaseTestSetup {
         Table<String, Integer, String> table = rt.getTable();
 
         for (int id = 1; id <= names.length; id++) {
-            HashMap<String, Object> result = Manager.find(id, tableName);
+            Map<String, Object> result = Manager.find(id, tableName);
             for (String field : result.keySet()) {
                 switch (field) {
                 case "id":
@@ -106,7 +106,7 @@ public class ManagerTest extends DatabaseTestSetup {
         Table<String, Integer, String> table = rt.getTable();
 
         for (int id = 1; id <= names.length; id++) {
-            HashMap<String, Object> result = Manager.find(id, tableName);
+            Map<String, Object> result = Manager.find(id, tableName);
             for (String field : result.keySet()) {
                 switch (field) {
                 case "id":

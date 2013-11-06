@@ -8,6 +8,7 @@ import com.sunnyd.database.Manager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
@@ -40,7 +41,7 @@ public class Peer extends Base implements IModel {
         super();
     }
 
-    public Peer(HashMap<String, Object> HM) {
+    public Peer(Map<String, Object> HM) {
         super(HM);
     }
 
