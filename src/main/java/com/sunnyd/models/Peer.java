@@ -29,10 +29,10 @@ public class Peer extends Base implements IModel {
     private String password;
 
     @ActiveRecordField
-    private Integer point;
+    private int point;
 
     @ActiveRecordField
-    private Integer rankId;
+    private int rankId;
 
     @ActiveRecordField
     private String personalWebsite;
@@ -90,7 +90,7 @@ public class Peer extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public Integer getPoint() {
+    public int getPoint() {
         return point;
     }
 
@@ -99,7 +99,7 @@ public class Peer extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public Integer getRankId() {
+    public int getRankId() {
         return rankId;
     }
 

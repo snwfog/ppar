@@ -51,7 +51,7 @@ public class Manager
 //        // System.out.println(update(0, "persons", map));
 //
 //        // converter Java to SQL:
-//        HashMap<String, String> c = convertJavaSQL(map);
+//        HashMap<String, String> c = convertJavaToSQL(map);
 //        for (Object key : c.keySet()) { // System.out.println(key + " " +
 //                                        // c.get(key));
 //
@@ -78,7 +78,7 @@ public class Manager
 
       if (rs.next())
       {
-        return convertSQLJava(rs);
+        return convertSQLToJava(rs);
       }
 
     }
@@ -127,7 +127,7 @@ public class Manager
 
     String where = "";
 
-    Map<String, String> SQLConditions = convertJavaSQL(conditions);
+    Map<String, String> SQLConditions = convertJavaToSQL(conditions);
 
     for (String key : SQLConditions.keySet())
     {
@@ -149,7 +149,7 @@ public class Manager
       while (rs.next())
       {
         Map<String, Object> row = new HashMap<String, Object>();
-        row = convertSQLJava(rs);
+        row = convertSQLToJava(rs);
         results.add(row);
       }
     }
@@ -175,7 +175,7 @@ public class Manager
     try
     {
       connection = Connector.getConnection();
-      Map<String, String> SQLHashmap = convertJavaSQL(hashmap);
+      Map<String, String> SQLHashmap = convertJavaToSQL(hashmap);
 
       DatabaseMetaData md = connection.getMetaData();
       if (md.getColumns(null, null, tableName, "creation_date").next())
@@ -257,16 +257,18 @@ public class Manager
     Statement stmt = null;
     boolean isUpdated = true;
 
-    Manager.acquireLock(id, tableName);
-
     try
     {
+      // Acquire mutex lock
+      Manager.acquireLock(id, tableName);
+
+      // Check for optimistic lock
       if (!Manager.checkIntegrity(id, tableName, hashMap)) return false;
 
       connection = Connector.getConnection();
       stmt = connection.createStatement();
 
-      Map<String, String> SQLHashMap = convertJavaSQL(hashMap);
+      Map<String, String> SQLHashMap = convertJavaToSQL(hashMap);
 
       for (Object key : SQLHashMap.keySet())
       {
@@ -291,6 +293,7 @@ public class Manager
     }
     finally
     {
+      // Release mutex lock
       Manager.releaseLock(id, tableName);
     }
 
@@ -298,7 +301,7 @@ public class Manager
   }
 
   // java (firstName:"bob") --> sql (first_name: "bob")
-  public static Map<String, String> convertJavaSQL(Map<String, Object> original)
+  public static Map<String, String> convertJavaToSQL(Map<String, Object> original)
   {
     boolean DEBUG = true;
     HashMap<String, String> converted = new HashMap<String, String>();
@@ -381,7 +384,7 @@ public class Manager
   }
 
   // sql (first_name: "bob" varchar) --> java (firstName: "bob" as string)
-  private static HashMap<String, Object> convertSQLJava(ResultSet resultset) throws SQLException
+  public static HashMap<String, Object> convertSQLToJava(ResultSet resultset) throws SQLException
   {
     HashMap<String, Object> converted = new HashMap<String, Object>();
     ResultSetMetaData rsmd = resultset.getMetaData();
