@@ -40,7 +40,11 @@ public class ResultTable
 
       for (int id = 1; rs.next(); id++)
         for (String name : columnsName.keySet())
-          table.put(name, id, rs.getString(name));
+        {
+          String value = rs.getString(name);
+          value = (value == null) ? "" : value;
+          table.put(name, id, value);
+        }
     }
     catch (SQLException e)
     {
@@ -71,5 +75,15 @@ public class ResultTable
   public List<String> getRawColumnAsList(String columnName)
   {
     return new ArrayList<String>(this.getRawColumnAsMap(columnName).values());
+  }
+
+  public Map<String, String> getRowAsMap(int rowId)
+  {
+    return table.column(rowId);
+  }
+
+  public Map<String, String> first()
+  {
+    return this.getRowAsMap(1);
   }
 }
