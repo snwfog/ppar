@@ -29,7 +29,7 @@ public class GrandChild extends Child{
         b.save();
         Integer id = b.getId();
         System.out.println(id);
-        GrandChild a = GrandChild.find(id);
+        GrandChild a = new GrandChild().find(id);
 //        a.setChildName("grandch1ld");
 //        a.update();
 //        a = GrandChild.find(b.getId());

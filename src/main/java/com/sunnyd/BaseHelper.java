@@ -11,11 +11,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class BaseHelper {
@@ -160,6 +163,33 @@ public class BaseHelper {
             }
         }
         return tableAttributes.toArray(new Field[tableAttributes.size()]);
+    }
+    
+    
+    static String getGenericCanonicalClassName(Field arrayListField){
+      //Get object class from Arraylist or list generic type
+        String genericClass = arrayListField.toGenericString();
+        Pattern classPattern = Pattern.compile("<.*>");
+        Matcher m = classPattern.matcher(genericClass);
+        while(m.find()){
+            String temp = m.group();
+            return m.group().substring(1, temp.length()-1);        
+        }
+
+        
+        return null;
+    }
+    
+    
+    static String getGenericSimpleName(Field arrayListField){
+        Pattern classPattern = Pattern.compile("\\w[a-zA-z]*$");
+        Matcher m = classPattern.matcher(getGenericCanonicalClassName(arrayListField));
+        
+        while(m.find()){
+            return m.group();      
+        }
+        
+        return null;
     }
 
 }

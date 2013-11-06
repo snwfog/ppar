@@ -48,6 +48,7 @@ public class Document extends Base implements IModel {
     
     public void setPeerId(Integer peerId){
         this.peerId = peerId;
+        setUpdateFlag(true);
     }
     
     public int getPeerId(){
@@ -69,7 +70,7 @@ public class Document extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Document a = Document.find(2);
+        Document a = new Document().find(2);
         System.out.println(a.getPeer().getFirstName());
         System.out.println(a.getPeer().getLastName());
     }

@@ -1,6 +1,7 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
+import static com.sunnyd.Base.find;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
@@ -8,6 +9,7 @@ import com.sunnyd.database.Manager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
@@ -37,7 +39,7 @@ public class Peer extends Base implements IModel {
     private String personalWebsite;
 
     @ActiveRelationHasMany
-    private Document[] documents;
+    private List<Document> documents;
 
     public Peer() {
         super();
@@ -118,8 +120,12 @@ public class Peer extends Base implements IModel {
         this.personalWebsite = personalWebsite;
         setUpdateFlag(true);
     }
+    
+    public void setDocuments(List<Document> documents){
+        this.documents = documents;
+    }
 
-    public Document[] getDocuments(){
+    public List<Document> getDocuments(){
         initRelation("documents");
         return this.documents;
 //        HashMap<String, Object> condition = new HashMap<String, Object>();
@@ -137,8 +143,15 @@ public class Peer extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-        Peer a = Peer.find(1);
+        Peer a = new Peer();
+        a.setFirstName("lucas");
         System.out.println(Arrays.asList(a.getDocuments()).toString());
+        Document d = new Document().find(2);
+        List<Document> docArray = a.getDocuments();
+        docArray.add(d);
+        System.out.println(d);
+        a.setDocuments(docArray);
+        a.save();
     }
 
 }

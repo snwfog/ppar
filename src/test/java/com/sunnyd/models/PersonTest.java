@@ -117,7 +117,7 @@ public class PersonTest extends Base implements IModel {
    
     @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind(){
-        PersonTest a = PersonTest.find(1);
+        PersonTest a = new PersonTest().find(1);
         Date today = new Date();
         Assert.assertNull(a.getStatus());
         Assert.assertEquals("a", a.getFirstName());
@@ -129,7 +129,7 @@ public class PersonTest extends Base implements IModel {
     
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        PersonTest p = PersonTest.find(1);
+        PersonTest p = new PersonTest().find(1);
         Assert.assertEquals("a", p.getFirstName());
         Assert.assertEquals("b", p.getLastName());
         p.setFirstName("john");
@@ -142,7 +142,7 @@ public class PersonTest extends Base implements IModel {
     
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        PersonTest p = PersonTest.find(1);
+        PersonTest p = new PersonTest().find(1);
         p.setFirstName("b");
         p.setLastName("c");
         p.update();

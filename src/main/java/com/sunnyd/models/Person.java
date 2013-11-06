@@ -37,7 +37,7 @@ public class Person extends Base implements IModel {
         a.setLastName("yit");
         a.save();
 
-        Person b = Person.find(a.getId());
+        Person b = new Person().find(a.getId());
 
         System.out.println(b.getId());
         System.out.println(b.getFirstName());
