@@ -65,7 +65,7 @@ public class Manager
   }
 
   // find by id, return single row
-  public static HashMap<String, Object> find(int id, String tableName)
+  public static Map<String, Object> find(int id, String tableName)
   {
     Connection connection = null;
     Statement stmt = null;
@@ -119,16 +119,16 @@ public class Manager
   }
 
   // find multiple by criteria
-  public static ArrayList<HashMap<String, Object>> findAll(String tableName, HashMap<String, Object> conditions)
+  public static ArrayList<Map<String, Object>> findAll(String tableName, Map<String, Object> conditions)
   {
     Connection connection = null;
     Statement stmt = null;
     ResultSet rs = null;
-    ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+    ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
     String where = "";
 
-    HashMap<String, String> SQLConditions = convertJavaSQL(conditions);
+    Map<String, String> SQLConditions = convertJavaSQL(conditions);
 
     for (String key : SQLConditions.keySet())
     {
@@ -149,7 +149,7 @@ public class Manager
       rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
       while (rs.next())
       {
-        HashMap<String, Object> row = new HashMap<String, Object>();
+        Map<String, Object> row = new HashMap<String, Object>();
         row = convertSQLJava(rs);
         results.add(row);
       }
@@ -162,7 +162,7 @@ public class Manager
 
   }
 
-  public static int save(String tableName, HashMap<String, Object> hashmap)
+  public static int save(String tableName, Map<String, Object> hashmap)
   {
     Connection connection = null;
     Statement stmt = null;
@@ -176,7 +176,7 @@ public class Manager
     try
     {
       connection = Connector.getConnection();
-      HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
+      Map<String, String> SQLHashmap = convertJavaSQL(hashmap);
 
       DatabaseMetaData md = connection.getMetaData();
       if (md.getColumns(null, null, tableName, "creation_date").next())
@@ -252,7 +252,7 @@ public class Manager
   }
 
   // update 1 or more fields of a single row
-  public static boolean update(int id, String tableName, HashMap<String, Object> hashmap)
+  public static boolean update(int id, String tableName, Map<String, Object> hashmap)
   {
     Connection connection = null;
     Statement stmt = null;
@@ -262,10 +262,11 @@ public class Manager
 
     try
     {
+
       connection = Connector.getConnection();
       stmt = connection.createStatement();
 
-      HashMap<String, String> SQLHashMap = convertJavaSQL(hashmap);
+      Map<String, String> SQLHashMap = convertJavaSQL(hashmap);
 
       for (Object key : SQLHashMap.keySet())
       {
@@ -292,7 +293,7 @@ public class Manager
   }
 
   // java (firstName:"bob") --> sql (first_name: "bob")
-  public static HashMap<String, String> convertJavaSQL(HashMap<String, Object> original)
+  public static Map<String, String> convertJavaSQL(Map<String, Object> original)
   {
     boolean DEBUG = true;
     HashMap<String, String> converted = new HashMap<String, String>();
@@ -484,5 +485,10 @@ public class Manager
     {
       e.printStackTrace();
     }
+  }
+
+  private static void verifyIntegrity(int id, String tableName, Map<String, Object> map)
+  {
+
   }
 }
