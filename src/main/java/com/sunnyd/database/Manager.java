@@ -25,42 +25,6 @@ public class Manager
   public static void main(String[] args)
   {
     Manager.checkIntegrity(1, "peers", new HashMap<String, Object>());
-//        final Logger logger = LoggerFactory.getLogger(Manager.class);
-//        logger.info("Hello world");
-//
-    //sample test for CRUD below:
-//    HashMap<String, Object> map = new HashMap<String, Object>();
-//    map.put("firstName", "asdsadsa");
-
-//        // FIND:
-//        // System.out.println(find(0, "persons"));
-//
-//        // FIND ALL:
-//
-//        // ArrayList<HashMap<String, Object>> r = findAll("persons", map); for
-//        // (HashMap<String, Object> h : r){ for (String key : h.keySet()){
-//        // System.out.println(key + ":" + h.get(key)); } }
-//
-//        // SAVE:
-//    System.out.println(save("peers", map));
-//
-//        // DESTROY:
-//        // System.out.println(destroy(2, "peers"));
-//
-//        // UPDATE:
-//        // System.out.println(update(0, "persons", map));
-//
-//        // converter Java to SQL:
-//        HashMap<String, String> c = convertJavaToSQL(map);
-//        for (Object key : c.keySet()) { // System.out.println(key + " " +
-//                                        // c.get(key));
-//
-//        }
-
-    // System.out.println(toCamelCase("first_name_else"));
-    // System.out.println(toUnderscoreCase("firstNameField"));
-
-
   }
 
   // find by id, return single row
