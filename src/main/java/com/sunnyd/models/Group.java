@@ -60,11 +60,17 @@ public class Group extends Base implements IModel {
         Group a = new Group().find(10);
         a.setGroupName("bllllllll");
         
-        Category c1 = new Category().find(1);
+        Category c1 = new Category().find(4);
         c1.setCategoryName("clllllll");
         
+        Category c2= new Category().find(2);
+       
+        Category c3 = new Category();
+        
         a.getCategories().add(c1);
-        a.save();
+        a.getCategories().add(c2);
+        a.getCategories().add(c3);
+        a.update();
     }
 
 }

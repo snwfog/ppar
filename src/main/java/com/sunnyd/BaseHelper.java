@@ -43,11 +43,12 @@ public class BaseHelper {
             Annotation attrAnnotation = field.getAnnotation(ActiveRecordField.class);
             if (attrAnnotation != null) {
                 try {
+                    field.setAccessible(true);
                     String fieldName = field.getName();
-                    Method method = parentClass.getDeclaredMethod("get" + StringUtils.capitalize(fieldName));
-                    Object value = method.invoke(classObject);
+                    Object value = field.get(classObject);
+                    System.out.println(value);
                     tableAttributes.put(field.getName(), value);
-                } catch (IllegalArgumentException | NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
+                } catch (IllegalArgumentException | SecurityException | IllegalAccessException  e) {
                     e.printStackTrace();
                 }
             }

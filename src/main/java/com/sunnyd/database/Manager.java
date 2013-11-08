@@ -1,5 +1,6 @@
 package com.sunnyd.database;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.sunnyd.database.query.QueryExecutorHook;
 
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class Manager {
 //        // System.out.println(key + ":" + h.get(key)); } }
 //
 //        // SAVE:
-        System.out.println(save("peers", map));
+//        System.out.println(save("peers", map));
 //
 //        // DESTROY:
 //        // System.out.println(destroy(2, "peers"));
@@ -137,7 +138,7 @@ public class Manager {
 
     }
 
-    public static int save(String tableName, HashMap<String, Object> hashmap) {
+    public static int save(String tableName, HashMap<String, Object> hashmap) throws MySQLIntegrityConstraintViolationException {
 //        QueryExecutorHook.beforeSave(hashmap);
         Connection connection = null;
         Statement stmt = null;
@@ -185,6 +186,9 @@ public class Manager {
             }
 
         } catch (SQLException e) {
+            if(e.getClass().getCanonicalName() == "com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException"){
+                throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            }
             e.printStackTrace();
         }
         return id;
@@ -206,6 +210,44 @@ public class Manager {
         return isDestroyed;
     }
 
+    
+    
+    public static ArrayList<HashMap<String, Object>> destroy(String tableName, HashMap<String, Object> conditions) {
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+
+        String where = "";
+
+        HashMap<String, String> SQLConditions = convertJavaSQL(conditions);
+
+        for (String key : SQLConditions.keySet()) {
+            where += key + " = " + SQLConditions.get(key) + " AND ";
+        }
+        // remove trailing comma
+        where = where.replaceAll(" AND $", ""); // col1, col2, col3
+
+        if (!where.equals("")) {
+            where = " WHERE " + where;
+        }
+
+        //TODO: Should you return all result when variable "where" is ""(empty)?
+        try {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery("DELETE FROM " + tableName + where);
+            while (rs.next()) {
+                HashMap<String, Object> row = new HashMap<String, Object>();
+                row = convertSQLJava(rs);
+                results.add(row);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+
+    }
     // update 1 or more fields of a single row
     public static boolean update(int id, String tableName, HashMap<String, Object> hashmap) {
         Connection connection = null;
@@ -217,6 +259,7 @@ public class Manager {
             stmt = connection.createStatement();
 
             HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
+            System.out.println(SQLHashmap.toString());
 
             for (Object key : SQLHashmap.keySet()) {
                 String column = (String) key;
@@ -228,10 +271,7 @@ public class Manager {
             if (md.getColumns(null, null, tableName, "creation_date").next() ){
                 stmt.execute("UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id);
             }
-            
-            
-            
-
+     
         } catch (SQLException e) {
             e.printStackTrace();
             isUpdated = false;
@@ -256,6 +296,7 @@ public class Manager {
             String key_underscore = toUnderscoreCase(key);
             switch (type) {
             case "": // null
+                converted.put(key_underscore, null);
                 break;
             case "Boolean":
                 converted.put(key_underscore, "'" + value.toString() + "'");
