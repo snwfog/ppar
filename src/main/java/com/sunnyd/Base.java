@@ -191,33 +191,37 @@ public class Base implements IModel {
 
     private static Integer save(Class<?> classObject, Object objectInstance) {
         HashMap<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue(classObject, objectInstance);
-        // System.out.println(classObject.getName());
         Integer id = 0;
         if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null) {
             id = Base.save(classObject.getSuperclass(), objectInstance);
-            // System.out.println(id);
         }
         if (id != 0) {
             attrToPersist.put("id", id);
-            // System.out.println(Arrays.asList(attrToPersist).toString());
         }
         
-        //Save object before has many or manytomany relation fields
+        //Save object before has many or ManyToMany relation fields
         id = Manager.save(BaseHelper.getClassTableName(classObject), attrToPersist);
         saveRelation(classObject, objectInstance, id);
         return id;
     } 
     
+    
+    //objectInstance contains all the data related to that instance
+    //classObject is the class interest
     public static void saveRelation(Class<?> classObject, Object objectInstance, Integer id){
         Field[] fields = classObject.getDeclaredFields();
         for(Field field : fields){
+            field.setAccessible(true);
             Annotation[] annotations = field.getAnnotations();
             if(annotations.length > 0 && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany")){
                 String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
                 try {        
-                    field.setAccessible(true);
                     @SuppressWarnings("unchecked")
                     List<Object> hasManyCollection = (List<Object>) field.get(objectInstance);
+                    if(hasManyCollection == null){      
+                        continue;
+                    }
+                    
                     for (int i = 0; i<hasManyCollection.size(); i++){
                         String setterMethod = "set"+StringUtils.capitalize(classObject.getSimpleName())+"Id";
                         
@@ -240,11 +244,54 @@ public class Base implements IModel {
                     }
                     
                 } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException | ClassNotFoundException | InvocationTargetException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }else if(annotations.length > 0 && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationManyToMany")){
-                //TODO add manager relation saving
+                String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
+                String relationSimpleName = BaseHelper.getGenericSimpleName(field);
+                String relationTable = ( (ActiveRelationManyToMany)annotations[0]).relationTable();
+                
+                try {
+                    List<Object> manyToManyCollection = (List<Object>) field.get(objectInstance);
+                    
+                    if(manyToManyCollection == null){      
+                        continue;
+                    }
+                    
+                    for (int i = 0; i<manyToManyCollection.size(); i++){
+                        
+                        Method getId = Class.forName(relationCanonicalName).getMethod("getId");
+                        Integer collectionObjectId = (Integer) getId.invoke(manyToManyCollection.get(i)); 
+                        
+                        if(collectionObjectId == null){
+                            //Collection object id is null, save the objects in the hasMany collection
+                            //If id is null, therefore the object id could not have exist in the relation table
+                            Method save = Class.forName(relationCanonicalName).getMethod("save");
+                            save.invoke(manyToManyCollection.get(i));             
+                            int newCollectionId = (int) getId.invoke(manyToManyCollection.get(i));             
+                                       
+                            //Save relation
+                            HashMap<String, Object> conditions = new HashMap<String, Object>();
+                            conditions.put(classObject.getSimpleName().toLowerCase()+"Id",id);
+                            conditions.put(relationSimpleName.toLowerCase()+"Id", newCollectionId);
+                            Manager.save(relationTable, conditions);
+                          
+                        }else{
+                            
+                              HashMap<String, Object> conditions = new HashMap<String, Object>();
+                              conditions.put(classObject.getSimpleName().toLowerCase()+"Id",id);
+                              conditions.put(relationSimpleName.toLowerCase()+"Id", collectionObjectId);
+                              ArrayList<HashMap<String, Object>> results = Manager.findAll(relationTable, conditions);
+                              if(results.size() == 0){
+                                  Manager.save(relationTable, conditions);
+                              }
+                        }
+                    }      
+                    
+                } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException | ClassNotFoundException | InvocationTargetException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
     }

@@ -47,11 +47,6 @@ public class Group extends Base implements IModel {
         setUpdateFlag(true);
     }
     
-    public static void main(String[] args) {
-        Group a = new Group().find(1);
-        System.out.println(Arrays.asList(a.getCategories()).toString());
-    }
-
     public List<Category> getCategories() {
         initRelation("categories");
         return categories;
@@ -59,6 +54,17 @@ public class Group extends Base implements IModel {
 
     public void setCategories(List<Category> categories) {
         this.categories = categories;
+    }
+    
+    public static void main(String[] args) {
+        Group a = new Group().find(10);
+        a.setGroupName("bllllllll");
+        
+        Category c1 = new Category().find(1);
+        c1.setCategoryName("clllllll");
+        
+        a.getCategories().add(c1);
+        a.save();
     }
 
 }
