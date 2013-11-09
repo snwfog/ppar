@@ -259,7 +259,6 @@ public class Manager {
             stmt = connection.createStatement();
 
             HashMap<String, String> SQLHashmap = convertJavaSQL(hashmap);
-            System.out.println(SQLHashmap.toString());
 
             for (Object key : SQLHashmap.keySet()) {
                 String column = (String) key;

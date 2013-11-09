@@ -238,7 +238,6 @@ public class Base implements IModel {
                     } 
                     
                     if(oldIds.size()>0){
-                        System.out.println(oldIds.toString());
                         //Get relation collection from db
                         Iterator<Integer> oldIdIter = oldIds.iterator();
                         while(oldIdIter.hasNext()){
@@ -302,7 +301,6 @@ public class Base implements IModel {
                             save.invoke(hasManyCollection.get(i));             
                         }else if( collectionObjectId> 0 && !oldIds.contains(collectionObjectId)){
                             //An existing object in database added to this collection
-                            System.out.println("SAVED OBJECT");
                             
                             //update collection object relation
                             String setterMethod = "set"+StringUtils.capitalize(classObject.getSimpleName())+"Id";                      
@@ -327,9 +325,6 @@ public class Base implements IModel {
                         Iterator<Integer> oldIdIter = oldIds.iterator();
                         while(oldIdIter.hasNext()){
                             int oldId = oldIdIter.next();
-                            System.out.println("DELETE"+oldId);
-                            System.out.println(relationTableName);
-                            System.out.println(classObject.getSimpleName());
                             HashMap<String, Object> nullField = new HashMap<String, Object>();
                             nullField.put(classObject.getSimpleName().toLowerCase()+"Id", null);
                             Manager.update(oldId, relationTableName, nullField);
