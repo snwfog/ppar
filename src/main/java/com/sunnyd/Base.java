@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +57,7 @@ public class Base implements IModel {
         try {
             // Get class attribute from database
             String tableName = BaseHelper.getClassTableName( canonicalClassName );
-            HashMap<String, Object> HM = Manager.find( id, tableName );
+            Map<String, Object> HM = Manager.find( id, tableName );
             // Get inherited values from parent table
             Map<String, Object> parentDatas = BaseHelper.getSuperDatas( (Integer) HM.get( "id" ), Class.forName( canonicalClassName ) );
 
