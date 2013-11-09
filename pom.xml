@@ -132,6 +132,7 @@
   <!--
     Original idea from:
     http://cemerick.com/2010/08/24/hosting-maven-repos-on-github/
+    -DaltDeploymentRepository=snapshot-repo::default::file:../mvn-repo/snapshots clean deploy -Dmaven.test.skip=tr
   -->
   <distributionManagement>
     <repository>
