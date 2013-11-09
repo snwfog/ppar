@@ -180,7 +180,7 @@ public class Base implements IModel {
                 
                 //Get relation collection from db
                 HashMap<String, Object> condition = new HashMap<String, Object>();
-                condition.put(classObject.getSimpleName().toLowerCase() + "Id", id);
+                condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
                 //Get results
                 ArrayList<HashMap<String, Object>> results = Manager.findAll(relationTable, condition);
                 
@@ -190,7 +190,7 @@ public class Base implements IModel {
                 while(a.hasNext()){
                     @SuppressWarnings("unchecked")
                     HashMap<String, Object> result = (HashMap<String, Object>) a.next();
-                    oldIds.add((Integer)result.get(relationSimpleName.toLowerCase()+"Id"));      
+                    oldIds.add((Integer)result.get(StringUtils.uncapitalize(relationSimpleName)+"Id"));      
                 }
                 
                 
@@ -212,8 +212,8 @@ public class Base implements IModel {
                                        
                             //Save relation
                             HashMap<String, Object> conditions = new HashMap<String, Object>();
-                            conditions.put(classObject.getSimpleName().toLowerCase()+"Id", id);
-                            conditions.put(relationSimpleName.toLowerCase()+"Id", newCollectionId);
+                            conditions.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id", id);
+                            conditions.put(StringUtils.uncapitalize(relationSimpleName)+"Id", newCollectionId);
                             Manager.save(relationTable, conditions);
                           
                         }else if( collectionObjectId> 0 && !oldIds.contains(collectionObjectId)){
@@ -221,8 +221,8 @@ public class Base implements IModel {
                             
                             //Save relation
                             HashMap<String, Object> conditions = new HashMap<String, Object>();
-                            conditions.put(classObject.getSimpleName().toLowerCase()+"Id", id);
-                            conditions.put(relationSimpleName.toLowerCase()+"Id", collectionObjectId);
+                            conditions.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id", id);
+                            conditions.put(StringUtils.uncapitalize(relationSimpleName)+"Id", collectionObjectId);
                             try {
                                     Manager.save(relationTable, conditions);
       
@@ -243,8 +243,8 @@ public class Base implements IModel {
                         while(oldIdIter.hasNext()){
                             int oldId = oldIdIter.next();
                             condition = new HashMap<String, Object>();
-                            condition.put(classObject.getSimpleName().toLowerCase() + "Id", id);
-                            condition.put(relationSimpleName.toLowerCase()+"Id", oldId);
+                            condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
+                            condition.put(StringUtils.uncapitalize(relationSimpleName)+"Id", oldId);
                             if( results.size() > 0 ){
                                   
                                 Manager.destroy(relationTable, condition);
@@ -261,11 +261,11 @@ public class Base implements IModel {
                 field.setAccessible(true);
                 String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
                 String relationSimpleName = BaseHelper.getGenericSimpleName(field);
-                String relationTableName = BaseHelper.getClassTableName(relationSimpleName.toLowerCase());
+                String relationTableName = BaseHelper.getClassTableName(relationSimpleName);
                 
                 //Get relation collection from db
                 HashMap<String, Object> condition = new HashMap<String, Object>();
-                condition.put(classObject.getSimpleName().toLowerCase() + "Id", id);
+                condition.put(StringUtils.uncapitalize(classObject.getSimpleName())+ "Id", id);
                 
                 //Get results 
                 ArrayList<HashMap<String, Object>> results = Manager.findAll(relationTableName, condition);
@@ -326,7 +326,7 @@ public class Base implements IModel {
                         while(oldIdIter.hasNext()){
                             int oldId = oldIdIter.next();
                             HashMap<String, Object> nullField = new HashMap<String, Object>();
-                            nullField.put(classObject.getSimpleName().toLowerCase()+"Id", null);
+                            nullField.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id", null);
                             Manager.update(oldId, relationTableName, nullField);
                         }                          
                         
@@ -470,15 +470,15 @@ public class Base implements IModel {
                                        
                             //Save relation
                             HashMap<String, Object> conditions = new HashMap<String, Object>();
-                            conditions.put(classObject.getSimpleName().toLowerCase()+"Id",id);
-                            conditions.put(relationSimpleName.toLowerCase()+"Id", newCollectionId);
+                            conditions.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id",id);
+                            conditions.put(StringUtils.uncapitalize(relationSimpleName)+"Id", newCollectionId);
                             Manager.save(relationTable, conditions);
                           
                         }else{
                             
                               HashMap<String, Object> conditions = new HashMap<String, Object>();
-                              conditions.put(classObject.getSimpleName().toLowerCase()+"Id",id);
-                              conditions.put(relationSimpleName.toLowerCase()+"Id", collectionObjectId);
+                              conditions.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id",id);
+                              conditions.put(StringUtils.uncapitalize(relationSimpleName)+"Id", collectionObjectId);
                               ArrayList<HashMap<String, Object>> results = Manager.findAll(relationTable, conditions);
                               if(results.size() == 0){
                                   Manager.save(relationTable, conditions);
@@ -511,7 +511,9 @@ public class Base implements IModel {
             
             if(this.id == null){
                 try {
-                    relation.set(this, new ArrayList<Object>());
+                    if(!relationAnnotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasOne")){
+                        relation.set(this, new ArrayList<Object>());
+                    }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -563,11 +565,15 @@ public class Base implements IModel {
         String relationSimpleName = relation.getType().getSimpleName();
         Object relationObject = null;
         try {
-            Field relationIdField = this.getClass().getDeclaredField(relationSimpleName.toLowerCase().trim()+"Id");
+            Field relationIdField = this.getClass().getDeclaredField(StringUtils.uncapitalize(relationSimpleName)+"Id");
             relationIdField.setAccessible(true);
             Method findMethod = Class.forName(relationCanonicalClassName).getMethod("find", int.class, String.class);
-            relationObject = findMethod.invoke(null, relationIdField.get(this), relationCanonicalClassName);
-        } catch (NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchFieldException e) {
+            Object newInstance = Class.forName(relationCanonicalClassName).getConstructor().newInstance();
+            if(relationIdField.get(this) == null){
+                return;
+            }
+            relationObject = findMethod.invoke(newInstance, relationIdField.get(this), relationCanonicalClassName);
+        } catch (NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchFieldException | InstantiationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
@@ -593,7 +599,7 @@ public class Base implements IModel {
         
         
         boolean isManyToMany = relationTableName == null ? false :true;
-        relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName.toLowerCase()) : relationTableName;
+        relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName) : relationTableName;
        
         Class<?> relationClass = null;
         try {
@@ -605,7 +611,7 @@ public class Base implements IModel {
         
         //Condition use current object ID for has many query
         HashMap<String, Object> condition = new HashMap<String, Object>();
-        condition.put(simpleClassName.toLowerCase() + "Id", this.getId());
+        condition.put(StringUtils.uncapitalize(simpleClassName) + "Id", this.getId());
         //Get results
         ArrayList<HashMap<String, Object>> results = Manager.findAll(
                 relationTableName, condition);
@@ -621,7 +627,7 @@ public class Base implements IModel {
                 }else{
                     //ActiveRelationManyToMany
                     Class<?> classObjectOfRelation = Class.forName(relationCanonicalClassName); 
-                    Object a = classObjectOfRelation.getMethod("find", int.class).invoke(classObjectOfRelation.getConstructor().newInstance(), (int)results.get(i).get(relationSimpleClassName.toLowerCase()+"Id"));
+                    Object a = classObjectOfRelation.getMethod("find", int.class).invoke(classObjectOfRelation.getConstructor().newInstance(), (int)results.get(i).get(StringUtils.uncapitalize(relationSimpleClassName)+"Id"));
                     collection.add(a);
                 }
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
@@ -647,7 +653,7 @@ public class Base implements IModel {
         String relationSimpleClassName = BaseHelper.getGenericSimpleName(relation);;
         String simpleClassName = this.getClass().getSimpleName();
         
-        relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName.toLowerCase()) : relationTableName;
+        relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName) : relationTableName;
        
         Class<?> relationClass = null;
         try {
@@ -659,7 +665,7 @@ public class Base implements IModel {
         
         //Condition use current object ID for has many query
         HashMap<String, Object> condition = new HashMap<String, Object>();
-        condition.put(simpleClassName.toLowerCase() + "Id", this.getId());
+        condition.put(StringUtils.uncapitalize(simpleClassName) + "Id", this.getId());
         //Get results
         ArrayList<HashMap<String, Object>> results = Manager.findAll(
                 relationTableName, condition);

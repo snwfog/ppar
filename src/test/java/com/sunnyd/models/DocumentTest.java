@@ -124,6 +124,10 @@ public class DocumentTest extends Base implements IModel{
         Assert.assertNull(d.getPeer());
         Assert.assertFalse(d.getUpdateFlag());
         d.setDocName("footb");
+        PeerTest p = new PeerTest();
+        p.setFirstName("wais");
+        Assert.assertTrue(p.save());
+        d.setPeerTestId(p.getId());
         Assert.assertTrue(d.save());
         Integer id = 1;
         Assert.assertEquals(d.getId().intValue(), id.intValue());
@@ -135,7 +139,7 @@ public class DocumentTest extends Base implements IModel{
     public static void TestFind(){
         DocumentTest d = new DocumentTest().find(1);
         Assert.assertEquals("footb", d.getDocName());
-       // Assert.assertEquals("a", d.getPeer().getFirstName());
+        Assert.assertEquals("wais", d.getPeer().getFirstName());
         //Assert.assertEquals("aiodjoadjoia", a.getDocuments());
         Integer id = 1;
         Assert.assertEquals(id.intValue(), d.getId().intValue());
