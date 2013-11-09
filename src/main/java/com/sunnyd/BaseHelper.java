@@ -44,7 +44,6 @@ public class BaseHelper {
             if (attrAnnotation != null) {
                 try {
                     field.setAccessible(true);
-                    String fieldName = field.getName();
                     Object value = field.get(classObject);
                     System.out.println(value);
                     tableAttributes.put(field.getName(), value);
