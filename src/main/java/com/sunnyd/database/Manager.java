@@ -287,7 +287,9 @@ public class Manager
     {
       boolean DEBUG = true;
       HashMap<String, String> converted = new HashMap<String, String>();
-
+      if( original ==  null){
+          return converted;
+      }
       for (String key : original.keySet()) // field, value pair
       {
         Object value = original.get(key); // value could be null

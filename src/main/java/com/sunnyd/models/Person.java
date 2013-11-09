@@ -3,8 +3,12 @@ package com.sunnyd.models;
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
+import com.sunnyd.database.Manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class Person extends Base implements IModel {
     public static final String tableName = "persons";
@@ -28,22 +32,11 @@ public class Person extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-
-        Person a = new Person();
-        System.out.println(a.getId());
-        System.out.println(a.getFirstName());
-        System.out.println(a.getLastName());
-        a.setFirstName("bobby");
-        a.setLastName("yit");
-        a.save();
-
-        Person b = new Person().find(a.getId());
-
-        System.out.println(b.getId());
-        System.out.println(b.getFirstName());
-        System.out.println(b.getLastName());
-        b.setFirstName("john");
-        b.update();
+        ArrayList<Map<String, Object>> a = Manager.findAll("persons", null);
+        Iterator asd = a.iterator();
+        while(asd.hasNext()){
+            System.out.println(asd.next());
+        }
 //
 //        Person b = Person.find(2);
 //
