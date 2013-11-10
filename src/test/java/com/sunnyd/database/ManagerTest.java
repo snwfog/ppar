@@ -57,7 +57,7 @@ public class ManagerTest extends DatabaseTestSetup
     Assert.assertEquals(p.getEmail(), "donchoa@gmail.com");
     Assert.assertEquals(p.getUserName(), "snwfog");
     Assert.assertEquals(p.getPassword(), "1234");
-    Assert.assertEquals(p.getPoint(), 9000);
+    Assert.assertEquals(p.getPoint(), new Integer(9000));
     Assert.assertEquals(p.getPersonalWebsite(), "http://charlescy.com");
   }
 

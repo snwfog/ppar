@@ -42,7 +42,7 @@ public class Manager
 
       if (rs.next())
       {
-        return convertSQLToJava(rs);
+        return convertSQLToJava( rs );
       }
 
     }
@@ -180,6 +180,7 @@ public class Manager
         // no id is provided (means auto-gen id)
         if (!hashmap.containsKey("id"))
         {
+            System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
           stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")",
               Statement.RETURN_GENERATED_KEYS);
           rs = stmt.getGeneratedKeys();
@@ -313,7 +314,7 @@ public class Manager
           converted.put(key_underscore, "'" + value.toString() + "'");
           break;
         case "Integer":
-          converted.put(key_underscore, Integer.toString((int) value));
+          converted.put(key_underscore, Integer.toString((Integer) value));
           break;
         case "Double":
           converted.put(key_underscore, Double.toString((double) value));
@@ -352,7 +353,7 @@ public class Manager
       switch (type)
       {
       case "": // null
-        break;
+        return null;
       case "Boolean":
         return "'" + value.toString() + "'";
       case "Integer":
@@ -378,6 +379,9 @@ public class Manager
       HashMap<String, Object> converted = new HashMap<String, Object>();
       ResultSetMetaData rsmd = resultset.getMetaData();
       int columnCount = rsmd.getColumnCount();
+
+        if (!resultset.next()) return converted;
+
       for (int i = 1; i < columnCount + 1; i++)
       {
         String columnName = rsmd.getColumnName(i); // underscore_case
