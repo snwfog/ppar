@@ -329,10 +329,6 @@ public class Manager {
         ResultSetMetaData rsmd = resultset.getMetaData();
         int columnCount = rsmd.getColumnCount();
 
-        if ( !resultset.next() ) {
-            return converted;
-        }
-
         for ( int i = 1; i < columnCount + 1; i++ ) {
             String columnName = rsmd.getColumnName( i ); // underscore_case
             String columnName_camel = toCamelCase( columnName ); // columnName in

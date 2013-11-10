@@ -50,6 +50,7 @@ public class ManagerTest extends DatabaseTestSetup
   {
     String sql = String.format("SELECT * FROM %s WHERE id = %s", tableName, 1);
     ResultSet rs = exec.executeQuery(sql);
+    rs.next();
     Map<String, Object> peerAttributes = Manager.convertSQLToJava(rs);
     Peer p = new Peer(peerAttributes);
     Assert.assertEquals(p.getFirstName(), "Charles");
