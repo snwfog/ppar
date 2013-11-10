@@ -201,8 +201,11 @@ public class Manager
 
       StringBuffer sb = new StringBuffer();
       Map<String, Object> row = Manager.find(id, tableName);
-      for (String key : row.keySet())
-        sb.append(row.get(key).hashCode());
+      System.out.println("aoidjaoidjsoaisj"+row);
+      for (String key : row.keySet()){
+         String value = row.get(key) == null ? "" : row.get(key).toString();
+         sb.append(value.hashCode());
+      }
 
       String sha256 = DigestHash.getShaHash(sb.toString());
 
