@@ -304,6 +304,7 @@ public class Manager
         switch (type)
         {
         case "": // null
+            converted.put( key_underscore, null );
           break;
         case "Boolean":
           converted.put(key_underscore, "'" + value.toString() + "'");
