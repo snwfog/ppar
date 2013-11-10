@@ -1,8 +1,10 @@
 package com.sunnyd.database;
 
 import com.google.common.base.Throwables;
+import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import com.sunnyd.Base;
 import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException;
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
@@ -171,16 +173,9 @@ public class Manager {
             e.printStackTrace();
         }
 
-        StringBuffer sb = new StringBuffer();
-        Map<String, Object> row = Manager.find( id, tableName );
-        System.out.println( "aoidjaoidjsoaisj" + row );
-        for ( String key : row.keySet() ) {
-            String value = row.get( key ) == null ? "" : row.get( key ).toString();
-            sb.append( value.hashCode() );
-        }
-
-        String sha256 = DigestHash.getShaHash( sb.toString() );
-
+        Peer thisPeer = new Peer(Manager.find( id, tableName ));
+        String thisPeerSha = Manager.getSha(thisPeer, PeerFunnel.class);
+        Manager.updateSha( thisPeer.getId(), tableName, thisPeerSha);
 
         return id;
     }
@@ -423,6 +418,22 @@ public class Manager {
         }
     }
 
+    private static <T extends Base, F extends Funnel<T>> String getSha(T model, Class<F> funnelKlazz)
+    {
+        Hasher hasher = Hashing.sha256().newHasher();
+        String newHashCode = "";
+        try
+        {
+            newHashCode = hasher.putObject( model, funnelKlazz.newInstance() ).hash().toString();
+        } catch ( InstantiationException e ) {
+            e.printStackTrace();
+        } catch ( IllegalAccessException e ) {
+            e.printStackTrace();
+        }
+
+        return newHashCode;
+    }
+
     private static boolean checkIntegrity( int id, String tableName, Map<String, Object> map ) {
         Connection conn = null;
         Statement stmt = null;
@@ -431,17 +442,31 @@ public class Manager {
             conn = Connector.getConnection();
             stmt = conn.createStatement();
             Peer latest = new Peer( Manager.find( id, tableName ) );
-            Hasher hasher = Hashing.sha256().newHasher();
-            String newHashCode = hasher.putObject( latest, new PeerFunnel() ).hash().toString();
-            System.out.println( newHashCode );
+            String newHashCode = Manager.getSha(latest, PeerFunnel.class);
             Peer old = new Peer( map );
-            String oldHashCode = hasher.putObject( old, new PeerFunnel() ).hash().toString();
-            System.out.println( oldHashCode );
+            String oldHashCode = Manager.getSha(old, PeerFunnel.class);
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }
+
+        return true;
+    }
+
+    private static boolean updateSha(int id, String tableName, String sha)
+    {
+        Connection conn = null;
+        Statement stmt = null;
+        try
+        {
+            conn = Connector.getConnection();
+            stmt = conn.createStatement();
+            stmt.executeUpdate( "UPDATE " + tableName + " SET etag = '" + sha + "' WHERE ID = " + id );
+        } catch ( SQLException e ) {
+            e.printStackTrace();
+            return false;
         }
 
         return true;
