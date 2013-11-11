@@ -1,6 +1,8 @@
 package com.sunnyd.database.query;
 
 import com.sunnyd.database.Connector;
+import com.sunnyd.database.SSHjdbcSession;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +17,7 @@ public class QueryExecutor
 {
   static final Logger logger = LoggerFactory.getLogger(QueryExecutor.class);
 
-  private static Connection conn;
+  private static SSHjdbcSession conn;
   private static QueryExecutor exec;
 
   private QueryExecutor() throws SQLException
@@ -40,6 +42,6 @@ public class QueryExecutor
 
   public ResultSet executeQuery(String sql) throws SQLException
   {
-    return conn.createStatement().executeQuery(sql);
+    return conn.getConnection().createStatement().executeQuery(sql);
   }
 }

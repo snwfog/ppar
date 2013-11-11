@@ -14,7 +14,7 @@ public class DatabaseTestSetup
 {
 
   final Logger logger = LoggerFactory.getLogger(DatabaseTestSetup.class);
-  protected Connection conn;
+  protected SSHjdbcSession conn;
   protected Statement stmt;
   protected QueryExecutor exec;
 
@@ -22,7 +22,7 @@ public class DatabaseTestSetup
   public void setUp() throws SQLException
   {
     conn = Connector.getConnection();
-    stmt = conn.createStatement();
+    stmt = conn.getConnection().createStatement();
     exec = QueryExecutor.getInstance();
   }
 
@@ -30,7 +30,7 @@ public class DatabaseTestSetup
   public void tearDown() throws SQLException
   {
     logger.info(" Closing JDBC active connection. Good Bye!");
-    conn.close();
+    conn.getConnection().close();
   }
 
 }

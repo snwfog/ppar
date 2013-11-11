@@ -14,14 +14,14 @@ public class ConnectorTest
   @Test(expectedExceptions = RuntimeException.class)
   public void connectionTest() throws MySQLSyntaxErrorException
   {
-    Connection connection = null;
+    SSHjdbcSession connection = null;
     Statement stmt = null;
     ResultSet rs = null;
 
     try
     {
       connection = Connector.getConnection();
-      stmt = connection.createStatement();
+      stmt = connection.getConnection().createStatement();
       rs = stmt.executeQuery("SELECT * from ppar where id = 1");
 
       if (rs.next())

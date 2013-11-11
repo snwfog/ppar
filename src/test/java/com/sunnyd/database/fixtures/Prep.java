@@ -2,6 +2,8 @@ package com.sunnyd.database.fixtures;
 
 import com.google.common.base.Throwables;
 import com.sunnyd.database.Connector;
+import com.sunnyd.database.SSHjdbcSession;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.print.PSStreamPrinterFactory;
@@ -12,7 +14,7 @@ public class Prep
 {
   final static Logger logger = LoggerFactory.getLogger(Prep.class);
 
-  private static Connection conn;
+  private static SSHjdbcSession conn;
   private static Statement stmt;
 
   static
@@ -20,7 +22,7 @@ public class Prep
     try
     {
       conn = Connector.getConnection();
-      stmt = conn.createStatement();
+      stmt = conn.getConnection().createStatement();
     }
     catch (SQLException e)
     {
@@ -32,7 +34,7 @@ public class Prep
   public static void init(String tableName) throws SQLException
   {
     // Check if table exists
-    DatabaseMetaData meta = conn.getMetaData();
+    DatabaseMetaData meta = conn.getConnection().getMetaData();
     ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"});
     if (!rs.first())
     {
