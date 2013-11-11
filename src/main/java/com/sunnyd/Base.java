@@ -415,6 +415,10 @@ public class Base implements IModel {
     
     
     public String toString(){
+        return toMap().toString();
+    }
+    
+    public Map<String, Object> toMap(){
         Field[] fields = this.getClass().getDeclaredFields();
         Map<String, Object> acorn = new HashMap<String, Object>();
         for(Field field: fields){
@@ -426,7 +430,7 @@ public class Base implements IModel {
                 e.printStackTrace();
             }
         }
-        return acorn.toString();
+        return acorn;
     }
     
     public Integer getId() {
