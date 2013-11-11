@@ -412,6 +412,23 @@ public class Base implements IModel {
 
     /****** MUTATOR ****************************************************/
     // Common Mutator in all child class.
+    
+    
+    public String toString(){
+        Field[] fields = this.getClass().getDeclaredFields();
+        Map<String, Object> acorn = new HashMap<String, Object>();
+        for(Field field: fields){
+            field.setAccessible(true);
+            try {
+                acorn.put(field.getName(), field.get(this));
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        return acorn.toString();
+    }
+    
     public Integer getId() {
         return this.id;
     }

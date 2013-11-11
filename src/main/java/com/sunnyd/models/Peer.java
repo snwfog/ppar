@@ -34,6 +34,9 @@ public class Peer extends Base implements IModel {
     @ActiveRecordField
     private String personalWebsite;
 
+    @ActiveRelationHasMany
+    private ArrayList<Document> documents;
+
     public Peer() {
         super();
     }
@@ -103,5 +106,21 @@ public class Peer extends Base implements IModel {
     public void setPersonalWebsite(String personalWebsite) {
         this.personalWebsite = personalWebsite;
         setUpdateFlag(true);
+    }
+
+    public ArrayList<Document> getDocuments() {
+        initRelation("documents");
+        return documents;
+    }
+
+    public void setDocuments(ArrayList<Document> documents) {
+        this.documents = documents;
+    }
+    
+    public static void main(String[] args) {
+        Peer a = new Peer().find(1);
+        System.out.println(a.toString());
+        System.out.println(a.getDocuments());
+        System.out.println(a.toString());
     }
 }
