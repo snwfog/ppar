@@ -35,13 +35,13 @@ public class Manager {
 
     // find by id, return single row
     public static Map<String, Object> find( int id, String tableName ) {
-        Connection connection = null;
+        SSHjdbcSession connection = null;
         Statement stmt = null;
         ResultSet rs = null;
 
         try {
             connection = Connector.getConnection();
-            stmt = connection.createStatement();
+            stmt = connection.getConnection().createStatement();
             rs = stmt.executeQuery( "SELECT * FROM " + tableName + " WHERE ID = " + id );
 
             if ( rs.next() ) {
@@ -56,14 +56,14 @@ public class Manager {
 
     // find by id, return single row
     public static Integer[] find( String tableName, String column, Object value ) {
-        Connection connection = null;
+        SSHjdbcSession connection = null;
         Statement stmt = null;
         ResultSet rs = null;
         value = convertJavaToSql( value );
         try {
             ArrayList<Integer> result = new ArrayList<Integer>();
             connection = Connector.getConnection();
-            stmt = connection.createStatement();
+            stmt = connection.getConnection().createStatement();
             rs = stmt.executeQuery( "SELECT * FROM " + tableName + " WHERE " + column + "=" + value );
 
             while ( rs.next() ) {
@@ -79,7 +79,7 @@ public class Manager {
 
     // find multiple by criteria
     public static ArrayList<Map<String, Object>> findAll( String tableName, Map<String, Object> conditions ) {
-        Connection connection = null;
+        SSHjdbcSession connection = null;
         Statement stmt = null;
         ResultSet rs = null;
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
@@ -89,7 +89,7 @@ public class Manager {
         //TODO: Should you return all result when variable "where" is ""(empty)?
         try {
             connection = Connector.getConnection();
-            stmt = connection.createStatement();
+            stmt = connection.getConnection().createStatement();
             rs = stmt.executeQuery( "SELECT * FROM " + tableName + where );
             while ( rs.next() ) {
                 Map<String, String> SQLConditions = convertJavaToSQL( conditions );
@@ -106,7 +106,7 @@ public class Manager {
 
                 try {
                     connection = Connector.getConnection();
-                    stmt = connection.createStatement();
+                    stmt = connection.getConnection().createStatement();
                     rs = stmt.executeQuery( "SELECT * FROM " + tableName + where );
                     while ( rs.next() ) {
                         Map<String, Object> row = new HashMap<String, Object>();
@@ -149,7 +149,7 @@ public class Manager {
     }
 
     private static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap, Funnel<T> funnel ) {
-        Connection connection = null;
+        SSHjdbcSession connection = null;
         Statement stmt = null;
         ResultSet rs = null;
 
@@ -163,7 +163,7 @@ public class Manager {
             connection = Connector.getConnection();
             Map<String, String> SQLHashmap = convertJavaToSQL( hashMap );
 
-            DatabaseMetaData md = connection.getMetaData();
+            DatabaseMetaData md = connection.getConnection().getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 SQLHashmap.put( "creation_date", "NOW()" );
                 SQLHashmap.put( "last_modified_date", "NOW()" );
@@ -179,7 +179,7 @@ public class Manager {
             columns = columns.replaceAll( ",$", "" );
             values = values.replaceAll( ",$", "" );
 
-            stmt = connection.createStatement();
+            stmt = connection.getConnection().createStatement();
 
             // no id is provided (means auto-gen id)
             if ( !hashMap.containsKey( "id" ) ) {
@@ -217,13 +217,13 @@ public class Manager {
     }
 
     public static boolean destroy( int id, String tableName ) {
-        Connection connection = null;
+        SSHjdbcSession connection = null;
         Statement stmt = null;
         boolean isDestroyed = true;
 
         try {
             connection = Connector.getConnection();
-            stmt = connection.createStatement();
+            stmt = connection.getConnection().createStatement();
             stmt.execute( "DELETE FROM " + tableName + " WHERE ID = " + id );
         } catch ( SQLException e ) {
             e.printStackTrace();
@@ -234,7 +234,7 @@ public class Manager {
 
     // update 1 or more fields of a single row
     public static <T extends Base> boolean update( int id, Class<T> klazz, Map<String, Object> hashMap ) {
-        Connection connection = null;
+        SSHjdbcSession connection = null;
         Statement stmt = null;
         String tableName = BaseHelper.getClassTableName( klazz );
         boolean isUpdated = true;
@@ -249,7 +249,7 @@ public class Manager {
             }
 
             connection = Connector.getConnection();
-            stmt = connection.createStatement();
+            stmt = connection.getConnection().createStatement();
 
             Map<String, String> SQLHashMap = convertJavaToSQL( hashMap );
 
@@ -259,7 +259,7 @@ public class Manager {
                 stmt.execute( "UPDATE " + tableName + " SET " + column + " = " + newValue + " WHERE ID = " + id );
             }
 
-            DatabaseMetaData md = connection.getMetaData();
+            DatabaseMetaData md = connection.getConnection().getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 stmt.execute( "UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id );
             }
@@ -416,12 +416,12 @@ public class Manager {
     }
 
     private static synchronized void acquireLock( int id, String tableName ) {
-        Connection conn = null;
+        SSHjdbcSession conn = null;
         Statement stmt = null;
 
         try {
             conn = Connector.getConnection();
-            stmt = conn.createStatement();
+            stmt = conn.getConnection().createStatement();
             ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
             if ( !rs.next() ) {
                 throw new NonExistingRecordException( id, tableName );
@@ -436,12 +436,12 @@ public class Manager {
     }
 
     private static synchronized void releaseLock( int id, String tableName ) {
-        Connection conn = null;
+        SSHjdbcSession conn = null;
         Statement stmt = null;
 
         try {
             conn = Connector.getConnection();
-            stmt = conn.createStatement();
+            stmt = conn.getConnection().createStatement();
             ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
             if ( !rs.next() ) {
                 throw new NonExistingRecordException( id, tableName );
@@ -464,7 +464,7 @@ public class Manager {
     }
 
     private static <T extends Base> boolean checkIntegrity( int id, Class<T> klazz, Map<String, Object> map ) {
-        Connection conn = null;
+        SSHjdbcSession conn = null;
         Statement stmt = null;
 
 
@@ -472,7 +472,7 @@ public class Manager {
         String tableName = BaseHelper.getClassTableName( klazz );
         try {
             conn = Connector.getConnection();
-            stmt = conn.createStatement();
+            stmt = conn.getConnection().createStatement();
             cons = klazz.getConstructor(Map.class);
             String funnelClass = klazz.getSimpleName() + "Funnel";
             Class<Funnel<T>> funnel = (Class<Funnel<T>>)Class.forName( funnelClass );
@@ -501,11 +501,11 @@ public class Manager {
     }
 
     private static boolean updateSha( int id, String tableName, String sha ) {
-        Connection conn = null;
+        SSHjdbcSession conn = null;
         Statement stmt = null;
         try {
             conn = Connector.getConnection();
-            stmt = conn.createStatement();
+            stmt = conn.getConnection().createStatement();
             stmt.executeUpdate( "UPDATE " + tableName + " SET etag = '" + sha + "' WHERE ID = " + id );
         } catch ( SQLException e ) {
             e.printStackTrace();
