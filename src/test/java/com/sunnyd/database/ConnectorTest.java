@@ -11,7 +11,7 @@ import java.sql.Statement;
 
 public class ConnectorTest
 {
-  @Test(expectedExceptions = RuntimeException.class)
+  @Test
   public void connectionTest() throws MySQLSyntaxErrorException
   {
     SSHjdbcSession connection = null;
@@ -22,7 +22,7 @@ public class ConnectorTest
     {
       connection = Connector.getConnection();
       stmt = connection.getConnection().createStatement();
-      rs = stmt.executeQuery("SELECT * from ppar where id = 1");
+      rs = stmt.executeQuery("SELECT * from soen387l where id = 1");
 
       if (rs.next())
       {

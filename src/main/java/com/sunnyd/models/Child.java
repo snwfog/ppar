@@ -22,18 +22,18 @@ public class Child extends Person {
     }
     
     public static void main(String[] args) {
-//        Child a = new Child();
-//        a.setChildName("Monday");
-//        a.setFirstName("D");
-//        a.setLastName("Luffy");
-//        a.save();
+        //Child a = new Child();
+        //a.setChildName("Monday");
+        //a.setFirstName("D");
+        //a.setLastName("Luffy");
+        //a.save();
         
         Child b = new Child().find(1);
         System.out.println(b.getId());
         System.out.println(b.getChildName());
         System.out.println(b.getFirstName());
         System.out.println(b.getLastName());
-        b.setFirstName("aasiojaoisdja");
+        b.setFirstName("yang");
         b.update();
         
         

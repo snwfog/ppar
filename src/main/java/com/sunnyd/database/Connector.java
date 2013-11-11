@@ -15,6 +15,9 @@ import com.jcraft.jsch.Session;
 
 public class Connector {
 
+    private static SSHjdbcSession sshInstance;
+    private static Connection connInstance;
+
     static {
         String driverName = "com.mysql.jdbc.Driver";
         try {
@@ -25,26 +28,22 @@ public class Connector {
     }
 
     public static SSHjdbcSession getConnection() {
-        Connection connection = null;
-        SSHjdbcSession ssHsession = doSshTunnel();
+        if (sshInstance == null)
+            sshInstance = doSshTunnel();
         String databaseName = "soen387l";
         String username = "soen387l";
         String password = "h82j76";
-        String url = "jdbc:mysql://" + ssHsession.getServer() + ":" + ssHsession.getPort() + "/"
+        String url = "jdbc:mysql://" + sshInstance.getServer() + ":" + sshInstance.getPort() + "/"
                 + databaseName; // for Mysql
 
         try {
-            connection = DriverManager.getConnection(url, username, password);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("sdfdf");
-        System.out.println(ssHsession.getServer());
-        System.out.println(ssHsession.getPort());
+            if (connInstance == null)
+                connInstance = DriverManager.getConnection(url, username, password);
+        } catch (Exception e) { e.printStackTrace(); }
+
+        sshInstance.setConnection(connInstance);
         
-        ssHsession.setConnection(connection);
-        
-        return ssHsession;
+        return sshInstance;
 
     }
 
