@@ -263,12 +263,34 @@ public class Manager {
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 stmt.execute( "UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id );
             }
+
+            String klazzName = klazz.getSimpleName();
+            String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
+
+            Class<?> funnelClass = null;
+            Funnel<T> funnel = null;
+            funnelClass = Class.forName( funnelName );
+            funnel = (Funnel<T>) funnelClass.newInstance();
+            T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
+            String thisModelSha = Manager.getSha( model, funnel );
+            Manager.updateSha( id, tableName, thisModelSha );
+
         } catch ( SQLException e ) {
             e.printStackTrace();
             isUpdated = false;
         } catch ( VersionChangedException e ) {
             isUpdated = false;
             Throwables.propagate( e );
+        } catch ( InvocationTargetException e ) {
+            e.printStackTrace();
+        } catch ( NoSuchMethodException e ) {
+            e.printStackTrace();
+        } catch ( InstantiationException e ) {
+            e.printStackTrace();
+        } catch ( IllegalAccessException e ) {
+            e.printStackTrace();
+        } catch ( ClassNotFoundException e ) {
+            e.printStackTrace();
         } finally {
             // Release mutex lock
             Manager.releaseLock( id, tableName );
