@@ -144,11 +144,11 @@
   <distributionManagement>
     <repository>
       <id>repo</id>
-      <url>https://github.com/snwfog/mvn-repo/raw/master/releases</url>
+      <url>file://${user.home}/.m2/repository</url>
     </repository>
     <snapshotRepository>
-      <id>snapshot-repo</id>
-      <url>https://github.com/snwfog/mvn-repo/raw/master/snapshots</url>
+      <id>repo-snapshot</id>
+      <url>file://${user.home}/.m2/repository</url>
     </snapshotRepository>
   </distributionManagement>
 </project>
