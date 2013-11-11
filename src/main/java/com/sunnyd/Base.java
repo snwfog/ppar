@@ -65,7 +65,7 @@ public class Base implements IModel {
                 // Merge parent's table data's into map
                 HM.putAll( parentDatas );
             }
-            return (T) Class.forName( canonicalClassName ).getConstructor( HashMap.class ).newInstance( HM );
+            return (T) Class.forName( canonicalClassName ).getConstructor( Map.class ).newInstance( HM );
         } catch ( ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e ) {
             e.printStackTrace();
@@ -394,7 +394,7 @@ public class Base implements IModel {
         List<Object> collection = new ArrayList<Object>();
         for ( int i = 0; i < size; i++ ) {
             try {
-                collection.add( relationClass.getConstructor( HashMap.class ).newInstance( results.get( i ) ) );
+                collection.add( relationClass.getConstructor( Map.class ).newInstance( results.get( i ) ) );
             } catch ( InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException e ) {
                 e.printStackTrace();

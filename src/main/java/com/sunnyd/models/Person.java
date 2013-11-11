@@ -27,7 +27,7 @@ public class Person extends Base implements IModel {
     public Person(){
         super();
     }
-    public Person(HashMap<String, Object> HM) {
+    public Person(Map<String, Object> HM) {
         super(HM);
     }
 

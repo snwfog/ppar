@@ -1,5 +1,3 @@
-ALTER TABLE peers ADD FOREIGN KEY(rank_id) REFERENCES ranks(id);
-
 ALTER TABLE documents DROP FOREIGN KEY documents_ibfk_1;
 
 ALTER TABLE documents ADD FOREIGN KEY(peer_id) REFERENCES peers(id) ON DELETE CASCADE;

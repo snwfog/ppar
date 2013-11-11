@@ -1,5 +1,3 @@
-ALTER TABLE peers ADD FOREIGN KEY (rank_id) REFERENCES ranks (id);
-
 ALTER TABLE documents ADD FOREIGN KEY (peer_id) REFERENCES peers (id);
 
 ALTER TABLE snapshots ADD FOREIGN KEY (document_id) REFERENCES documents (id);

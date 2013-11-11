@@ -1,6 +1,7 @@
 package com.sunnyd.models;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRecordField;
@@ -16,7 +17,7 @@ public class GrandChild extends Child{
         super();
     }
     
-    public GrandChild(HashMap<String, Object> HM) {
+    public GrandChild(Map<String, Object> HM) {
         super(HM);
     }
     
