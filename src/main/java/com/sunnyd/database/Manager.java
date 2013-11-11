@@ -496,8 +496,8 @@ public class Manager {
             conn = Connector.getConnection();
             stmt = conn.createStatement();
             cons = klazz.getConstructor(Map.class);
-            String funnelClass = klazz.getSimpleName() + "Funnel";
-            Class<Funnel<T>> funnel = (Class<Funnel<T>>)Class.forName( funnelClass );
+            String funnelClass = "com.sunnyd.database.hash."+klazz.getSimpleName() + "Funnel";
+            Class<Funnel<T>> funnel = (Class<Funnel<T>>) Class.forName( funnelClass );
             T latest = cons.newInstance( Manager.find(id, tableName) );
             String newHashCode = Manager.getSha( latest, funnel.newInstance() );
             T old = cons.newInstance( Manager.find( id, tableName ));
