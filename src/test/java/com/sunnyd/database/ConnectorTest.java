@@ -11,7 +11,7 @@ import java.sql.Statement;
 
 public class ConnectorTest
 {
-  @Test
+  @Test(enabled = false)
   public void connectionTest() throws MySQLSyntaxErrorException
   {
     SSHjdbcSession connection = null;

@@ -13,7 +13,6 @@ import com.sunnyd.database.concurrency.exception.VersionChangedException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -121,6 +120,8 @@ public class Manager {
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
+        } catch ( Throwable e ) {
+            e.printStackTrace();
         }
 
         return results;
@@ -128,7 +129,7 @@ public class Manager {
 
     public static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap ) {
         String klazzName = klazz.getSimpleName();
-        String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
+        String funnelName = "com.sunnyd.database.hash." + klazzName + "Funnel";
 
         Class<?> funnelClass = null;
         Funnel<T> funnel = null;
@@ -197,8 +198,7 @@ public class Manager {
             e.printStackTrace();
         }
 
-        try
-        {
+        try {
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
             String thisModelSha = Manager.getSha( model, funnel );
             Manager.updateSha( id, tableName, thisModelSha );
@@ -265,7 +265,7 @@ public class Manager {
             }
 
             String klazzName = klazz.getSimpleName();
-            String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
+            String funnelName = "com.sunnyd.database.hash." + klazzName + "Funnel";
 
             Class<?> funnelClass = null;
             Funnel<T> funnel = null;
@@ -495,17 +495,17 @@ public class Manager {
         try {
             conn = Connector.getConnection();
             stmt = conn.getConnection().createStatement();
-            cons = klazz.getConstructor(Map.class);
-            String funnelClass = "com.sunnyd.database.hash."+klazz.getSimpleName() + "Funnel";
+            cons = klazz.getConstructor( Map.class );
+            String funnelClass = "com.sunnyd.database.hash." + klazz.getSimpleName() + "Funnel";
             Class<Funnel<T>> funnel = (Class<Funnel<T>>) Class.forName( funnelClass );
-            T latest = cons.newInstance( Manager.find(id, tableName) );
+            T latest = cons.newInstance( Manager.find( id, tableName ) );
             String newHashCode = Manager.getSha( latest, funnel.newInstance() );
-            T old = cons.newInstance( Manager.find( id, tableName ));
+            T old = cons.newInstance( Manager.find( id, tableName ) );
             String oldHashCode = Manager.getSha( old, funnel.newInstance() );
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
-        } catch ( SQLException e) {
+        } catch ( SQLException e ) {
             e.printStackTrace();
         } catch ( NoSuchMethodException e ) {
             e.printStackTrace();
