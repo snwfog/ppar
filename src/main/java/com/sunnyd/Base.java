@@ -176,6 +176,9 @@ public class Base implements IModel {
                     field.setAccessible( true );
                     @SuppressWarnings("unchecked")
                     List<Object> hasManyCollection = (List<Object>) field.get( objectInstance );
+                    if(hasManyCollection ==null){
+                        continue;
+                    }
                     for ( int i = 0; i < hasManyCollection.size(); i++ ) {
                         String setterMethod = "set" + StringUtils.capitalize( classObject.getSimpleName() ) + "Id";
 
