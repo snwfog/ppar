@@ -102,8 +102,7 @@ public class Connector {
                                             // tunnel
         String localServer = "127.0.0.1";
         int nRemotePort = 3306; // remote port number of your database
-        System.out.println(strSshPassword);
-        System.out.println(nLocalPort);
+       
         final JSch jsch = new JSch();
 
         int assport = 0;
