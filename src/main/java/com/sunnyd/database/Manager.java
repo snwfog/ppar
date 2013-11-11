@@ -5,14 +5,14 @@ import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 import com.sunnyd.Base;
+import com.sunnyd.BaseHelper;
 import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException;
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
-import com.sunnyd.database.hash.PeerFunnel;
-import com.sunnyd.database.query.DigestHash;
-import com.sunnyd.models.Peer;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -26,11 +26,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class Manager {
 
-    public static void main( String[] args ) {
-        Manager.checkIntegrity( 1, "peers", new HashMap<String, Object>() );
-    }
+    //public static void main( String[] args ) {
+    //    Manager.checkIntegrity( 1, "peers", new HashMap<String, Object>() );
+    //}
 
     // find by id, return single row
     public static Map<String, Object> find( int id, String tableName ) {
@@ -119,25 +120,48 @@ public class Manager {
 
             }
         } catch ( SQLException e ) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
         return results;
     }
 
-    public static int save( String tableName, Map<String, Object> hashmap ) {
+    public static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap ) {
+        String klazzName = klazz.getSimpleName();
+        String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
+
+        Class<?> funnelClass = null;
+        Funnel<T> funnel = null;
+        try {
+            funnelClass = Class.forName( funnelName );
+            funnel = (Funnel<T>) funnelClass.newInstance();
+
+        } catch ( ClassNotFoundException e ) {
+            e.printStackTrace();
+        } catch ( InstantiationException e ) {
+            e.printStackTrace();
+        } catch ( IllegalAccessException e ) {
+            e.printStackTrace();
+        }
+
+
+        return Manager.save( klazz, hashMap, funnel );
+    }
+
+    private static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap, Funnel<T> funnel ) {
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
 
         String columns = "";
         String values = "";
+        String tableName = BaseHelper.getClassTableName( klazz );
 
         int id = 0;
 
         try {
             connection = Connector.getConnection();
-            Map<String, String> SQLHashmap = convertJavaToSQL( hashmap );
+            Map<String, String> SQLHashmap = convertJavaToSQL( hashMap );
 
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
@@ -158,7 +182,7 @@ public class Manager {
             stmt = connection.createStatement();
 
             // no id is provided (means auto-gen id)
-            if ( !hashmap.containsKey( "id" ) ) {
+            if ( !hashMap.containsKey( "id" ) ) {
                 System.out.println( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" );
                 stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")", Statement.RETURN_GENERATED_KEYS );
                 rs = stmt.getGeneratedKeys();
@@ -167,16 +191,28 @@ public class Manager {
                 }
             } else // id is provided (means
             {
-                id = stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" ) != 0 ? (int) hashmap.get( "id" ) : 0;
+                id = stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" ) != 0 ? (int) hashMap.get( "id" ) : 0;
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
         }
 
-        Peer thisPeer = new Peer(Manager.find( id, tableName ));
-        String thisPeerSha = Manager.getSha(thisPeer, PeerFunnel.class);
-        Manager.updateSha( thisPeer.getId(), tableName, thisPeerSha);
+        try
+        {
+            T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
+            String thisModelSha = Manager.getSha( model, funnel );
+            Manager.updateSha( id, tableName, thisModelSha );
 
+
+        } catch ( NoSuchMethodException e ) {
+            e.printStackTrace();
+        } catch ( InvocationTargetException e ) {
+            e.printStackTrace();
+        } catch ( InstantiationException e ) {
+            e.printStackTrace();
+        } catch ( IllegalAccessException e ) {
+            e.printStackTrace();
+        }
         return id;
     }
 
@@ -197,9 +233,10 @@ public class Manager {
     }
 
     // update 1 or more fields of a single row
-    public static boolean update( int id, String tableName, Map<String, Object> hashMap ) {
+    public static <T extends Base> boolean update( int id, Class<T> klazz, Map<String, Object> hashMap ) {
         Connection connection = null;
         Statement stmt = null;
+        String tableName = BaseHelper.getClassTableName( klazz );
         boolean isUpdated = true;
 
         try {
@@ -207,7 +244,7 @@ public class Manager {
             Manager.acquireLock( id, tableName );
 
             // Check for optimistic lock
-            if ( !Manager.checkIntegrity( id, tableName, hashMap ) ) {
+            if ( !Manager.checkIntegrity( id, klazz, hashMap ) ) {
                 return false;
             }
 
@@ -418,49 +455,55 @@ public class Manager {
         }
     }
 
-    private static <T extends Base, F extends Funnel<T>> String getSha(T model, Class<F> funnelKlazz)
-    {
+    private static <T extends Base> String getSha( T model, Funnel<T> funnelKlazz ) {
         Hasher hasher = Hashing.sha256().newHasher();
         String newHashCode = "";
-        try
-        {
-            newHashCode = hasher.putObject( model, funnelKlazz.newInstance() ).hash().toString();
-        } catch ( InstantiationException e ) {
-            e.printStackTrace();
-        } catch ( IllegalAccessException e ) {
-            e.printStackTrace();
-        }
+        newHashCode = hasher.putObject( model, funnelKlazz ).hash().toString();
 
         return newHashCode;
     }
 
-    private static boolean checkIntegrity( int id, String tableName, Map<String, Object> map ) {
+    private static <T extends Base> boolean checkIntegrity( int id, Class<T> klazz, Map<String, Object> map ) {
         Connection conn = null;
         Statement stmt = null;
 
+
+        Constructor<T> cons = null;
+        String tableName = BaseHelper.getClassTableName( klazz );
         try {
             conn = Connector.getConnection();
             stmt = conn.createStatement();
-            Peer latest = new Peer( Manager.find( id, tableName ) );
-            String newHashCode = Manager.getSha(latest, PeerFunnel.class);
-            Peer old = new Peer( map );
-            String oldHashCode = Manager.getSha(old, PeerFunnel.class);
+            cons = klazz.getConstructor(Map.class);
+            String funnelClass = klazz.getSimpleName() + "Funnel";
+            Class<Funnel<T>> funnel = (Class<Funnel<T>>)Class.forName( funnelClass );
+            T latest = cons.newInstance( Manager.find(id, tableName) );
+            String newHashCode = Manager.getSha( latest, funnel.newInstance() );
+            T old = cons.newInstance( Manager.find( id, tableName ));
+            String oldHashCode = Manager.getSha( old, funnel.newInstance() );
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
-        } catch ( SQLException e ) {
+        } catch ( SQLException e) {
+            e.printStackTrace();
+        } catch ( NoSuchMethodException e ) {
+            e.printStackTrace();
+        } catch ( InvocationTargetException e ) {
+            e.printStackTrace();
+        } catch ( InstantiationException e ) {
+            e.printStackTrace();
+        } catch ( IllegalAccessException e ) {
+            e.printStackTrace();
+        } catch ( ClassNotFoundException e ) {
             e.printStackTrace();
         }
 
         return true;
     }
 
-    private static boolean updateSha(int id, String tableName, String sha)
-    {
+    private static boolean updateSha( int id, String tableName, String sha ) {
         Connection conn = null;
         Statement stmt = null;
-        try
-        {
+        try {
             conn = Connector.getConnection();
             stmt = conn.createStatement();
             stmt.executeUpdate( "UPDATE " + tableName + " SET etag = '" + sha + "' WHERE ID = " + id );

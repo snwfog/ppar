@@ -72,7 +72,7 @@ public class BaseHelper {
         return parentResult;
     }
 
-    static String getClassTableName(Class<?> classObject) {
+    public static String getClassTableName(Class<?> classObject) {
         String className = classObject.getSimpleName();
         return getClassTableName(className);    
     }

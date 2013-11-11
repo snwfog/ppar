@@ -7,7 +7,6 @@ create table peers (
     password varchar(255),
     point int,
     personal_website varchar(255),
-    rank_id int,
     PRIMARY KEY(id)
 );
 

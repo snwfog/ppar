@@ -32,9 +32,6 @@ public class Peer extends Base implements IModel {
     private Integer point;
 
     @ActiveRecordField
-    private Integer rankId;
-
-    @ActiveRecordField
     private String personalWebsite;
 
     public Peer() {
@@ -96,15 +93,6 @@ public class Peer extends Base implements IModel {
 
     public void setPoint(Integer point) {
         this.point = point;
-        setUpdateFlag(true);
-    }
-
-    public Integer getRankId() {
-        return rankId;
-    }
-
-    public void setRankId(Integer rankId) {
-        this.rankId = rankId;
         setUpdateFlag(true);
     }
 

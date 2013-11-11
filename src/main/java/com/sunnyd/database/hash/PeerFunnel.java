@@ -18,7 +18,6 @@ public class PeerFunnel implements Funnel<Peer> {
                 .putString( peer.getUserName(), Charsets.UTF_8 )
                 .putString( peer.getPassword(), Charsets.UTF_8 )
                 .putInt( peer.getPoint() )
-                .putInt( peer.getRankId() )
                 .putString( peer.getPersonalWebsite(), Charsets.UTF_8 );
     }
 }

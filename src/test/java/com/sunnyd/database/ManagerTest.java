@@ -38,7 +38,7 @@ public class ManagerTest extends DatabaseTestSetup
     p.setLastName("Yang");
     p.setEmail("donchoa@gmail.com");
     p.setUserName("snwfog");
-    p.setPassword("1234");
+    p.setPassword("4321");
     p.setPoint(9000);
     p.setPersonalWebsite("http://charlescy.com");
 

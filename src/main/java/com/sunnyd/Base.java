@@ -125,16 +125,16 @@ public class Base implements IModel {
         return null;
     }
 
-    private static boolean update( Class<?> classObject, Object instanceObject ) {
+    private static <T extends Base> boolean update( Class<T> classObject, Object instanceObject ) {
         Map<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue( classObject, instanceObject );
         if ( classObject.getAnnotation( ActiveRecordInheritFrom.class ) != null ) {
-            boolean updated = Base.update( classObject.getSuperclass(), instanceObject );
+            boolean updated = Base.update( (Class<T>)classObject.getSuperclass(), instanceObject );
             if ( !updated ) {
                 System.out.println( "Could not update " + ((Base) instanceObject).getId() + " " + classObject.getName() );
                 return false;
             }
         }
-        return Manager.update( ((Base) instanceObject).getId(), BaseHelper.getClassTableName( classObject ), updateAttributes );
+        return Manager.update( ((Base) instanceObject).getId(), classObject , updateAttributes );
     }
 
     // Delete Parent Data after child has been deleted
@@ -147,12 +147,12 @@ public class Base implements IModel {
         return success;
     }
 
-    private static Integer save( Class<?> classObject, Object objectInstance ) {
+    private static <T extends Base> Integer save( Class<T> classObject, Object objectInstance ) {
         Map<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue( classObject, objectInstance );
         // System.out.println(classObject.getName());
         Integer id = 0;
         if ( classObject.getAnnotation( ActiveRecordInheritFrom.class ) != null ) {
-            id = Base.save( classObject.getSuperclass(), objectInstance );
+            id = Base.save( (Class<T>)classObject.getSuperclass(), objectInstance );
             // System.out.println(id);
         }
         if ( id != 0 ) {
@@ -161,7 +161,7 @@ public class Base implements IModel {
         }
 
         //Save object before has many or manytomany relation fields
-        id = Manager.save( BaseHelper.getClassTableName( classObject ), attrToPersist );
+        id = Manager.save( classObject , attrToPersist );
         saveRelation( classObject, objectInstance, id );
         return id;
     }
