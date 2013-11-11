@@ -28,11 +28,13 @@ public class Child extends Person {
 //        a.setLastName("Luffy");
 //        a.save();
         
-        Child b = new Child().find(18);
+        Child b = new Child().find(1);
         System.out.println(b.getId());
         System.out.println(b.getChildName());
         System.out.println(b.getFirstName());
         System.out.println(b.getLastName());
+        b.setFirstName("aasiojaoisdja");
+        b.update();
         
         
     }
@@ -47,7 +49,5 @@ public class Child extends Person {
         setUpdateFlag(true);
     }
     
-
-   
 
 }

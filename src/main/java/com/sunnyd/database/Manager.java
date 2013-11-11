@@ -263,12 +263,34 @@ public class Manager {
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 stmt.execute( "UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id );
             }
+
+            String klazzName = klazz.getSimpleName();
+            String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
+
+            Class<?> funnelClass = null;
+            Funnel<T> funnel = null;
+            funnelClass = Class.forName( funnelName );
+            funnel = (Funnel<T>) funnelClass.newInstance();
+            T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
+            String thisModelSha = Manager.getSha( model, funnel );
+            Manager.updateSha( id, tableName, thisModelSha );
+
         } catch ( SQLException e ) {
             e.printStackTrace();
             isUpdated = false;
         } catch ( VersionChangedException e ) {
             isUpdated = false;
             Throwables.propagate( e );
+        } catch ( InvocationTargetException e ) {
+            e.printStackTrace();
+        } catch ( NoSuchMethodException e ) {
+            e.printStackTrace();
+        } catch ( InstantiationException e ) {
+            e.printStackTrace();
+        } catch ( IllegalAccessException e ) {
+            e.printStackTrace();
+        } catch ( ClassNotFoundException e ) {
+            e.printStackTrace();
         } finally {
             // Release mutex lock
             Manager.releaseLock( id, tableName );
@@ -474,8 +496,8 @@ public class Manager {
             conn = Connector.getConnection();
             stmt = conn.getConnection().createStatement();
             cons = klazz.getConstructor(Map.class);
-            String funnelClass = klazz.getSimpleName() + "Funnel";
-            Class<Funnel<T>> funnel = (Class<Funnel<T>>)Class.forName( funnelClass );
+            String funnelClass = "com.sunnyd.database.hash."+klazz.getSimpleName() + "Funnel";
+            Class<Funnel<T>> funnel = (Class<Funnel<T>>) Class.forName( funnelClass );
             T latest = cons.newInstance( Manager.find(id, tableName) );
             String newHashCode = Manager.getSha( latest, funnel.newInstance() );
             T old = cons.newInstance( Manager.find( id, tableName ));
