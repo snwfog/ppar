@@ -191,5 +191,9 @@ public class BaseHelper {
         
         return null;
     }
+    
+    static String annotationSimpleName(Annotation  a){
+        return a.annotationType().getSimpleName();
+    }
 
 }

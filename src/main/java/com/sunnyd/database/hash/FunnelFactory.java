@@ -10,6 +10,7 @@ import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.models.Person;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 
 public class FunnelFactory {
     public static <T extends Base> Funnel<T> getInstance(Class<T> klazz)
@@ -37,12 +38,19 @@ public class FunnelFactory {
                             }
                             else if (fieldType == String.class)
                             {
-                                into.putString( f.get(instance ).toString(), Charsets.UTF_8 );
-
+                                String value = f.get(instance) == null? "": f.get(instance).toString();
+                                into.putString( value, Charsets.UTF_8 );
                             }
                             else if (fieldType == Double.class)
                             {
-                                into.putDouble(f.getDouble( instance) );
+                                into.putDouble( (Double) f.get( instance) );
+                            }
+                            else if (fieldType == Date.class)
+                            {
+                                Date value = f.get(instance) == null ? null : (Date) f.get(instance);
+                                if(value != null){
+                                    into.putString( value.toString(), Charsets.UTF_8 );
+                                }
                             }
                             else
                             {

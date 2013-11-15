@@ -56,10 +56,8 @@ public class Base implements IModel {
         this.setUpdateFlag(false);
     }
 
-    public <T> T find(int id) {
-        return find(id, this.getClass().getCanonicalName());
-    }
-
+    
+    /********************************************************FIND******************************************************************/
     // public static <T extends Base> T find(int id) {
     // //TODO BUG: if calling lets say Document.find in Peer main method, the
     // class is peer...
@@ -75,7 +73,11 @@ public class Base implements IModel {
     // System.out.println(Arrays.asList(Thread.currentThread().getStackTrace()).toString());
     // return find(id, className);
     // }
-
+    
+    public <T> T find(int id) {
+        return find(id, this.getClass().getCanonicalName());
+    }
+    
     @SuppressWarnings("unchecked")
     public static <T> T find(int id, String canonicalClassName) {
         try {
@@ -97,6 +99,7 @@ public class Base implements IModel {
         }
         return null;
     }
+
 
     @SuppressWarnings("unchecked")
     public <T extends Base> ArrayList<Map<String, Object>> findAll(Map<String, Object> conditions) {
@@ -140,12 +143,16 @@ public class Base implements IModel {
 
     /**************************************************** UPDATE *******************************************************/
     public boolean update() {
-        if (this.getUpdateFlag()) {
-            boolean allUpdated = update(this.getClass(), this);
-            if (allUpdated) {
-                this.setUpdateFlag(false);
-                return allUpdated;
+        if(this.id != null){
+            if (this.getUpdateFlag()) {
+                boolean allUpdated = update(this.getClass(), this);
+                if (allUpdated) {
+                    this.setUpdateFlag(false);
+                    return allUpdated;
+                }
             }
+        }else{
+            System.out.println("new object try saving first");
         }
         return false;
     }
@@ -170,211 +177,185 @@ public class Base implements IModel {
     private static <T extends Base> boolean updateRelation(Class<T> classObject, Object instanceObject) {
         Field[] fields = classObject.getDeclaredFields();
         for (Field field : fields) {
-            int id = ((Base) instanceObject).getId();
-
             Annotation[] annotations = field.getAnnotations();
-
+            
             // ActiveRelationManyToMany
-            if (annotations.length > 0
-                    && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationManyToMany")) {
-                String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
-                String relationSimpleName = BaseHelper.getGenericSimpleName(field);
-                field.setAccessible(true);
-                String relationTable = ((ActiveRelationManyToMany) annotations[0]).relationTable();
+            if (annotations.length > 0)
+                if(annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationManyToMany") | 
+                   annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany"))                    
+                    updateManyRelation(field, annotations[0],  classObject, instanceObject);
 
-                // GetCollectionField
-                List<Object> manyToManyCollection = null;
-                try {
-                    manyToManyCollection = (List<Object>) field.get(instanceObject);
-                    if (manyToManyCollection == null) {
-                        // Either not initiated or no collection
-                        continue;
+        }
+        return false;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static <T extends Base> void updateManyRelation(Field field, Annotation annotation, Class<T> classObject,  Object instanceObject){
+        int id = ((Base) instanceObject).getId();   
+        String relationName = annotation.annotationType().getSimpleName();
+        field.setAccessible(true);
+        
+        String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
+        String relationSimpleName = BaseHelper.getGenericSimpleName(field);
+        String relationTable = relationName.contentEquals("ActiveRelationManyToMany") ?  ((ActiveRelationManyToMany) annotation).relationTable() : BaseHelper.getClassTableName(relationSimpleName);
+
+        // Get Collection Field
+        List<Object> collection = null;
+        try {
+            collection = (List<Object>) field.get(instanceObject);
+            if (collection == null) {
+                // Either not initiated or no collection
+                return;
+            }
+        } catch (IllegalArgumentException | IllegalAccessException e1) {
+            e1.printStackTrace();
+        }
+
+        // Get current collection data from database
+        Map<String, Object> condition = new HashMap<String, Object>();
+        condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
+        ArrayList<Map<String, Object>> results = Manager.findAll(relationTable, condition);
+
+        // Get extract current collection id
+        Iterator<Map<String, Object>> a = results.iterator();
+        List<Integer> oldIds = new ArrayList<Integer>();
+        while (a.hasNext()) {
+            Map<String, Object> result = a.next();
+            String idFieldName = relationName.contentEquals("ActiveRelationManyToMany") ? StringUtils.uncapitalize(relationSimpleName) + "Id" : "Id";
+            oldIds.add((Integer) result.get(idFieldName));
+        }
+
+        try {
+            for (int i = 0; i < collection.size(); i++) {
+                Method getId = Class.forName(relationCanonicalName).getMethod("getId");
+                Integer collectionObjectId = (Integer) getId.invoke(collection.get(i));
+                if (collectionObjectId == null) {
+                    switch (relationName.toString()) {
+                    
+                        case "ActiveRelationManyToMany":
+                            newObjectManyToMany(id, collection.get(i), relationCanonicalName, relationSimpleName, relationTable, classObject);
+                            break;
+                            
+                        case "ActiveRelationHasMany":
+                            newObjectHasMany(id, collection.get(i), relationCanonicalName, classObject);
+                            break;
+                        default:
+                            break;
                     }
-                } catch (IllegalArgumentException | IllegalAccessException e1) {
-                    e1.printStackTrace();
-                }
+                    
+                } else if (collectionObjectId > 0 && !oldIds.contains(collectionObjectId)) {
 
-                // Get relation collection from db
-                Map<String, Object> condition = new HashMap<String, Object>();
-                condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
-
-                // Get results
-                ArrayList<Map<String, Object>> results = Manager.findAll(relationTable, condition);
-
-                // Get old collection's ids
-                Iterator<Map<String, Object>> a = results.iterator();
-                List<Integer> oldIds = new ArrayList<Integer>();
-                while (a.hasNext()) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> result = a.next();
-                    oldIds.add((Integer) result.get(StringUtils.uncapitalize(relationSimpleName) + "Id"));
-                }
-
-                try {
-                    for (int i = 0; i < manyToManyCollection.size(); i++) {
-                        Method getId = Class.forName(relationCanonicalName).getMethod("getId");
-                        Integer collectionObjectId = (Integer) getId.invoke(manyToManyCollection.get(i));
-
-                        if (collectionObjectId == null) {
-                            // New collection object but doesn't exists in
-                            // database
-
-                            // If id is null, therefore the object id could not
-                            // have exist in the relation table
-                            Method save = Class.forName(relationCanonicalName).getMethod("save");
-                            save.invoke(manyToManyCollection.get(i));
-                            int newCollectionId = (int) getId.invoke(manyToManyCollection.get(i));
-
-                            // Save relation
-                            Map<String, Object> conditions = new HashMap<String, Object>();
-                            conditions.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
-                            conditions.put(StringUtils.uncapitalize(relationSimpleName) + "Id", newCollectionId);
-                            Manager.save(relationTable, conditions);
-
-                        } else if (collectionObjectId > 0 && !oldIds.contains(collectionObjectId)) {
-                            // An existing object in database added to this
-                            // collection
-
-                            // Save relation
-                            Map<String, Object> conditions = new HashMap<String, Object>();
-                            conditions.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
-                            conditions.put(StringUtils.uncapitalize(relationSimpleName) + "Id", collectionObjectId);
-                            try {
-                                Manager.save(relationTable, conditions);
-
-                            } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e) {
-                                // Do nothing, user must have added the same
-                                // object twice in the collection
-                            }
-
-                        } else if (oldIds.contains(collectionObjectId)) {
-                            // If exists in both list then keep
-                            oldIds.remove(collectionObjectId);
-                        }
-
+                    switch (relationName.toString()) {
+                        case "ActiveRelationManyToMany":
+                            existingObjectManyToMany(id, collectionObjectId, relationSimpleName, relationTable, classObject);
+                            break;
+                            
+                        case "ActiveRelationHasMany":
+                            existingObjectHasMany(id, collection.get(i), relationCanonicalName, classObject);
+                            break;
+                        default:
+                            break;
                     }
-
-                    if (oldIds.size() > 0) {
-                        // Get relation collection from db
-                        Iterator<Integer> oldIdIter = oldIds.iterator();
-                        while (oldIdIter.hasNext()) {
-                            int oldId = oldIdIter.next();
-                            condition = new HashMap<String, Object>();
-                            condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
-                            condition.put(StringUtils.uncapitalize(relationSimpleName) + "Id", oldId);
-                            if (results.size() > 0) {
-
-                                Manager.destroy(relationTable, condition);
-                            }
-                        }
-
-                    }
-
-                } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException
-                        | ClassNotFoundException | InvocationTargetException
-                        | MySQLIntegrityConstraintViolationException e) {
-                    e.printStackTrace();
-                }
-                // ActiveRelationHasMany
-            } else if (annotations.length > 0
-                    && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany")) {
-                // TODO implement ActiveRelationHasMany
-                field.setAccessible(true);
-                String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
-                String relationSimpleName = BaseHelper.getGenericSimpleName(field);
-                String relationTableName = BaseHelper.getClassTableName(relationSimpleName);
-
-                // GetCollectionField
-                List<Object> hasManyCollection = null;
-                try {
-                    hasManyCollection = (List<Object>) field.get(instanceObject);
-                    if (hasManyCollection == null) {
-                        // Either not initiated or no collection
-                        continue;
-                    }
-                } catch (IllegalArgumentException | IllegalAccessException e1) {
-                    e1.printStackTrace();
-                }
-
-                // Get relation collection from db
-                Map<String, Object> condition = new HashMap<String, Object>();
-                condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
-
-                // Get results
-                ArrayList<Map<String, Object>> results = Manager.findAll(relationTableName, condition);
-
-                // Get old collection's ids
-                Iterator<Map<String, Object>> a = results.iterator();
-                List<Integer> oldIds = new ArrayList<Integer>();
-                while (a.hasNext()) {
-                    Map<String, Object> result = a.next();
-                    oldIds.add((Integer) result.get("id"));
-                }
-
-                try {
-                    for (int i = 0; i < hasManyCollection.size(); i++) {
-
-                        Method getId = Class.forName(relationCanonicalName).getMethod("getId");
-                        Integer collectionObjectId = (Integer) getId.invoke(hasManyCollection.get(i));
-
-                        if (collectionObjectId == null) {
-                            // Handling: New collection object but doesn't
-                            // exists in database
-                            String setterMethod = "set" + StringUtils.capitalize(classObject.getSimpleName()) + "Id";
-
-                            // Set objects in the has many collection to current
-                            // id
-                            Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(
-                                    setterMethod, Integer.class);
-                            setRelationIdMethod.invoke(hasManyCollection.get(i), id);
-
-                            Method save = Class.forName(relationCanonicalName).getMethod("save");
-                            save.invoke(hasManyCollection.get(i));
-
-                        } else if (collectionObjectId > 0 && !oldIds.contains(collectionObjectId)) {
-                            // Handling: An existing object in database added to
-                            // this collection
-
-                            // update collection object relation
-                            String setterMethod = "set" + StringUtils.capitalize(classObject.getSimpleName()) + "Id";
-
-                            // Set objects in the has many collection to current
-                            // id
-                            Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(
-                                    setterMethod, Integer.class);
-                            setRelationIdMethod.invoke(hasManyCollection.get(i), id);
-
-                            // Update existing object
-                            Method update = Class.forName(relationCanonicalName).getMethod("update");
-                            update.invoke(hasManyCollection.get(i));
-
-                        } else if (oldIds.contains(collectionObjectId)) {
-                            // Handling: If exists in both list then keep
-                            oldIds.remove(collectionObjectId);
-                        }
-                    }
-
-                    // Remove old id that isn't in the new collections
-                    if (oldIds.size() > 0) {
-                        // Get relation collection from db
-                        Iterator<Integer> oldIdIter = oldIds.iterator();
-                        while (oldIdIter.hasNext()) {
-                            int oldId = oldIdIter.next();
-                            Map<String, Object> nullField = new HashMap<String, Object>();
-                            nullField.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", null);
-                            Manager.update(oldId, (Class<T>) Class.forName(relationCanonicalName), nullField);
-                        }
-
-                    }
-
-                } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException
-                        | ClassNotFoundException | InvocationTargetException e) {
-                    e.printStackTrace();
+                                   
+                } else if (oldIds.contains(collectionObjectId)) {
+                    // If exists in both list then keep
+                    oldIds.remove(collectionObjectId);
                 }
 
             }
+
+            //If existing id in oldId list are those to be removed from database(remove relation)
+            if (oldIds.size() > 0) {
+                Iterator<Integer> oldIdIter = oldIds.iterator();
+                while (oldIdIter.hasNext()) {
+                    int oldId = oldIdIter.next();
+                    
+                    condition = new HashMap<String, Object>();
+                    condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
+                    condition.put(StringUtils.uncapitalize(relationSimpleName) + "Id", oldId);
+                    if (results.size() > 0) {
+                        Manager.destroy(relationTable, condition);
+                    }
+                }
+
+            }
+
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException
+                | ClassNotFoundException | InvocationTargetException e) {
+            e.printStackTrace();
         }
-        return false;
+    }
+    
+    private static void newObjectManyToMany(Integer id, Object collectionObject, String relationCanonicalName, String relationSimpleName, String relationTable, Class<?> classObject){
+        // New collection object but doesn't exists in database
+   
+        // If id is null, therefore the object id could not have exist in the relation table
+        try{
+        Method getId = Class.forName(relationCanonicalName).getMethod("getId");
+        Method save = Class.forName(relationCanonicalName).getMethod("save");
+        save.invoke(collectionObject);
+        int newCollectionId = (int) getId.invoke(collectionObject);
+
+        // Save relation
+        Map<String, Object> conditions = new HashMap<String, Object>();
+        conditions.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
+        conditions.put(StringUtils.uncapitalize(relationSimpleName) + "Id", newCollectionId);
+        Manager.save(relationTable, conditions);
+        }catch(MySQLIntegrityConstraintViolationException | NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e){
+            e.printStackTrace();
+        }
+        
+    }
+    
+    
+    private static void existingObjectManyToMany(Integer id, Integer collectionObjectId,  String relationSimpleName, String relationTable, Class<?> classObject){
+        // An existing object in database added to this collection
+        // Save relation
+        Map<String, Object> conditions = new HashMap<String, Object>();
+        conditions.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
+        conditions.put(StringUtils.uncapitalize(relationSimpleName) + "Id", collectionObjectId);
+        try {
+            Manager.save(relationTable, conditions);
+
+        } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e) {
+            // Do nothing, user must have added the same
+            // object twice in the collection
+        }
+        
+    }
+  
+    private static void newObjectHasMany(Integer id, Object collectionObject, String relationCanonicalName, Class<?> classObject){
+     // Handling: New collection object but doesn't exists in database
+        try{
+            String setterMethod = "set" + StringUtils.capitalize(classObject.getSimpleName()) + "Id";
+            // Set objects in the has many collection to current instanceObject id
+            Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(setterMethod, Integer.class);
+            setRelationIdMethod.invoke(collectionObject, id);
+    
+            Method save = Class.forName(relationCanonicalName).getMethod("save");
+            save.invoke(collectionObject);
+        }catch(IllegalAccessException | NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException e){
+            e.printStackTrace();
+        }    
+    }
+    
+    private static void existingObjectHasMany(Integer id, Object collectionObject,  String relationCanonicalName, Class<?> classObject){
+        // Handling: An existing object in database added to
+        // update collection object relation
+        String setterMethod = "set" + StringUtils.capitalize(classObject.getSimpleName()) + "Id";
+
+        // Set objects in the has many collection to current id
+        try{
+        Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(setterMethod, Integer.class);
+        setRelationIdMethod.invoke(collectionObject, id);
+
+        // Update existing object
+        Method update = Class.forName(relationCanonicalName).getMethod("update");
+        update.invoke(collectionObject);
+        }catch(IllegalAccessException | NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalArgumentException | InvocationTargetException e){
+            e.printStackTrace();
+        }
+        
     }
 
     /*********************************************** DELETE *******************************************************/
@@ -442,8 +423,7 @@ public class Base implements IModel {
         for (Field field : fields) {
             field.setAccessible(true);
             Annotation[] annotations = field.getAnnotations();
-            if (annotations.length > 0
-                    && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany")) {
+            if (annotations.length > 0 && annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany")) {
                 String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
                 try {
                     @SuppressWarnings("unchecked")
@@ -455,8 +435,7 @@ public class Base implements IModel {
                     for (int i = 0; i < hasManyCollection.size(); i++) {
                         String setterMethod = "set" + StringUtils.capitalize(classObject.getSimpleName()) + "Id";
 
-                        // Set objects in the has many collection id to current
-                        // id
+                        // Set objects in the has many collection id to current id
                         Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(
                                 setterMethod, Integer.class);
                         setRelationIdMethod.invoke(hasManyCollection.get(i), id);
@@ -548,6 +527,11 @@ public class Base implements IModel {
             // LazyLoading
             relation.setAccessible(true);
 
+
+            if (relationLoaded(relation)) {
+                return;
+            }
+            
             if (this.id == null) {
                 try {
                     if (!relationAnnotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasOne")) {
@@ -557,10 +541,6 @@ public class Base implements IModel {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            }
-
-            if (relationLoaded(relation)) {
-                return;
             }
 
             switch (relationAnnotations[0].annotationType().getSimpleName()) {
@@ -688,53 +668,6 @@ public class Base implements IModel {
         }
     }
 
-    private void relationManyToMany(Field relation, String relationTableName) {
-
-        // Get object class from Arraylist or list generic type
-
-        String relationCanonicalClassName = BaseHelper.getGenericCanonicalClassName(relation);
-        String relationSimpleClassName = BaseHelper.getGenericSimpleName(relation);
-        ;
-        String simpleClassName = this.getClass().getSimpleName();
-
-        relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName)
-                : relationTableName;
-
-        Class<?> relationClass = null;
-        try {
-            relationClass = Class.forName(relationCanonicalClassName);
-        } catch (ClassNotFoundException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-
-        // Condition use current object ID for has many query
-        Map<String, Object> condition = new HashMap<String, Object>();
-        condition.put(StringUtils.uncapitalize(simpleClassName) + "Id", this.getId());
-        // Get results
-        ArrayList<Map<String, Object>> results = Manager.findAll(relationTableName, condition);
-
-        // Following: create instance of relation class and add to array
-        int size = results.size();
-        List<Object> collection = new ArrayList<Object>();
-        for (int i = 0; i < size; i++) {
-            try {
-                collection.add(relationClass.getConstructor(Map.class).newInstance(results.get(i)));
-            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                    | InvocationTargetException | NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-        }
-
-        relation.setAccessible(true);
-        try {
-            relation.set(this, collection);
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
     /****** MUTATOR ****************************************************/
     // Common Mutator in all child class.
 
@@ -797,8 +730,10 @@ public class Base implements IModel {
                 String capitalizeField = StringUtils.capitalize(fieldName);
                 java.lang.reflect.Method method;
                 try {
-                    method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
-                    method.invoke(instanceObject, fieldType.cast(value));
+                    if(value !=null){
+                        method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
+                        method.invoke(instanceObject, fieldType.cast(value));
+                    }
                 } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException e) {
                     e.printStackTrace();

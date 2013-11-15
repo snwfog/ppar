@@ -121,18 +121,23 @@ public class Peer extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Peer a = new Peer().find(3);
-        a.setFirstName("oiajdiojdoajooaoooooooooooooooooooooooooo ");
-        a.setLastName("pham");
-        a.setEmail("adoijaoidjaoids");
-        a.setUserName("weq");
-        a.setPassword("adoijadoijaso");
-        a.setPoint(1);
-        a.setPersonalWebsite("aoidjaodjsao");
+        Peer a = new Peer();
+        a.setFirstName("mike");
         System.out.println(a.toString());
         System.out.println(a.getDocuments());
         System.out.println(a.toString());
         a.setPassword("mmmmmm");
-        a.update();
+        
+        Document doc1 = new Document();
+        doc1.setDocName("lukeSkyWalker");
+        
+        Document doc2 = new Document();
+        doc2.setDocName("cuntSkyWalker");
+        doc2.save();
+        
+        a.getDocuments().add(doc1);
+        a.getDocuments().add(doc2);
+        System.out.println(a.getDocuments());
+        a.save();
     }
 }

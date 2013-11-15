@@ -58,20 +58,19 @@ public class Group extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Group a = new Group();
+        Group a = new Group().find(2);
         a.setGroupName("blubber");
-        
-        Category c1 = new Category();
-        c1.setCategoryName("clllllll");
         
         Category c2 = new Category().find(1);
         c2.setCategoryName("aoidjaodjoiasc2");
         c2.save();
         
-        a.getCategories().add(c1);
+        Category c3 = new Category();
+        c3.setCategoryName("ccc23333");
+        
         a.getCategories().add(c2);
-        a.getCategories().add(c1); //Duplicate should not be saved
-        a.save();
+        a.getCategories().add(c3);
+        a.update();
     }
 
 }
