@@ -32,7 +32,7 @@ public class FunnelFactory {
                         {
                             if (fieldType == Integer.class)
                             {
-                                into.putInt( f.getInt( instance ) );
+                                into.putInt( (int) f.get( instance ) );
                             }
                             else if (fieldType == String.class)
                             {
