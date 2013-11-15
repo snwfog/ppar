@@ -9,33 +9,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Group extends Base implements IModel {
+@ActiveRecordModel
+public class Category extends Base implements IModel {
 
-    public static final String tableName = "comments";
+    public static final String tableName = "categories";
 
     @ActiveRecordField
-    private String groupName;
+    private String categoryName;
 
     @ActiveRecordField
     private String description;
-
+    
     @ActiveRelationManyToMany(relationTable = "groups_categories")
-    private List<Category> categories;
+    private List<Group> groups;
 
-    public Group() {
+    public Category() {
         super();
     }
 
-    public Group(Map<String, Object> HM) {
+    public Category(Map<String, Object> HM) {
         super(HM);
     }
 
-    public String getGroupName() {
-        return groupName;
+    public String getCategoryName() {
+        return categoryName;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
         setUpdateFlag(true);
     }
 
@@ -48,19 +49,17 @@ public class Group extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public List<Category> getCategories() {
-        initRelation("categories");
-        return categories;
+    public List<Group> getGroups() {
+        initRelation("groups");
+        return groups;
     }
 
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
     }
 
     public static void main(String[] args) {
-        Group a = new Group().find(1);
-        a.setGroupName("aoisjdoiasjdo");
-        System.out.println(a.update());
+        Category a = new Category().find(1);
+        System.out.println(Arrays.asList(a.getGroups()).toString());
     }
-
 }

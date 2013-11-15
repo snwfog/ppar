@@ -30,14 +30,14 @@ public class BaseHelper {
 
 
     //Get classObject attribute and value
-    static HashMap<String, Object> getTableFieldNameAndValue(Object classObject) {
+    static Map<String, Object> getTableFieldNameAndValue(Object classObject) {
         return getTableFieldNameAndValue(classObject.getClass(), classObject);
     }
     
     //For inheritance, get parent field and value and invoke on object fields
-    static HashMap<String, Object> getTableFieldNameAndValue(Class<?> parentClass, Object classObject) {
+    static Map<String, Object> getTableFieldNameAndValue(Class<?> parentClass, Object classObject) {
         Field[] classFields = parentClass.getDeclaredFields();
-        HashMap<String, Object> tableAttributes = new HashMap<String, Object>();
+        Map<String, Object> tableAttributes = new HashMap<String, Object>();
         for (int i = 0; i < classFields.length; i++) {
             Field field = classFields[i];
             Annotation attrAnnotation = field.getAnnotation(ActiveRecordField.class);

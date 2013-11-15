@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.sunnyd.Base;
 import com.sunnyd.BaseHelper;
 import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException;
@@ -85,17 +86,19 @@ public class Manager {
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
         String where = "";
-
-        HashMap<String, String> SQLConditions = convertJavaSQL( conditions );
-
-        for ( String key : SQLConditions.keySet() ) {
-            where += key + " = " + SQLConditions.get( key ) + " AND ";
-        }
-        // remove trailing comma
-        where = where.replaceAll( " AND $", "" ); // col1, col2, col3
-
-        if ( !where.equals( "" ) ) {
-            where = " WHERE " + where;
+        Map<String, String> SQLConditions = convertJavaToSQL( conditions );
+        
+        if(conditions != null){
+            //Return all if condition is null  
+            for ( String key : SQLConditions.keySet() ) {
+                where += key + " = " + SQLConditions.get( key ) + " AND ";
+            }
+            // remove trailing comma
+            where = where.replaceAll( " AND $", "" ); // col1, col2, col3
+    
+            if ( !where.equals( "" ) ) {
+                where = " WHERE " + where;
+            }
         }
 
         //TODO: Should you return all result when variable "where" is ""(empty)?
@@ -104,18 +107,6 @@ public class Manager {
             stmt = connection.createStatement();
             rs = stmt.executeQuery( "SELECT * FROM " + tableName + where );
             while ( rs.next() ) {
-                Map<String, String> SQLConditions = convertJavaToSQL( conditions );
-
-                for ( String key : SQLConditions.keySet() ) {
-                    where += key + " = " + SQLConditions.get( key ) + " AND ";
-                }
-                // remove trailing comma
-                where = where.replaceAll( " AND $", "" ); // col1, col2, col3
-
-                if ( !where.equals( "" ) ) {
-                    where = " WHERE " + where;
-                }
-
                 try {
                     connection = Connector.getConnection();
                     stmt = connection.createStatement();
@@ -227,6 +218,61 @@ public class Manager {
         }
         return id;
     }
+    
+    
+    public static int save( String tableName, Map<String, Object> hashMap) throws MySQLIntegrityConstraintViolationException {
+    //for table not related to any model (i.e relation table)
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        String columns = "";
+        String values = "";
+
+        int id = 0;
+
+        try {
+            connection = Connector.getConnection();
+            Map<String, String> SQLHashmap = convertJavaToSQL( hashMap );
+
+            DatabaseMetaData md = connection.getMetaData();
+            if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
+                SQLHashmap.put( "creation_date", "NOW()" );
+                SQLHashmap.put( "last_modified_date", "NOW()" );
+            }
+
+
+            // get column value pairs from hashmap as val,val,val...
+            for ( String key : SQLHashmap.keySet() ) {
+                columns += key + ",";
+                values += SQLHashmap.get( key ) + ",";
+            }
+            // remove trailing comma
+            columns = columns.replaceAll( ",$", "" );
+            values = values.replaceAll( ",$", "" );
+
+            stmt = connection.createStatement();
+
+            // no id is provided (means auto-gen id)
+            if ( !hashMap.containsKey( "id" ) ) {
+                System.out.println( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" );
+                stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")", Statement.RETURN_GENERATED_KEYS );
+                rs = stmt.getGeneratedKeys();
+                if ( rs.next() ) {
+                    id = rs.getInt( 1 );
+                }
+            } else // id is provided (means
+            {
+                id = stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" ) != 0 ? (int) hashMap.get( "id" ) : 0;
+            }
+        } catch ( SQLException e ) {
+            if(e.getClass().getCanonicalName() == "com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException"){
+                    throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            }
+            e.printStackTrace();
+        }
+        return id;
+    }
 
     public static boolean destroy( int id, String tableName ) {
         Connection connection = null;
@@ -244,7 +290,7 @@ public class Manager {
         return isDestroyed;
     }
 
-    public static ArrayList<HashMap<String, Object>> destroy( String tableName, HashMap<String, Object> conditions ) {
+    public static ArrayList<HashMap<String, Object>> destroy( String tableName, Map<String, Object> conditions ) {
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -252,7 +298,7 @@ public class Manager {
 
         String where = "";
 
-        HashMap<String, String> SQLConditions = convertJavaSQL( conditions );
+        Map<String, String> SQLConditions = convertJavaToSQL( conditions );
 
         for ( String key : SQLConditions.keySet() ) {
             where += key + " = " + SQLConditions.get( key ) + " AND ";
@@ -271,7 +317,7 @@ public class Manager {
             rs = stmt.executeQuery( "DELETE FROM " + tableName + where );
             while ( rs.next() ) {
                 HashMap<String, Object> row = new HashMap<String, Object>();
-                row = convertSQLJava( rs );
+                row = convertSQLToJava( rs );
                 results.add( row );
             }
         } catch ( SQLException e ) {
@@ -436,7 +482,6 @@ public class Manager {
             String columnName = rsmd.getColumnName( i ); // underscore_case
             String columnName_camel = toCamelCase( columnName ); // columnName in
             // java var style
-
             String type = rsmd.getColumnTypeName( i );
 
             switch ( type ) {
