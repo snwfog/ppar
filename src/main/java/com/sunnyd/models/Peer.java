@@ -29,7 +29,10 @@ public class Peer extends Base implements IModel {
     private String password;
 
     @ActiveRecordField
-    private Integer point;
+    private Integer point = null;
+
+    @ActiveRecordField
+    private Integer rankId = null;
 
     @ActiveRecordField
     private String personalWebsite;

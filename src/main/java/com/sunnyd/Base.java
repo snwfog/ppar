@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -134,6 +135,8 @@ public class Base implements IModel {
                 return false;
             }
         }
+        
+        updateRelation(classObject, instanceObject);
         return Manager.update( ((Base) instanceObject).getId(), classObject , updateAttributes );
     }
 
@@ -147,17 +150,35 @@ public class Base implements IModel {
         return success;
     }
 
+    
+    
+    /***********************************************SAVE********************************************************/
+    public boolean save() {
+        int newId = 0;
+        if (this.getId() == null) {
+            newId = save(this.getClass(), this);
+            if (newId != 0) {
+                id = newId;
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static <T extends Base> Integer save( Class<T> classObject, Object objectInstance ) {
         Map<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue( classObject, objectInstance );
-        // System.out.println(classObject.getName());
         Integer id = 0;
         if ( classObject.getAnnotation( ActiveRecordInheritFrom.class ) != null ) {
             id = Base.save( (Class<T>)classObject.getSuperclass(), objectInstance );
             // System.out.println(id);
         }
         if ( id != 0 ) {
+        //Save object before has many or ManyToMany relation fields
+        try {
             attrToPersist.put( "id", id );
-            // System.out.println(Arrays.asList(attrToPersist).toString());
+        } catch (MySQLIntegrityConstraintViolationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         //Save object before has many or manytomany relation fields
@@ -166,9 +187,15 @@ public class Base implements IModel {
         return id;
     }
 
+    //objectInstance contains all the data related to that instance
+    //classObject is the class interest
     public static void saveRelation( Class<?> classObject, Object objectInstance, Integer id ) {
+        
+        //TODO Refactor large method
+        
         Field[] fields = classObject.getDeclaredFields();
         for ( Field field : fields ) {
+            field.setAccessible(true);
             Annotation[] annotations = field.getAnnotations();
             if ( annotations.length > 0 && annotations[0].annotationType().getSimpleName().contentEquals( "ActiveRelationHasMany" ) ) {
                 String relationCanonicalName = BaseHelper.getGenericCanonicalClassName( field );
@@ -179,6 +206,7 @@ public class Base implements IModel {
                     if(hasManyCollection ==null){
                         continue;
                     }
+                    
                     for ( int i = 0; i < hasManyCollection.size(); i++ ) {
                         String setterMethod = "set" + StringUtils.capitalize( classObject.getSimpleName() ) + "Id";
 
@@ -223,7 +251,41 @@ public class Base implements IModel {
                 java.lang.reflect.Method method;
                 try {
                     method = classObject.getDeclaredMethod( "set" + capitalizeField, fieldType );
+                    
+                    if(manyToManyCollection == null){      
+                        continue;
+                    }
+                    
+                    for (int i = 0; i<manyToManyCollection.size(); i++){
+                        
+                        Method getId = Class.forName(relationCanonicalName).getMethod("getId");
+                        Integer collectionObjectId = (Integer) getId.invoke(manyToManyCollection.get(i)); 
+                        
+                        if(collectionObjectId == null){
+                            //Collection object id is null, save the objects in the hasMany collection
+                            //If id is null, therefore the object id could not have exist in the relation table
+                            Method save = Class.forName(relationCanonicalName).getMethod("save");
+                            save.invoke(manyToManyCollection.get(i));             
+                            int newCollectionId = (int) getId.invoke(manyToManyCollection.get(i));             
+                                       
+                            //Save relation
+                            HashMap<String, Object> conditions = new HashMap<String, Object>();
+                            conditions.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id",id);
+                            conditions.put(StringUtils.uncapitalize(relationSimpleName)+"Id", newCollectionId);
+                            Manager.save(relationTable, conditions);
+                          
+                        }else{
+                            
+                              HashMap<String, Object> conditions = new HashMap<String, Object>();
+                              conditions.put(StringUtils.uncapitalize(classObject.getSimpleName())+"Id",id);
                     method.invoke( instanceObject, fieldType.cast( value ) );
+                              ArrayList<HashMap<String, Object>> results = Manager.findAll(relationTable, conditions);
+                              if(results.size() == 0){
+                                  Manager.save(relationTable, conditions);
+                              }
+                        }
+                    }      
+                    
                 } catch ( NoSuchMethodException | IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException e ) {
                     e.printStackTrace();
@@ -292,7 +354,9 @@ public class Base implements IModel {
 
             if ( this.id == null ) {
                 try {
+                    if(!relationAnnotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasOne")){
                     relation.set( this, new ArrayList<Object>() );
+                    }
                 } catch ( IllegalArgumentException | IllegalAccessException e ) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -350,6 +414,10 @@ public class Base implements IModel {
             Field relationIdField = this.getClass().getDeclaredField( relationSimpleName.toLowerCase().trim() + "Id" );
             relationIdField.setAccessible( true );
             Method findMethod = Class.forName( relationCanonicalClassName ).getMethod( "find", int.class, String.class );
+            Object newInstance = Class.forName(relationCanonicalClassName).getConstructor().newInstance();
+            if(relationIdField.get(this) == null){
+                return;
+            }
             relationObject = findMethod.invoke( null, relationIdField.get( this ), relationCanonicalClassName );
         } catch ( NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchFieldException e ) {
             // TODO Auto-generated catch block
@@ -366,9 +434,61 @@ public class Base implements IModel {
 
 
     }
+private void relationHasMany( Field relation, String relationTableName ) {
+        String relationCanonicalClassName = BaseHelper.getGenericCanonicalClassName(relation); 
+        String relationSimpleClassName = BaseHelper.getGenericSimpleName(relation);;
+        String simpleClassName = this.getClass().getSimpleName();
+        
+        
+    
+        relationTableName = relationTableName == null ? BaseHelper.getClassTableName(relationSimpleClassName) : relationTableName;
+       
+        Class<?> relationClass = null;
+        try {
+            relationClass = Class.forName(relationCanonicalClassName);
+        } catch (ClassNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        
+        //Condition use current object ID for has many query
+        HashMap<String, Object> condition = new HashMap<String, Object>();
+        condition.put(StringUtils.uncapitalize(simpleClassName) + "Id", this.getId());
+        //Get results
+        ArrayList<HashMap<String, Object>> results = Manager.findAll(
+                relationTableName, condition);
 
-    private void relationHasMany( Field relation, String relationTableName ) {
-
+        //Following: create instance of relation class and add to array
+        int size = results.size();
+        List<Object> collection = new ArrayList<Object>();
+        for (int i = 0; i < size; i++) {
+            try {
+                if(!isManyToMany){
+                    //ActiveRelationHasMany
+                    collection.add(relationClass.getConstructor(HashMap.class).newInstance(results.get(i)) );
+                }else{
+                    //ActiveRelationManyToMany
+                    Class<?> classObjectOfRelation = Class.forName(relationCanonicalClassName); 
+                    Object a = classObjectOfRelation.getMethod("find", int.class).invoke(classObjectOfRelation.getConstructor().newInstance(), (int)results.get(i).get(StringUtils.uncapitalize(relationSimpleClassName)+"Id"));
+                    collection.add(a);
+                }
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        relation.setAccessible(true);
+        try {
+            relation.set(this, collection);
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    private void relationManyToMany(Field relation, String relationTableName){
+        
         //Get object class from Arraylist or list generic type
 
         String relationCanonicalClassName = BaseHelper.getGenericCanonicalClassName( relation );

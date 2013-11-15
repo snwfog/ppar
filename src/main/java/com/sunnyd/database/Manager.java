@@ -86,6 +86,18 @@ public class Manager {
 
         String where = "";
 
+        HashMap<String, String> SQLConditions = convertJavaSQL( conditions );
+
+        for ( String key : SQLConditions.keySet() ) {
+            where += key + " = " + SQLConditions.get( key ) + " AND ";
+        }
+        // remove trailing comma
+        where = where.replaceAll( " AND $", "" ); // col1, col2, col3
+
+        if ( !where.equals( "" ) ) {
+            where = " WHERE " + where;
+        }
+
         //TODO: Should you return all result when variable "where" is ""(empty)?
         try {
             connection = Connector.getConnection();
@@ -230,6 +242,43 @@ public class Manager {
             isDestroyed = false;
         }
         return isDestroyed;
+    }
+
+    public static ArrayList<HashMap<String, Object>> destroy( String tableName, HashMap<String, Object> conditions ) {
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
+
+        String where = "";
+
+        HashMap<String, String> SQLConditions = convertJavaSQL( conditions );
+
+        for ( String key : SQLConditions.keySet() ) {
+            where += key + " = " + SQLConditions.get( key ) + " AND ";
+        }
+        // remove trailing comma
+        where = where.replaceAll( " AND $", "" ); // col1, col2, col3
+
+        if ( !where.equals( "" ) ) {
+            where = " WHERE " + where;
+        }
+
+        //TODO: Should you return all result when variable "where" is ""(empty)?
+        try {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( "DELETE FROM " + tableName + where );
+            while ( rs.next() ) {
+                HashMap<String, Object> row = new HashMap<String, Object>();
+                row = convertSQLJava( rs );
+                results.add( row );
+            }
+        } catch ( SQLException e ) {
+            e.printStackTrace();
+        }
+        return results;
+
     }
 
     // update 1 or more fields of a single row
