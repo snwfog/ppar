@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -38,7 +39,7 @@ public class DocumentTest extends Base implements IModel{
         super();
     }
 
-    public DocumentTest(HashMap<String, Object> HM) {
+    public DocumentTest(Map<String, Object> HM) {
         super(HM);
     }
 

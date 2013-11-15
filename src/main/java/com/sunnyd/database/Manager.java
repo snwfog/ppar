@@ -11,6 +11,7 @@ import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
+import com.sunnyd.database.hash.FunnelFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -362,10 +363,7 @@ public class Manager {
             String klazzName = klazz.getSimpleName();
             String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
 
-            Class<?> funnelClass = null;
-            Funnel<T> funnel = null;
-            funnelClass = Class.forName( funnelName );
-            funnel = (Funnel<T>) funnelClass.newInstance();
+            Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
             String thisModelSha = Manager.getSha( model, funnel );
             Manager.updateSha( id, tableName, thisModelSha );
@@ -383,8 +381,6 @@ public class Manager {
         } catch ( InstantiationException e ) {
             e.printStackTrace();
         } catch ( IllegalAccessException e ) {
-            e.printStackTrace();
-        } catch ( ClassNotFoundException e ) {
             e.printStackTrace();
         } finally {
             // Release mutex lock
@@ -591,11 +587,11 @@ public class Manager {
             stmt = conn.createStatement();
             cons = klazz.getConstructor(Map.class);
             String funnelClass = "com.sunnyd.database.hash."+klazz.getSimpleName() + "Funnel";
-            Class<Funnel<T>> funnel = (Class<Funnel<T>>) Class.forName( funnelClass );
+            Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T latest = cons.newInstance( Manager.find(id, tableName) );
-            String newHashCode = Manager.getSha( latest, funnel.newInstance() );
+            String newHashCode = Manager.getSha( latest, funnel );
             T old = cons.newInstance( Manager.find( id, tableName ));
-            String oldHashCode = Manager.getSha( old, funnel.newInstance() );
+            String oldHashCode = Manager.getSha( old, funnel );
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
@@ -608,8 +604,6 @@ public class Manager {
         } catch ( InstantiationException e ) {
             e.printStackTrace();
         } catch ( IllegalAccessException e ) {
-            e.printStackTrace();
-        } catch ( ClassNotFoundException e ) {
             e.printStackTrace();
         }
 

@@ -32,9 +32,6 @@ public class Peer extends Base implements IModel {
     private Integer point = null;
 
     @ActiveRecordField
-    private Integer rankId = null;
-
-    @ActiveRecordField
     private String personalWebsite;
 
     @ActiveRelationHasMany
