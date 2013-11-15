@@ -29,7 +29,10 @@ public class Peer extends Base implements IModel {
     private String password;
 
     @ActiveRecordField
-    private Integer point = null;
+    private Integer point;
+
+//    @ActiveRecordField
+//    private Integer rankId = null;
 
     @ActiveRecordField
     private String personalWebsite;
@@ -118,9 +121,18 @@ public class Peer extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Peer a = new Peer().find(1);
+        Peer a = new Peer().find(3);
+        a.setFirstName("oiajdiojdoajooaoooooooooooooooooooooooooo ");
+        a.setLastName("pham");
+        a.setEmail("adoijaoidjaoids");
+        a.setUserName("weq");
+        a.setPassword("adoijadoijaso");
+        a.setPoint(1);
+        a.setPersonalWebsite("aoidjaodjsao");
         System.out.println(a.toString());
         System.out.println(a.getDocuments());
         System.out.println(a.toString());
+        a.setPassword("mmmmmm");
+        a.update();
     }
 }
