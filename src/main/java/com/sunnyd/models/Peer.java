@@ -121,7 +121,7 @@ public class Peer extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Peer a = new Peer().find(3);
+        Peer a = new Peer().find(1);
         a.setFirstName("oiajdiojdoajooaoooooooooooooooooooooooooo ");
         a.setLastName("pham");
         a.setEmail("adoijaoidjaoids");

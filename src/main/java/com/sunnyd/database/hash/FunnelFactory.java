@@ -12,51 +12,36 @@ import com.sunnyd.models.Person;
 import java.lang.reflect.Field;
 
 public class FunnelFactory {
-    public static <T extends Base> Funnel<T> getInstance(Class<T> klazz)
-    {
-        Funnel<T> funnel = new Funnel<T>()
-        {
+
+    public static <T extends Base> Funnel<T> getInstance( Class<T> klazz ) {
+        Funnel<T> funnel = new Funnel<T>() {
             @Override
             public void funnel( T instance, PrimitiveSink into ) {
                 // Get all the fields
                 Field[] fields = instance.getClass().getDeclaredFields();
 
-                for (Field f : fields)
-                {
-                    if (f.getAnnotation( ActiveRecordField.class ) != null)
-                    {
+                for ( Field f : fields ) {
+                    if ( f.getAnnotation( ActiveRecordField.class ) != null ) {
                         f.setAccessible( true );
                         Class<?> fieldType = f.getType();
 
-                        try
-                        {
-                            if (fieldType == Integer.class)
-                            {
-                                into.putInt( f.getInt( instance ) );
-                            }
-                            else if (fieldType == String.class)
-                            {
-                                into.putString( f.get(instance ).toString(), Charsets.UTF_8 );
+                        try {
+                            if ( fieldType == Integer.class ) {
+                                into.putInt( (Integer) (f.get( instance )) );
+                            } else if ( fieldType == String.class ) {
+                                into.putString( f.get( instance ).toString(), Charsets.UTF_8 );
 
-                            }
-                            else if (fieldType == Double.class)
-                            {
-                                into.putDouble(f.getDouble( instance) );
-                            }
-                            else
-                            {
-                                throw new Throwable("Could not find associate Funnel for class of type: <" +
-                                fieldType.toString() + ">.");
+                            } else if ( fieldType == Double.class ) {
+                                into.putDouble( (Double) f.get( instance ) );
+                            } else {
+                                throw new Throwable( "Could not find associate Funnel for class of type: <" +
+                                        fieldType.toString() + ">." );
                             }
 
-                        }
-                        catch (IllegalAccessException e)
-                        {
+                        } catch ( IllegalAccessException e ) {
 
-                        }
-                        catch (Throwable t)
-                        {
-                            System.out.println(t);
+                        } catch ( Throwable t ) {
+                            System.out.println( t );
                             t.printStackTrace();
                         }
                     }
@@ -71,7 +56,7 @@ public class FunnelFactory {
     }
 
     public static void main( String[] args ) {
-        Funnel<Person> personFunnel = FunnelFactory.getInstance( Person.class);
+        Funnel<Person> personFunnel = FunnelFactory.getInstance( Person.class );
         Person p = new Person();
         p.setFirstName( "Charles" );
         p.setLastName( "Yang" );
