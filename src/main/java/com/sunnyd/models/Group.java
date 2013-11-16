@@ -4,6 +4,7 @@ import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -55,21 +56,12 @@ public class Group extends Base implements IModel {
 
     public void setCategories(List<Category> categories) {
         this.categories = categories;
+        this.setUpdateFlag(true);
     }
     
     public static void main(String[] args) {
         Group a = new Group().find(2);
-        a.setGroupName("blubber");
-        
-        Category c2 = new Category().find(1);
-        c2.setCategoryName("aoidjaodjoiasc2");
-        c2.save();
-        
-        Category c3 = new Category();
-        c3.setCategoryName("ccc23333");
-        
-        a.getCategories().add(c2);
-        a.getCategories().add(c3);
+        a.setCategories(new ArrayList<Category>());
         a.update();
     }
 

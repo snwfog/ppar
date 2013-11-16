@@ -33,8 +33,10 @@ public class FunnelFactory {
                         {
                             if (fieldType == Integer.class)
                             {
-                                
-                                into.putInt( (int) f.get( instance ) );
+                                Integer value = f.get( instance ) == null ? null : (Integer) f.get( instance );
+                                if(value != null){
+                                    into.putInt( (int) f.get( instance ) );
+                                }
                             }
                             else if (fieldType == String.class)
                             {

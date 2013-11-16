@@ -315,12 +315,7 @@ public class Manager {
         try {
             connection = Connector.getConnection();
             stmt = connection.createStatement();
-            rs = stmt.executeQuery( "DELETE FROM " + tableName + where );
-            while ( rs.next() ) {
-                HashMap<String, Object> row = new HashMap<String, Object>();
-                row = convertSQLToJava( rs );
-                results.add( row );
-            }
+            stmt.execute( "DELETE FROM " + tableName + where );
         } catch ( SQLException e ) {
             e.printStackTrace();
         }

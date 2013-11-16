@@ -191,10 +191,9 @@ public class Base implements IModel {
     
     @SuppressWarnings("unchecked")
     private static <T extends Base> void updateManyRelation(Field field, Annotation annotation, Class<T> classObject,  Object instanceObject){
-        int id = ((Base) instanceObject).getId();   
-        String relationName = annotation.annotationType().getSimpleName();
+        int id = ((Base) instanceObject).getId();        
         field.setAccessible(true);
-        
+        String relationName = annotation.annotationType().getSimpleName();
         String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
         String relationSimpleName = BaseHelper.getGenericSimpleName(field);
         String relationTable = relationName.contentEquals("ActiveRelationManyToMany") ?  ((ActiveRelationManyToMany) annotation).relationTable() : BaseHelper.getClassTableName(relationSimpleName);
@@ -221,7 +220,7 @@ public class Base implements IModel {
         List<Integer> oldIds = new ArrayList<Integer>();
         while (a.hasNext()) {
             Map<String, Object> result = a.next();
-            String idFieldName = relationName.contentEquals("ActiveRelationManyToMany") ? StringUtils.uncapitalize(relationSimpleName) + "Id" : "Id";
+            String idFieldName = relationName.contentEquals("ActiveRelationManyToMany") ? StringUtils.uncapitalize(relationSimpleName) + "Id" : "id";
             oldIds.add((Integer) result.get(idFieldName));
         }
 
@@ -268,14 +267,22 @@ public class Base implements IModel {
             if (oldIds.size() > 0) {
                 Iterator<Integer> oldIdIter = oldIds.iterator();
                 while (oldIdIter.hasNext()) {
-                    int oldId = oldIdIter.next();
-                    
-                    condition = new HashMap<String, Object>();
-                    condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
-                    condition.put(StringUtils.uncapitalize(relationSimpleName) + "Id", oldId);
-                    if (results.size() > 0) {
-                        Manager.destroy(relationTable, condition);
+                    if(relationName.contentEquals("ActiveRelationHasMany")){
+                        int oldId = oldIdIter.next();
+                        Map<String, Object> nullField = new HashMap<String, Object>();
+                        nullField.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", null);
+                        Manager.update(oldId, (Class<T>) Class.forName(relationCanonicalName), nullField);
+                    }else if(relationName.contentEquals("ActiveRelationManyToMany")){
+                        int oldId = oldIdIter.next();                   
+                        condition = new HashMap<String, Object>();
+                        condition.put(StringUtils.uncapitalize(classObject.getSimpleName()) + "Id", id);
+                        condition.put(StringUtils.uncapitalize(relationSimpleName) + "Id", oldId);
+                        if (results.size() > 0) {
+                            Manager.destroy(relationTable, condition);
+                        }
                     }
+                    
+
                 }
 
             }
