@@ -8,7 +8,7 @@ ALTER TABLE snapshots ADD FOREIGN KEY(document_id) REFERENCES documents(id) ON D
 
 ALTER TABLE changesets DROP FOREIGN KEY changesets_ibfk_1;
 
-ALTER TABLE changesets ADD FOREIGN KEY(document_id) REFERENCES documents(id) ON DELETE CASCADE;
+ALTER TABLE changesets ADD FOREIGN KEY(document_id) REFERENCES documents(id) ON DELETE set null;
 
 ALTER TABLE resumes ADD FOREIGN KEY(id) REFERENCES documents(id) ON DELETE CASCADE;
 
