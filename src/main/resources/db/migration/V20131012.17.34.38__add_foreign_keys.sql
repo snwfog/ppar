@@ -1,4 +1,4 @@
-ALTER TABLE documents ADD FOREIGN KEY (peer_id) REFERENCES peers (id);
+ALTER TABLE documents ADD FOREIGN KEY (peer_id) REFERENCES peers (id) on delete set null;
 
 ALTER TABLE snapshots ADD FOREIGN KEY (document_id) REFERENCES documents (id);
 

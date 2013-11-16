@@ -5,10 +5,13 @@ import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.testng.Assert;
 
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
@@ -33,6 +36,9 @@ public class Peer extends Base implements IModel {
 
     @ActiveRecordField
     private Integer rankId = null;
+    
+    @ActiveRecordField
+    private Date dateOfBirth = null;
 
     @ActiveRecordField
     private String personalWebsite;
@@ -122,10 +128,25 @@ public class Peer extends Base implements IModel {
     
     public static void main(String[] args) {
         System.out.println(new Peer().findAll(null));
-        Peer a = new Peer().find(1);  
+        Peer a = new Peer();
+        a.setFirstName("fdf");
         System.out.println(a.getRankId());
         System.out.println(a.getDocuments());
+        
+        Document d = new Document();
+        d.setDocName("aiodjoadjoia");
+        ArrayList<Document> docArray = a.getDocuments();
+        docArray.add(d);
+        a.setDocuments(docArray);
+        d.save();
+        
+        
+        
         a.save();
+        a.find(a.getId());
+        //a.Destroy();
+        System.out.println(a.getFirstName());
+        a.Destroy();
     }
 
     public Integer getRankId() {
@@ -135,5 +156,13 @@ public class Peer extends Base implements IModel {
     public void setRankId(Integer rankId) {
         this.rankId = rankId;
         setUpdateFlag(true);
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }

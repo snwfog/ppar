@@ -54,6 +54,14 @@ public class FunnelFactory {
                                     into.putString( value.toString(), Charsets.UTF_8 );
                                 }
                             }
+                            
+                            else if (fieldType == java.sql.Date.class)
+                            {
+                                java.sql.Date value = f.get(instance) == null ? null : (java.sql.Date) f.get(instance);
+                                if(value != null){
+                                    into.putString( value.toString(), Charsets.UTF_8 );
+                                }
+                            }
                             else
                             {
                                 throw new Throwable("Could not find associate Funnel for class of type: <" +

@@ -20,6 +20,7 @@ import com.sunnyd.database.fixtures.Prep;
 public class DocumentTest extends Base implements IModel{
     
     public static final String tableName = "documents";
+    
     /****************************** TEST ********************************************************/
 
     private static final boolean purgeExistingRecord = true;
@@ -30,24 +31,40 @@ public class DocumentTest extends Base implements IModel{
     }
     
     public void prepTable() throws SQLException {
-        Prep.purgeAllRecord("peers", true);
+        Prep.purgeAllRecord("peers", false);
         Prep.resetPrimaryKey("peers");    
-        Prep.purgeAllRecord(tableName, true);
+        Prep.purgeAllRecord(tableName, false);
         Prep.resetPrimaryKey(tableName);
     }
 
     @Test
     public void TestSave() {
-
+        try {
+            prepTable();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         Document d = new Document();
+        Assert.assertNull(d.getId());
+        Assert.assertNull(d.getCreationDate());
+        Assert.assertNull(d.getLastModifiedDate());
+        Assert.assertNull(d.getDocName());
+        Assert.assertNull(d.getPeer());
+        Assert.assertFalse(d.getUpdateFlag());
         d.setDocName("footb");
+        Peer p = new Peer();
+        p.setFirstName("wais");
+        Assert.assertTrue(p.save());
+        d.setPeerId(p.getId());
         Assert.assertTrue(d.save());
-
-        
+        Integer id = 1;
+        Assert.assertEquals(d.getId().intValue(), id.intValue());
+       
     }
     
    
-   /* @Test (dependsOnMethods = { "TestSave" })
+    @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind(){
         Document d = new Document().find(1);
         Assert.assertEquals("footb", d.getDocName());
@@ -58,7 +75,7 @@ public class DocumentTest extends Base implements IModel{
 
     }
 
-    */
+    
     
 
 }
