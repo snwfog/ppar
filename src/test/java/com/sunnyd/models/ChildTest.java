@@ -97,8 +97,6 @@ public class ChildTest extends PersonTest {
        
         Assert.assertTrue(c.Destroy());
         Assert.assertNull(c.getId());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), c.getId().intValue());
     }
 
 }

@@ -20,10 +20,8 @@ import java.util.HashMap;
 
 public class PersonTest extends Base implements IModel {
 
-    
     public static final String tableName = "persons";
 
-    
     /****************************** TEST ********************************************************/
 
     private static final boolean purgeExistingRecord = true;
@@ -32,13 +30,13 @@ public class PersonTest extends Base implements IModel {
     public void init() throws SQLException {
         Prep.init(tableName);
     }
-    
+
     public void prepTable() throws SQLException {
-        
+
         Prep.purgeAllRecord("grand_childs", false);
         Prep.resetPrimaryKey("grand_childs");
         Prep.purgeAllRecord("childs", false);
-        Prep.resetPrimaryKey("childs");    
+        Prep.resetPrimaryKey("childs");
         Prep.purgeAllRecord(tableName, false);
         Prep.resetPrimaryKey(tableName);
     }
@@ -65,12 +63,11 @@ public class PersonTest extends Base implements IModel {
         Assert.assertTrue(a.save());
         Integer id = 1;
         Assert.assertEquals(a.getId().intValue(), id.intValue());
-       
+
     }
-    
-   
-    @Test (dependsOnMethods = { "TestSave" })
-    public static void TestFind(){
+
+    @Test(dependsOnMethods = { "TestSave" })
+    public static void TestFind() {
         Person a = new Person().find(1);
         Date today = new Date();
         Assert.assertNull(a.getStatus());
@@ -80,7 +77,7 @@ public class PersonTest extends Base implements IModel {
         Assert.assertEquals(id.intValue(), a.getId().intValue());
 
     }
-    
+
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
         Person p = new Person().find(1);
@@ -93,18 +90,17 @@ public class PersonTest extends Base implements IModel {
         Assert.assertEquals(id.intValue(), p.getId().intValue());
 
     }
-    
+
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
         Person p = new Person().find(1);
         p.setFirstName("b");
         p.setLastName("c");
         p.update();
-       
+
         Assert.assertTrue(p.Destroy());
         Assert.assertNull(p.getId());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), p.getId().intValue());
+
     }
 
 }

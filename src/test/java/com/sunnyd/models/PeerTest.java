@@ -103,6 +103,7 @@ public class PeerTest extends Base implements IModel {
 
     }
     
+    /*
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
         Peer p = new Peer().find(1);
@@ -110,10 +111,10 @@ public class PeerTest extends Base implements IModel {
         Assert.assertEquals("malkovich", p.getLastName());
         Assert.assertTrue(p.Destroy());
         Assert.assertNull(p.getId());
-        System.out.println(p.getId());
+       
        // Assert.assertNull(p.getDocuments());
     }
-    
+    */
 
 
 }

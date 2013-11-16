@@ -101,8 +101,6 @@ public class GrandChildTest extends ChildTest {
        
         Assert.assertTrue(gc.Destroy());
         Assert.assertNull(gc.getId());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), gc.getId().intValue());
     }
 
 }
