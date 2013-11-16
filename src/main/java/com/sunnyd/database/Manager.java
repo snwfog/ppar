@@ -474,13 +474,13 @@ public class Manager {
             String columnName_camel = toCamelCase( columnName ); // columnName in
             // java var style
             String type = rsmd.getColumnTypeName( i );
-
+            
             switch ( type ) {
                 case "INT UNSIGNED":
-                    converted.put( columnName_camel, (int) resultset.getLong( columnName ) );
+                    converted.put( columnName_camel, (Long) resultset.getObject( columnName ) );
                     break;
                 case "INT":
-                    converted.put( columnName_camel, (Integer) resultset.getInt( columnName ) );
+                    converted.put( columnName_camel, (Integer) resultset.getObject( columnName ) );
                     break;
                 case "TINYINT": // boolean
                     converted.put( columnName_camel, resultset.getBoolean( columnName ) );

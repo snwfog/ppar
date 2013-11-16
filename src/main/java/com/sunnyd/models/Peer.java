@@ -31,8 +31,8 @@ public class Peer extends Base implements IModel {
     @ActiveRecordField
     private Integer point;
 
-//    @ActiveRecordField
-//    private Integer rankId = null;
+    @ActiveRecordField
+    private Integer rankId = null;
 
     @ActiveRecordField
     private String personalWebsite;
@@ -121,17 +121,19 @@ public class Peer extends Base implements IModel {
     }
     
     public static void main(String[] args) {
-        Peer a = new Peer().find(18);
-        a.setFirstName("mike");
-        System.out.println(a.toString());
+        System.out.println(new Peer().findAll(null));
+        Peer a = new Peer().find(1);  
+        System.out.println(a.getRankId());
         System.out.println(a.getDocuments());
-        System.out.println(a.toString());
-        a.setPassword("mmmmmm");
-        
-        Document doc1 = new Document().find(28);
-        doc1.setDocName("lukeSkyWalker");
-        
-        a.setDocuments(new ArrayList<Document>());
-        a.update();
+        a.save();
+    }
+
+    public Integer getRankId() {
+        return rankId;
+    }
+
+    public void setRankId(Integer rankId) {
+        this.rankId = rankId;
+        setUpdateFlag(true);
     }
 }
