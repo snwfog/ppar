@@ -59,3 +59,4 @@ local.properties
 .buildpath
 .git.commit.template
 !*.sql
+ppar.iml

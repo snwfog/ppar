@@ -87,15 +87,15 @@ public class Manager {
 
         String where = "";
         Map<String, String> SQLConditions = convertJavaToSQL( conditions );
-        
-        if(conditions != null){
+
+        if ( conditions != null ) {
             //Return all if condition is null  
             for ( String key : SQLConditions.keySet() ) {
                 where += key + " = " + SQLConditions.get( key ) + " AND ";
             }
             // remove trailing comma
             where = where.replaceAll( " AND $", "" ); // col1, col2, col3
-    
+
             if ( !where.equals( "" ) ) {
                 where = " WHERE " + where;
             }
@@ -130,23 +130,7 @@ public class Manager {
     }
 
     public static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap ) {
-        String klazzName = klazz.getSimpleName();
-        String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
-
-        Class<?> funnelClass = null;
-        Funnel<T> funnel = null;
-        try {
-            funnelClass = Class.forName( funnelName );
-            funnel = (Funnel<T>) funnelClass.newInstance();
-
-        } catch ( ClassNotFoundException e ) {
-            e.printStackTrace();
-        } catch ( InstantiationException e ) {
-            e.printStackTrace();
-        } catch ( IllegalAccessException e ) {
-            e.printStackTrace();
-        }
-
+        Funnel<T> funnel = FunnelFactory.getInstance( klazz );
 
         return Manager.save( klazz, hashMap, funnel );
     }
@@ -200,8 +184,7 @@ public class Manager {
             e.printStackTrace();
         }
 
-        try
-        {
+        try {
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
             String thisModelSha = Manager.getSha( model, funnel );
             Manager.updateSha( id, tableName, thisModelSha );
@@ -218,10 +201,9 @@ public class Manager {
         }
         return id;
     }
-    
-    
-    public static int save( String tableName, Map<String, Object> hashMap) throws MySQLIntegrityConstraintViolationException {
-    //for table not related to any model (i.e relation table)
+
+    public static int save( String tableName, Map<String, Object> hashMap ) throws MySQLIntegrityConstraintViolationException {
+        //for table not related to any model (i.e relation table)
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -266,8 +248,8 @@ public class Manager {
                 id = stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" ) != 0 ? (int) hashMap.get( "id" ) : 0;
             }
         } catch ( SQLException e ) {
-            if(e.getClass().getCanonicalName() == "com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException"){
-                    throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+            if ( e.getClass().getCanonicalName() == "com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException" ) {
+                throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
             }
             e.printStackTrace();
         }
@@ -355,7 +337,7 @@ public class Manager {
             }
 
             String klazzName = klazz.getSimpleName();
-            String funnelName = "com.sunnyd.database.hash."+ klazzName + "Funnel";
+            String funnelName = "com.sunnyd.database.hash." + klazzName + "Funnel";
 
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
@@ -473,7 +455,7 @@ public class Manager {
             String columnName_camel = toCamelCase( columnName ); // columnName in
             // java var style
             String type = rsmd.getColumnTypeName( i );
-            
+
             switch ( type ) {
                 case "INT UNSIGNED":
                     converted.put( columnName_camel, (Long) resultset.getObject( columnName ) );
@@ -580,17 +562,16 @@ public class Manager {
         try {
             conn = Connector.getConnection();
             stmt = conn.createStatement();
-            cons = klazz.getConstructor(Map.class);
-            String funnelClass = "com.sunnyd.database.hash."+klazz.getSimpleName() + "Funnel";
+            cons = klazz.getConstructor( Map.class );
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
-            T latest = cons.newInstance( Manager.find(id, tableName) );
+            T latest = cons.newInstance( Manager.find( id, tableName ) );
             String newHashCode = Manager.getSha( latest, funnel );
-            T old = cons.newInstance( Manager.find( id, tableName ));
+            T old = cons.newInstance( Manager.find( id, tableName ) );
             String oldHashCode = Manager.getSha( old, funnel );
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
-        } catch ( SQLException e) {
+        } catch ( SQLException e ) {
             e.printStackTrace();
         } catch ( NoSuchMethodException e ) {
             e.printStackTrace();
