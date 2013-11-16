@@ -21,124 +21,8 @@ import org.testng.annotations.Test;
 
 public class PeerTest extends Base implements IModel {
     
-    public static final String tableName = "peer_tests";
-    public static final String relatedTableName = "document_tests";
-
-    @ActiveRecordField
-    private String firstName;
-
-    @ActiveRecordField
-    private String lastName;
-
-    @ActiveRecordField
-    private String email;
-
-    @ActiveRecordField
-    private String userName;
-
-    @ActiveRecordField
-    private String password;
-
-    @ActiveRecordField
-    private Integer point = null;
-
-    @ActiveRecordField
-    private Integer rankId = null;
-
-    @ActiveRecordField
-    private String personalWebsite;
-
-    @ActiveRelationHasMany
-    private List<DocumentTest> documents;
-
-    public PeerTest() {
-        super();
-    }
-
-    public PeerTest(HashMap<String, Object> HM) {
-        super(HM);
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-        setUpdateFlag(true);
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-        setUpdateFlag(true);
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-        setUpdateFlag(true);
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-        setUpdateFlag(true);
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-        setUpdateFlag(true);
-    }
-
-    public Integer getPoint() {
-        return point;
-    }
-
-    public void setPoint(Integer point) {
-        this.point = point;
-        setUpdateFlag(true);
-    }
-
-    public Integer getRankId() {
-        return rankId;
-    }
-
-    public void setRankId(Integer rankId) {
-        this.rankId = rankId;
-        setUpdateFlag(true);
-    }
-
-    public String getPersonalWebsite() {
-        return personalWebsite;
-    }
-
-    public void setPersonalWebsite(String personalWebsite) {
-        this.personalWebsite = personalWebsite;
-        setUpdateFlag(true);
-    }
-    
-    public void setDocuments(List<DocumentTest> documents){
-        this.documents = documents;
-    }
-
-    public List<DocumentTest> getDocuments(){
-        initRelation("documents");
-        return this.documents;
-    }
+    public static final String tableName = "peers";
+    public static final String relatedTableName = "documents";
 
     /****************************** TEST ********************************************************/
 
@@ -164,7 +48,7 @@ public class PeerTest extends Base implements IModel {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        PeerTest a = new PeerTest();
+        Peer a = new Peer();
         Assert.assertNull(a.getId());
         Assert.assertNull(a.getCreationDate());
         Assert.assertNull(a.getLastModifiedDate());
@@ -174,9 +58,9 @@ public class PeerTest extends Base implements IModel {
         Assert.assertFalse(a.getUpdateFlag());
         a.setFirstName("a");
         a.setLastName("b");
-        DocumentTest d = new DocumentTest();
+        Document d = new Document();
         d.setDocName("aiodjoadjoia");
-        List<DocumentTest> docArray = a.getDocuments();
+        ArrayList<Document> docArray = a.getDocuments();
         docArray.add(d);
         a.setDocuments(docArray);
         Assert.assertTrue(d.save());
@@ -189,7 +73,7 @@ public class PeerTest extends Base implements IModel {
    
     @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind(){
-        PeerTest a = new PeerTest().find(1);
+        Peer a = new Peer().find(1);
         Assert.assertEquals("a", a.getFirstName());
         Assert.assertEquals("b", a.getLastName());
         //Assert.assertEquals("aiodjoadjoia", a.getDocuments());
@@ -200,7 +84,7 @@ public class PeerTest extends Base implements IModel {
     
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        PeerTest p = new PeerTest().find(1);
+        Peer p = new Peer().find(1);
         Assert.assertEquals("a", p.getFirstName());
         Assert.assertEquals("b", p.getLastName());
         //Assert.assertEquals(documents.toArray(), p.getDocuments());
@@ -208,9 +92,9 @@ public class PeerTest extends Base implements IModel {
         p.setFirstName("john");
         p.setLastName("malkovich");
         
-        DocumentTest d = new DocumentTest().find(1);
+        Document d = new Document().find(1);
         d.setDocName("bbbbbbb");
-        List<DocumentTest> docArray = p.getDocuments();
+        ArrayList<Document> docArray = p.getDocuments();
         docArray.add(d);
         p.setDocuments(docArray);
         Assert.assertTrue(p.update());
@@ -221,12 +105,12 @@ public class PeerTest extends Base implements IModel {
     
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        PeerTest p = new PeerTest().find(1);
+        Peer p = new Peer().find(1);
         Assert.assertEquals("john", p.getFirstName());
         Assert.assertEquals("malkovich", p.getLastName());
-       
         Assert.assertTrue(p.Destroy());
         Assert.assertNull(p.getId());
+        System.out.println(p.getId());
        // Assert.assertNull(p.getDocuments());
     }
     

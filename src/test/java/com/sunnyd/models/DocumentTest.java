@@ -125,7 +125,7 @@ public class DocumentTest extends Base implements IModel{
         Assert.assertNull(d.getPeer());
         Assert.assertFalse(d.getUpdateFlag());
         d.setDocName("footb");
-        PeerTest p = new PeerTest();
+        Peer p = new Peer();
         p.setFirstName("wais");
         Assert.assertTrue(p.save());
         d.setPeerTestId(p.getId());
@@ -138,7 +138,7 @@ public class DocumentTest extends Base implements IModel{
    
     @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind(){
-        DocumentTest d = new DocumentTest().find(1);
+        Document d = new Document().find(1);
         Assert.assertEquals("footb", d.getDocName());
         Assert.assertEquals("wais", d.getPeer().getFirstName());
         //Assert.assertEquals("aiodjoadjoia", a.getDocuments());
