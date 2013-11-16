@@ -1,4 +1,4 @@
-package com.sunnyd.database.hash;
+package com.sunnyd.database;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Funnel;

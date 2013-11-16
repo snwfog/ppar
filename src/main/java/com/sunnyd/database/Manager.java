@@ -11,7 +11,6 @@ import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
-import com.sunnyd.database.hash.FunnelFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
