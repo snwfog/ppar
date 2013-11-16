@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.testng.Assert;
 
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
