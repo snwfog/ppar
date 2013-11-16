@@ -545,7 +545,6 @@ public class Base implements IModel {
                         relation.set(this, new ArrayList<Object>());
                     }
                 } catch (IllegalArgumentException | IllegalAccessException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
