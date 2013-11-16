@@ -491,6 +491,7 @@ public class Manager {
                     converted.put( columnName_camel, resultset.getBoolean( columnName ) );
                     break;
                 case "VARCHAR":
+                case "CHAR":
                     converted.put( columnName_camel, resultset.getString( columnName ) );
                     break;
                 case "DATETIME":

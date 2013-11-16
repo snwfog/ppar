@@ -27,8 +27,8 @@ public class Document extends Base implements IModel {
     @ActiveRecordField
     private Integer peerId;
     
-//    @ActiveRecordField
-//    private String class;
+    @ActiveRecordField
+    private String docType;
 
 
     public Document() {
@@ -104,16 +104,16 @@ public class Document extends Base implements IModel {
     }
 
 
-//    public String getDocType() {
-//        return docType;
-//    }
-//
-//    public void setDocType(String type) {
-//        if(type.toLowerCase().trim().contentEquals("resume") | type.toLowerCase().trim().contentEquals("coverLetter")){
-//            this.docType = type;
-//            setUpdateFlag(true);
-//        }
-//    }
+    public String getDocType() {
+        return docType;
+    }
+
+    public void setDocType(String type) {
+        if(type.toLowerCase().trim().contentEquals("resume") | type.toLowerCase().trim().contentEquals("coverLetter")){
+            this.docType = type;
+            setUpdateFlag(true);
+        }
+    }
 
 
 }
