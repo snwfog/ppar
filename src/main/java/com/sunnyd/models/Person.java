@@ -9,10 +9,10 @@ import java.util.HashMap;
 public class Person extends Base implements IModel {
     public static final String tableName = "persons";
 
-    @tableAttr
+    @ActiveRecordField
     private String firstName;
 
-    @tableAttr
+    @ActiveRecordField
     private String lastName;
 
 //    @hasMany
@@ -29,20 +29,21 @@ public class Person extends Base implements IModel {
 
     public static void main(String[] args) {
 
-//        Person a = new Person();
-//        System.out.println(a.getId());
-//        System.out.println(a.getFirstName());
-//        System.out.println(a.getLastName());
-//        a.setFirstName("bobby");
-//        a.setLastName("yit");
-//        a.save();
-
-        Person a = Person.find(1);
-
+        Person a = new Person();
         System.out.println(a.getId());
         System.out.println(a.getFirstName());
         System.out.println(a.getLastName());
-        a.setFirstName("john");
+        a.setFirstName("bobby");
+        a.setLastName("yit");
+        a.save();
+
+        Person b = Person.find(a.getId());
+
+        System.out.println(b.getId());
+        System.out.println(b.getFirstName());
+        System.out.println(b.getLastName());
+        b.setFirstName("john");
+        b.update();
 //
 //        Person b = Person.find(2);
 //
@@ -85,7 +86,7 @@ public class Person extends Base implements IModel {
     
     @Override
     public boolean save(){
-        if(firstName.isEmpty())
+        if(firstName != null && firstName.isEmpty())
             return false;
         return super.save();
     }

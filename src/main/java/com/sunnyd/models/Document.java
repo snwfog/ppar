@@ -1,41 +1,34 @@
 package com.sunnyd.models;
 
+import java.util.Date;
 import java.util.HashMap;
-
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
-import com.sunnyd.annotations.tableAttr;
+import com.sunnyd.annotations.ActiveRelationHasOne;
+import com.sunnyd.annotations.ActiveRecordField;
+import com.sunnyd.database.Manager;
 
 public class Document extends Base implements IModel {
     public static final String tableName = "documents";
-    
-    @tableAttr
-    private Integer id;
-    
-    @tableAttr
+
+    @ActiveRecordField
     private String docName;
-
-   /* private enum type {
-        resume("resume"), coverletter("coverletter");
-        private type(String value) {
-            this.value = value;
-        }
-
-        private final String value;
-
-        public String getValue() {
-            return value;
-        }
-    };  */
-    
-    private enum type{resume,coverletter}; 
-    
+    @ActiveRecordField
     private String thumbnailPath;
+    @ActiveRecordField
+    private Date lastModifiedDate;
+    @ActiveRecordField
+    private Date creationDate;
+    @ActiveRelationHasOne
+    private Peer peer;
+    @ActiveRecordField
+    private Integer peerId;
     
-    public Document(){
+    
+    public Document() {
         super();
     }
-    
+
     public Document(HashMap<String, Object> HM) {
         super(HM);
     }
@@ -44,16 +37,25 @@ public class Document extends Base implements IModel {
         return docName;
     }
 
-    public void setDocName(String docName) {
-        this.docName = docName;
+    public Peer getPeer(){
+        if(peer == null){
+            HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
+            this.peer = new Peer(foundPeer);
+        }
+        return peer;
     }
     
-    public Integer getId() {
-        return id;
+    public void setPeerId(Integer peerId){
+        this.peerId = peerId;
     }
-
-    public void setId(Integer id) {
-        this.id = id;
+    
+    public int getPeerId(){
+        return this.peerId;
+    }
+    
+    public void setDocName(String docName) {
+        this.docName = docName;
+        setUpdateFlag(true);
     }
 
     public String getThumbnailPath() {
@@ -62,6 +64,37 @@ public class Document extends Base implements IModel {
 
     public void setThumbnailPath(String thumbnailPath) {
         this.thumbnailPath = thumbnailPath;
+        setUpdateFlag(true);
+    }
+    
+    public static void main(String[] args) {
+        Document d = new Document();
+        d.setDocName("mydoc");
+        d.setPeerId(3); // why this setPeerId is not working @mike?
+        System.out.println(d.save());
+        
+//        Document d = Document.find(4);
+        System.out.println(d.getPeer().getFirstName());
+        System.out.println(d.getPeer().getLastName());
+        System.out.println(d.getPeer().getCreationDate());
+    }
+
+    public Date getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(Date lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+        setUpdateFlag(true);
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+        setUpdateFlag(true);
     }
 
 }
