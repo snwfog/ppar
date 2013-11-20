@@ -30,9 +30,11 @@ import java.util.Map;
 
 public class Manager {
 
-    //public static void main( String[] args ) {
-    //    Manager.checkIntegrity( 1, "peers", new HashMap<String, Object>() );
-    //}
+    public static void main( String[] args ) {
+        Map<String, Object> cond = new HashMap<>(  );
+        cond.put("userName", "Charles");
+        Manager.findAll( "peers", cond );
+    }
 
     // find by id, return single row
     public static Map<String, Object> find( int id, String tableName ) {
