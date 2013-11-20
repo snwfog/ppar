@@ -1,15 +1,12 @@
-Concordia University Capstone 2013
-===
-
-Active Record Library
+# PeerPen Active Record
 
 ## Description
 PPAR (PeerPen Active Record) is an active record library inspired by
 Rails' active record pattern built from scratch in order to accomodate
 the evaluation criteria of the Capstone project 2013. PPAR does not
 depend on database, but on annotation that are placed inside of the
-model. PPAR satisfies *most* of the commonly used interface of the
 active record pattern. Furthermore, PPAR is lazy loaded, and uses
+model. PPAR satisfies *most* of the commonly used interface of the
 optimistic offline locking. Therefore, it imposes a few default fields
 that must be present in the database, and these are `id`, `created_at`, `updated_at`, `etag`, and `semaphore`.
 
