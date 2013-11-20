@@ -2,6 +2,7 @@ database.properties
 bin
 target/
 *.class
+.idea/
 
 # Package Files #
 *.jar
@@ -58,3 +59,4 @@ local.properties
 .buildpath
 .git.commit.template
 !*.sql
+ppar.iml

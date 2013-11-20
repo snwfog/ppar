@@ -5,8 +5,12 @@ import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+
 
 public class Peer extends Base implements IModel {
     public static final String tableName = "peers";
@@ -30,19 +34,22 @@ public class Peer extends Base implements IModel {
     private Integer point;
 
     @ActiveRecordField
-    private Integer rankId;
+    private Integer rankId = null;
+    
+    @ActiveRecordField
+    private Date dateOfBirth = null;
 
     @ActiveRecordField
     private String personalWebsite;
 
     @ActiveRelationHasMany
-    private Document[] documents;
+    private ArrayList<Document> documents;
 
     public Peer() {
         super();
     }
 
-    public Peer(HashMap<String, Object> HM) {
+    public Peer(Map<String, Object> HM) {
         super(HM);
     }
 
@@ -100,15 +107,6 @@ public class Peer extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public Integer getRankId() {
-        return rankId;
-    }
-
-    public void setRankId(Integer rankId) {
-        this.rankId = rankId;
-        setUpdateFlag(true);
-    }
-
     public String getPersonalWebsite() {
         return personalWebsite;
     }
@@ -118,28 +116,52 @@ public class Peer extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public Document[] getDocuments(){
-        HashMap<String, Object> condition = new HashMap<String, Object>();
-        condition.put("peerId", this.getId());
-        
-        ArrayList<HashMap<String, Object>> foundDocuments = Manager.findAll("documents", condition);
-        int size = foundDocuments.size();
-        documents = new Document[size-1];
-        
-        for (int i=0; i<size;i++){
-            Document d = new Document(foundDocuments.get(i));
-            documents[i] = d;
-        }
+    public ArrayList<Document> getDocuments() {
+        initRelation("documents");
         return documents;
     }
 
+    public void setDocuments(ArrayList<Document> documents) {
+        this.documents = documents;
+    }
+    
     public static void main(String[] args) {
-        Peer p = new Peer();
-        p.setFirstName("asoidjasoidjaisjdioj");
-        p.setLastName("Zhang");
-        p.setEmail("mail");
-        p.setPoint(0);
-        System.out.println(p.save());
+        System.out.println(new Peer().findAll(null));
+        Peer a = new Peer();
+        a.setFirstName("fdf");
+        System.out.println(a.getRankId());
+        System.out.println(a.getDocuments());
+        
+        Document d = new Document();
+        d.setDocName("aiodjoadjoia");
+        ArrayList<Document> docArray = a.getDocuments();
+        docArray.add(d);
+        a.setDocuments(docArray);
+        d.save();
+        
+        
+        
+        a.save();
+        a.find(a.getId());
+        //a.Destroy();
+        System.out.println(a.getFirstName());
+        a.Destroy();
     }
 
+    public Integer getRankId() {
+        return rankId;
+    }
+
+    public void setRankId(Integer rankId) {
+        this.rankId = rankId;
+        setUpdateFlag(true);
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
 }

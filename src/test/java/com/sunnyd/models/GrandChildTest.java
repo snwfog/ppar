@@ -13,29 +13,9 @@ import com.sunnyd.database.fixtures.Prep;
 
 @ActiveRecordInheritFrom(childClassof = "ChildTest")
 public class GrandChildTest extends ChildTest {
-    public static final String tableName = "grand_child_tests";
-    public static final String parentTableName = "child_tests";
-    public static final String grandParentTableName = "person_tests";
-
-    @ActiveRecordField
-    private String grandChildName;
-
-    public GrandChildTest() {
-        super();
-    }
-
-    public GrandChildTest(HashMap<String, Object> HM) {
-        super(HM);
-    }
-
-    public String getGrandChildName() {
-        return grandChildName;
-    }
-
-    public void setGrandChildName(String grandChildName) {
-        this.grandChildName = grandChildName;
-        setUpdateFlag(true);
-    }
+    public static final String tableName = "grand_childs";
+    public static final String parentTableName = "childs";
+    public static final String grandParentTableName = "persons";
 
     /****************************** TEST ********************************************************/
 
@@ -63,7 +43,7 @@ public class GrandChildTest extends ChildTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        GrandChildTest gc = new GrandChildTest();
+        GrandChild gc = new GrandChild();
         Assert.assertNull(gc.getId());
         Assert.assertNull(gc.getCreationDate());
         Assert.assertNull(gc.getLastModifiedDate());
@@ -84,7 +64,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestSave" })
     public static void TestFind() {
-        GrandChildTest gc = GrandChildTest.find(1);
+        GrandChild gc = new GrandChild().find(1);
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());
         Assert.assertEquals("GrandLuffy", gc.getLastName());
@@ -95,7 +75,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        GrandChildTest gc = GrandChildTest.find(1);
+        GrandChild gc = new GrandChild().find(1);
         Assert.assertEquals("GrandChild", gc.getGrandChildName());
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());
@@ -112,7 +92,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        GrandChildTest gc = GrandChildTest.find(1);
+        GrandChild gc = new GrandChild().find(1);
         gc.setGrandChildName("d");
         gc.setChildName("a");
         gc.setFirstName("b");
@@ -121,16 +101,6 @@ public class GrandChildTest extends ChildTest {
        
         Assert.assertTrue(gc.Destroy());
         Assert.assertNull(gc.getId());
-//        Assert.assertNull(gc.getCreationDate());
-//        Assert.assertNull(gc.getLastModifiedDate());
-//        Assert.assertNull(gc.getGrandChildName());
-//        Assert.assertNull(gc.getChildName());
-//        Assert.assertNull(gc.getFirstName());
-//        Assert.assertNull(gc.getLastName());
-//        Assert.assertNull(gc.getStatus());
-//        Assert.assertTrue(gc.getUpdateFlag());
-        //Integer id = 1;
-        //Assert.assertEquals(id.intValue(), gc.getId().intValue());
     }
 
 }

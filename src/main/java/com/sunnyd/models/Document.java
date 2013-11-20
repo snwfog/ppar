@@ -1,9 +1,12 @@
 package com.sunnyd.models;
-
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
+
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
+import com.sunnyd.annotations.ActiveRelationHasMany;
 import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
@@ -24,12 +27,15 @@ public class Document extends Base implements IModel {
     @ActiveRecordField
     private Integer peerId;
     
-    
+    @ActiveRecordField
+    private String docType;
+
+
     public Document() {
         super();
     }
 
-    public Document(HashMap<String, Object> HM) {
+    public Document(Map<String, Object> HM) {
         super(HM);
     }
 
@@ -38,21 +44,18 @@ public class Document extends Base implements IModel {
     }
 
     public Peer getPeer(){
-        if(peer == null){
-            HashMap<String, Object> foundPeer = Manager.find(peerId, "peers");
-            this.peer = new Peer(foundPeer);
-        }
+        initRelation("peer");
         return peer;
     }
-    
+
     public void setPeerId(Integer peerId){
         this.peerId = peerId;
     }
-    
+
     public int getPeerId(){
         return this.peerId;
     }
-    
+
     public void setDocName(String docName) {
         this.docName = docName;
         setUpdateFlag(true);
@@ -66,17 +69,13 @@ public class Document extends Base implements IModel {
         this.thumbnailPath = thumbnailPath;
         setUpdateFlag(true);
     }
-    
+
     public static void main(String[] args) {
         Document d = new Document();
         d.setDocName("mydoc");
-        d.setPeerId(3); // why this setPeerId is not working @mike?
-        System.out.println(d.save());
-        
-//        Document d = Document.find(4);
         System.out.println(d.getPeer().getFirstName());
         System.out.println(d.getPeer().getLastName());
-        System.out.println(d.getPeer().getCreationDate());
+        //System.out.println(d.getPeer().getCreationDate());
     }
 
     public Date getLastModifiedDate() {
@@ -96,5 +95,18 @@ public class Document extends Base implements IModel {
         this.creationDate = creationDate;
         setUpdateFlag(true);
     }
+
+
+    public String getDocType() {
+        return docType;
+    }
+
+    public void setDocType(String type) {
+        if(type.toLowerCase().trim().contentEquals("resume") | type.toLowerCase().trim().contentEquals("coverLetter")){
+            this.docType = type;
+            setUpdateFlag(true);
+        }
+    }
+
 
 }

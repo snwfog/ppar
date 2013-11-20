@@ -11,37 +11,11 @@ import com.sunnyd.annotations.ActiveRecordField;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-@ActiveRecordInheritFrom(childClassof = "PersonTest")
+@ActiveRecordInheritFrom(childClassof = "Person")
 public class ChildTest extends PersonTest {
-    public static final String tableName = "child_tests";
-    public static final String parentTableName = "person_tests";
+    public static final String tableName = "childs";
+    public static final String parentTableName = "persons";
 
-    @ActiveRecordField
-    private String childName;
-
-    public ChildTest() {
-        super();
-    }
-
-    public ChildTest(HashMap<String, Object> HM) {
-        super(HM);
-    }
-
-    public String getChildName() {
-        return childName;
-    }
-
-    public void setChildName(String childName) {
-        this.childName = childName;
-        setUpdateFlag(true);
-    }
-
-    @Override
-    public boolean save() {
-        if (childName != null && childName.isEmpty())
-            return false;
-        return super.save();
-    }
 
     /****************************** TEST ********************************************************/
 
@@ -54,8 +28,8 @@ public class ChildTest extends PersonTest {
 
     public void prepTable() throws SQLException {
         
-        Prep.purgeAllRecord("grand_child_tests", true);
-        Prep.resetPrimaryKey("grand_child_tests");
+        Prep.purgeAllRecord("grand_childs", true);
+        Prep.resetPrimaryKey("grand_childs");
         Prep.purgeAllRecord(tableName, true);
         Prep.resetPrimaryKey(tableName);
         Prep.purgeAllRecord(parentTableName, true);
@@ -70,7 +44,7 @@ public class ChildTest extends PersonTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        ChildTest c = new ChildTest();
+        Child c = new Child();
         Assert.assertNull(c.getId());
         Assert.assertNull(c.getCreationDate());
         Assert.assertNull(c.getLastModifiedDate());
@@ -90,7 +64,7 @@ public class ChildTest extends PersonTest {
 
     @Test (dependsOnMethods = { "TestSave" })
     public static void TestFind() {
-        ChildTest c = ChildTest.find(1);
+        Child c = new Child().find(1);
         Assert.assertEquals("luffy", c.getChildName());
         Assert.assertEquals("monkey", c.getFirstName());
         Assert.assertEquals("d", c.getLastName());
@@ -100,7 +74,7 @@ public class ChildTest extends PersonTest {
 
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        ChildTest c = ChildTest.find(1);
+        Child c = new Child().find(1);
         Assert.assertEquals("luffy", c.getChildName());
         Assert.assertEquals("monkey", c.getFirstName());
         Assert.assertEquals("d", c.getLastName());
@@ -112,10 +86,10 @@ public class ChildTest extends PersonTest {
         Assert.assertEquals(id.intValue(), c.getId().intValue());
 
     }
-    
+   
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        ChildTest c = ChildTest.find(1);
+        Child c = new Child().find(1);
         c.setChildName("a");
         c.setFirstName("b");
         c.setLastName("c");
@@ -123,15 +97,6 @@ public class ChildTest extends PersonTest {
        
         Assert.assertTrue(c.Destroy());
         Assert.assertNull(c.getId());
-//        Assert.assertNull(c.getCreationDate());
-//        Assert.assertNull(c.getLastModifiedDate());
-//        Assert.assertNull(c.getChildName());
-//        Assert.assertNull(c.getFirstName());
-//        Assert.assertNull(c.getLastName());
-//        Assert.assertNull(c.getStatus());
-//        Assert.assertTrue(c.getUpdateFlag());
-        //Integer id = 1;
-        //Assert.assertEquals(id.intValue(), gc.getId().intValue());
     }
 
 }

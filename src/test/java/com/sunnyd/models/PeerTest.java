@@ -1,26 +1,28 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
+import static com.sunnyd.Base.find;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
+import com.sunnyd.database.Manager;
 import com.sunnyd.database.fixtures.Prep;
-import com.sunnyd.models.Person;
-
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
 
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
-public class PersonTest extends Base implements IModel {
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-    public static final String tableName = "persons";
+public class PeerTest extends Base implements IModel {
+    
+    public static final String tableName = "peers";
+    public static final String relatedTableName = "documents";
 
     /****************************** TEST ********************************************************/
 
@@ -30,13 +32,10 @@ public class PersonTest extends Base implements IModel {
     public void init() throws SQLException {
         Prep.init(tableName);
     }
-
+    
     public void prepTable() throws SQLException {
-
-        Prep.purgeAllRecord("grand_childs", false);
-        Prep.resetPrimaryKey("grand_childs");
-        Prep.purgeAllRecord("childs", false);
-        Prep.resetPrimaryKey("childs");
+        Prep.purgeAllRecord(relatedTableName, false);
+        Prep.resetPrimaryKey(relatedTableName);    
         Prep.purgeAllRecord(tableName, false);
         Prep.resetPrimaryKey(tableName);
     }
@@ -49,58 +48,73 @@ public class PersonTest extends Base implements IModel {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        Person a = new Person();
+        Peer a = new Peer();
         Assert.assertNull(a.getId());
         Assert.assertNull(a.getCreationDate());
         Assert.assertNull(a.getLastModifiedDate());
         Assert.assertNull(a.getFirstName());
         Assert.assertNull(a.getLastName());
-        Assert.assertNull(a.getStatus());
+        
         Assert.assertFalse(a.getUpdateFlag());
-        a.setStatus("aoidjaoidja");
         a.setFirstName("a");
         a.setLastName("b");
+        Document d = new Document();
+        d.setDocName("aiodjoadjoia");
+        ArrayList<Document> docArray = a.getDocuments();
+        docArray.add(d);
+        a.setDocuments(docArray);
+        Assert.assertTrue(d.save());
         Assert.assertTrue(a.save());
         Integer id = 1;
         Assert.assertEquals(a.getId().intValue(), id.intValue());
-
+       
     }
-
-    @Test(dependsOnMethods = { "TestSave" })
-    public static void TestFind() {
-        Person a = new Person().find(1);
-        Date today = new Date();
-        Assert.assertNull(a.getStatus());
+    
+   
+    @Test (dependsOnMethods = { "TestSave" })
+    public static void TestFind(){
+        Peer a = new Peer().find(1);
         Assert.assertEquals("a", a.getFirstName());
         Assert.assertEquals("b", a.getLastName());
+        //Assert.assertEquals("aiodjoadjoia", a.getDocuments());
         Integer id = 1;
         Assert.assertEquals(id.intValue(), a.getId().intValue());
 
     }
-
+    
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        Person p = new Person().find(1);
+        Peer p = new Peer().find(1);
         Assert.assertEquals("a", p.getFirstName());
         Assert.assertEquals("b", p.getLastName());
+        //Assert.assertEquals(documents.toArray(), p.getDocuments());
+        
         p.setFirstName("john");
         p.setLastName("malkovich");
+        
+        Document d = new Document().find(1);
+        d.setDocName("bbbbbbb");
+        ArrayList<Document> docArray = p.getDocuments();
+        docArray.add(d);
+        p.setDocuments(docArray);
         Assert.assertTrue(p.update());
         Integer id = 1;
         Assert.assertEquals(id.intValue(), p.getId().intValue());
 
     }
-
+    
+    
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        Person p = new Person().find(1);
-        p.setFirstName("b");
-        p.setLastName("c");
-        p.update();
-
+        Peer p = new Peer().find(1);
+        Assert.assertEquals("john", p.getFirstName());
+        Assert.assertEquals("malkovich", p.getLastName());
         Assert.assertTrue(p.Destroy());
         Assert.assertNull(p.getId());
-
+       
+       // Assert.assertNull(p.getDocuments());
     }
+    
+
 
 }

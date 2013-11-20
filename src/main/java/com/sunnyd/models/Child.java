@@ -1,6 +1,7 @@
 package com.sunnyd.models;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRecordField;
@@ -16,7 +17,7 @@ public class Child extends Person {
         super();
     }
     
-    public Child(HashMap<String, Object> HM) {
+    public Child(Map<String, Object> HM) {
         super(HM);
     }
     
@@ -27,11 +28,13 @@ public class Child extends Person {
 //        a.setLastName("Luffy");
 //        a.save();
         
-        Child b = Child.find(18);
+        Child b = new Child().find(1);
         System.out.println(b.getId());
         System.out.println(b.getChildName());
         System.out.println(b.getFirstName());
         System.out.println(b.getLastName());
+        b.setFirstName("aasiojaoisdja");
+        b.update();
         
         
     }
@@ -46,7 +49,5 @@ public class Child extends Person {
         setUpdateFlag(true);
     }
     
-
-   
 
 }
