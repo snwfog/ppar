@@ -1,14 +1,12 @@
 package com.sunnyd.models;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
-import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.fixtures.Prep;
 
 @ActiveRecordInheritFrom(childClassof = "ChildTest")
@@ -99,7 +97,7 @@ public class GrandChildTest extends ChildTest {
         gc.setLastName("c");
         gc.update();
        
-        Assert.assertTrue(gc.Destroy());
+        Assert.assertTrue(gc.destroy());
         Assert.assertNull(gc.getId());
     }
 

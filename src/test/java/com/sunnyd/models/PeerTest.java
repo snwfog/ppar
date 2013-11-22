@@ -1,19 +1,11 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import static com.sunnyd.Base.find;
 import com.sunnyd.IModel;
-import com.sunnyd.annotations.*;
-import com.sunnyd.database.Manager;
 import com.sunnyd.database.fixtures.Prep;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -109,7 +101,7 @@ public class PeerTest extends Base implements IModel {
         Peer p = new Peer().find(1);
         Assert.assertEquals("john", p.getFirstName());
         Assert.assertEquals("malkovich", p.getLastName());
-        Assert.assertTrue(p.Destroy());
+        Assert.assertTrue(p.destroy());
         Assert.assertNull(p.getId());
        
        // Assert.assertNull(p.getDocuments());

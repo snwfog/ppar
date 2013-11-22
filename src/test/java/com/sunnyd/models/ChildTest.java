@@ -3,13 +3,10 @@ package com.sunnyd.models;
 import com.sunnyd.database.fixtures.Prep;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
-import com.sunnyd.annotations.ActiveRecordField;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 
 @ActiveRecordInheritFrom(childClassof = "Person")
 public class ChildTest extends PersonTest {
@@ -95,7 +92,7 @@ public class ChildTest extends PersonTest {
         c.setLastName("c");
         c.update();
        
-        Assert.assertTrue(c.Destroy());
+        Assert.assertTrue(c.destroy());
         Assert.assertNull(c.getId());
     }
 

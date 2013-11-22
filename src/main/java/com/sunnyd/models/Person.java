@@ -47,7 +47,7 @@ public class Person extends Base implements IModel {
 //
 //        b.update();
 //        a.update();
-        // System.out.println(a.Destroy());
+        // System.out.println(a.destroy());
 
     }
 

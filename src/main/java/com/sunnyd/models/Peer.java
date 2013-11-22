@@ -3,12 +3,9 @@ package com.sunnyd.models;
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
-import com.sunnyd.database.Manager;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -143,9 +140,9 @@ public class Peer extends Base implements IModel {
         
         a.save();
         a.find(a.getId());
-        //a.Destroy();
+        //a.destroy();
         System.out.println(a.getFirstName());
-        a.Destroy();
+        a.destroy();
     }
 
     public Integer getRankId() {

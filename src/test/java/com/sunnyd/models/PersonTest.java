@@ -2,21 +2,14 @@ package com.sunnyd.models;
 
 import com.sunnyd.Base;
 import com.sunnyd.IModel;
-import com.sunnyd.annotations.*;
 import com.sunnyd.database.fixtures.Prep;
-import com.sunnyd.models.Person;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 
 public class PersonTest extends Base implements IModel {
 
@@ -98,7 +91,7 @@ public class PersonTest extends Base implements IModel {
         p.setLastName("c");
         p.update();
 
-        Assert.assertTrue(p.Destroy());
+        Assert.assertTrue(p.destroy());
         Assert.assertNull(p.getId());
 
     }
