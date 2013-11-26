@@ -2,16 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.sunnyd.ppar</groupId>
-  <artifactId>ppar</artifactId>
-  <version>1.0.9-SNAPSHOT</version>
-  <properties>
-    <ppar.database>ppardb</ppar.database>
-    <ppar.host>localhost</ppar.host>
-    <ppar.port>3306</ppar.port>
-    <ppar.username>root</ppar.username>
-    <ppar.root>root</ppar.root>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.sunnyd.ppar</groupId>
+    <artifactId>ppar</artifactId>
+    <version>1.0.11-SNAPSHOT</version>
+    <properties>
+        <ppar.database>ppardb</ppar.database>
+        <ppar.host>localhost</ppar.host>
+        <ppar.port>3306</ppar.port>
+        <ppar.username>root</ppar.username>
+        <ppar.root>root</ppar.root>
 
     <github.global.server>github</github.global.server>
   </properties>

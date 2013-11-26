@@ -30,6 +30,12 @@ import java.util.Map;
 
 public class Manager {
 
+    public static void main( String[] args ) {
+        Map<String, Object> cond = new HashMap<>();
+        cond.put( "userName", "Charles" );
+        Manager.findAll( "peers", cond );
+    }
+
     // find by id, return single row
     public static Map<String, Object> find( int id, String tableName ) {
         Connection connection = null;
@@ -459,6 +465,11 @@ public class Manager {
                 case "INT":
                     converted.put( columnName_camel, (Integer) resultset.getObject( columnName ) );
                     break;
+
+                case "FLOAT":
+                    converted.put( columnName_camel, Double.parseDouble( resultset.getObject( columnName ).toString() ) );
+                    break;
+
                 case "TINYINT": // boolean
                     converted.put( columnName_camel, resultset.getBoolean( columnName ) );
                     break;
