@@ -35,10 +35,8 @@ public class Person extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-//        Person a = new Person().find(2);
-//        a.setPrice((Double)0.03);
-//        a.update();
-//        System.out.println(a.getPrice());
+        Person a = new Person().find(1);
+        System.out.println(a.toString());
 
     }
 

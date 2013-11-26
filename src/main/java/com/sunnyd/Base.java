@@ -5,6 +5,7 @@ import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRelationManyToMany;
 import com.sunnyd.database.Manager;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
@@ -914,5 +915,26 @@ public class Base implements IModel
     }
     return null;
   }
+  
+  public Map<String, Object> toMap(){
+      Field[] fields = this.getClass().getDeclaredFields();
+      Map<String, Object> map = new HashMap<String, Object>();
+      for(Field field : fields){
+          field.setAccessible(true);
+        try {
+            map.put(field.getName(), field.get(this));
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+      }
+      return map;   
+  }
+  
+  @Override
+  public String toString(){
+      return this.toMap().toString();
+  }
+  
 
 }
