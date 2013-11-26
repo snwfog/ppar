@@ -18,6 +18,9 @@ public class Person extends Base implements IModel {
 
     @ActiveRecordField
     private String lastName;
+    
+    @ActiveRecordField
+    private Double price; 
 
 //    @hasMany
 //    private Resume[] resumes;
@@ -32,22 +35,10 @@ public class Person extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-        ArrayList<Map<String, Object>> a = Manager.findAll("persons", null);
-        Iterator asd = a.iterator();
-        while(asd.hasNext()){
-            System.out.println(asd.next());
-        }
-//
-//        Person b = Person.find(2);
-//
-//        System.out.println(a.getId());
-//        System.out.println(a.getFirstName());
-//        System.out.println(a.getLastName());
-//        b.setFirstName("oaisjdoaijdoa");
-//
-//        b.update();
-//        a.update();
-        // System.out.println(a.Destroy());
+        Person a = new Person().find(2);
+        a.setPrice((Double)0.03);
+        a.update();
+        System.out.println(a.getPrice());
 
     }
 
@@ -83,5 +74,14 @@ public class Person extends Base implements IModel {
             return false;
         return super.save();
     }
+    
+    
+    public Double getPrice(){
+        return this.price;
+    }
 
+    public void setPrice(Double price){
+        this.price = price;
+        setUpdateFlag(true);
+    }
 }

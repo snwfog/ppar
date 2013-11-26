@@ -465,6 +465,11 @@ public class Manager {
                 case "INT":
                     converted.put( columnName_camel, (Integer) resultset.getObject( columnName ) );
                     break;
+                    
+                case "FLOAT":
+                    converted.put( columnName_camel, Double.parseDouble(resultset.getObject( columnName ).toString()));
+                    break;
+                    
                 case "TINYINT": // boolean
                     converted.put( columnName_camel, resultset.getBoolean( columnName ) );
                     break;
