@@ -19,8 +19,8 @@ public class Person extends Base implements IModel {
     @ActiveRecordField
     private String lastName;
     
-    @ActiveRecordField
-    private Double price; 
+//    @ActiveRecordField
+//    private Double price; 
 
 //    @hasMany
 //    private Resume[] resumes;
@@ -35,10 +35,10 @@ public class Person extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-        Person a = new Person().find(2);
-        a.setPrice((Double)0.03);
-        a.update();
-        System.out.println(a.getPrice());
+//        Person a = new Person().find(2);
+//        a.setPrice((Double)0.03);
+//        a.update();
+//        System.out.println(a.getPrice());
 
     }
 
@@ -76,12 +76,12 @@ public class Person extends Base implements IModel {
     }
     
     
-    public Double getPrice(){
-        return this.price;
-    }
-
-    public void setPrice(Double price){
-        this.price = price;
-        setUpdateFlag(true);
-    }
+//    public Double getPrice(){
+//        return this.price;
+//    }
+//
+//    public void setPrice(Double price){
+//        this.price = price;
+//        setUpdateFlag(true);
+//    }
 }
