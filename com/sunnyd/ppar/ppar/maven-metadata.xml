@@ -4,9 +4,8 @@
   <artifactId>ppar</artifactId>
   <versioning>
     <versions>
-      <version>1.0.9-SNAPSHOT</version>
-      <version>1.0.11-SNAPSHOT</version>
+      <version>1.0.12-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20131126023816</lastUpdated>
+    <lastUpdated>20131126025135</lastUpdated>
   </versioning>
 </metadata>
