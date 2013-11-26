@@ -8,6 +8,7 @@ import com.sunnyd.database.Manager;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -589,12 +590,38 @@ public class Base implements IModel
   }
 
   // TODO: Relation delete
-
   @SuppressWarnings("unchecked")
-  public <T extends Base> ArrayList<Map<String, Object>> findAll(Map<String, Object> conditions)
+  public <T extends Base> List<T> findAll(Map<String, Object> conditions)
   {
     String canonicalClassName = this.getClass().getCanonicalName();
-    return Manager.findAll(BaseHelper.getClassTableName(canonicalClassName), conditions);
+    List<Map<String, Object>> list =
+        Manager.findAll(BaseHelper.getClassTableName(canonicalClassName), conditions);
+    List<T> arrayList = new ArrayList<T>(list.size());
+    Constructor cons = null;
+    try
+    {
+      cons = this.getClass().getConstructor(Map.class);
+      for (Map<String, Object> attr : list)
+        arrayList.add((T)cons.newInstance(attr));
+    }
+    catch (NoSuchMethodException e)
+    {
+      e.printStackTrace();
+    }
+    catch (InvocationTargetException e)
+    {
+      e.printStackTrace();
+    }
+    catch (InstantiationException e)
+    {
+      e.printStackTrace();
+    }
+    catch (IllegalAccessException e)
+    {
+      e.printStackTrace();
+    }
+
+    return arrayList;
   }
 
   /**
