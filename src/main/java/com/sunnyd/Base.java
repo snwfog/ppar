@@ -60,6 +60,14 @@ public class Base implements IModel
       // Get class attribute from database
       String tableName = BaseHelper.getClassTableName(canonicalClassName);
       Map<String, Object> HM = Manager.find(id, tableName);
+      
+      //NullCheck
+      if(HM == null){
+          return null;
+      }
+      if(HM.size() <= 0 ){
+          return null;
+      }
       // Get inherited values from parent table
       Map<String, Object> parentDatas = BaseHelper.getSuperDatas((Integer) HM.get("id"),
           Class.forName(canonicalClassName));
