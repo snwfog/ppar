@@ -53,6 +53,8 @@ public class Manager {
 
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(connection);
         }
         return null;
     }
@@ -76,6 +78,8 @@ public class Manager {
 
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(connection);
         }
         return null;
     }
@@ -126,7 +130,11 @@ public class Manager {
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(connection);
         }
+        
+        
 
         return results;
     }
@@ -184,6 +192,8 @@ public class Manager {
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(connection);
         }
 
         try {
@@ -254,6 +264,8 @@ public class Manager {
                 throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
             }
             e.printStackTrace();
+        }finally{
+            closeConnection(connection);
         }
         return id;
     }
@@ -270,6 +282,8 @@ public class Manager {
         } catch ( SQLException e ) {
             e.printStackTrace();
             isDestroyed = false;
+        }finally{
+            closeConnection(connection);
         }
         return isDestroyed;
     }
@@ -301,6 +315,8 @@ public class Manager {
             stmt.execute( "DELETE FROM " + tableName + where );
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(connection);
         }
         return results;
 
@@ -362,6 +378,7 @@ public class Manager {
             e.printStackTrace();
         } finally {
             // Release mutex lock
+            closeConnection(connection);
             Manager.releaseLock( id, tableName );
         }
 
@@ -528,6 +545,8 @@ public class Manager {
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(conn);
         }
     }
 
@@ -548,6 +567,8 @@ public class Manager {
             }
         } catch ( SQLException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(conn);
         }
     }
 
@@ -588,6 +609,8 @@ public class Manager {
             e.printStackTrace();
         } catch ( IllegalAccessException e ) {
             e.printStackTrace();
+        }finally{
+            closeConnection(conn);
         }
 
         return true;
@@ -603,8 +626,22 @@ public class Manager {
         } catch ( SQLException e ) {
             e.printStackTrace();
             return false;
+        }finally{
+            closeConnection(conn);
         }
 
         return true;
+    }
+    
+    
+    private static void closeConnection(Connection connection){
+        try {
+            if(!connection.isClosed()){
+                connection.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
     }
 }
