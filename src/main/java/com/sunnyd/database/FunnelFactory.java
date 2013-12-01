@@ -48,7 +48,13 @@ public class FunnelFactory
               }
               else if (fieldType == Double.class)
               {
-                into.putDouble((Double) f.get(instance));
+                
+                  Double value = f.get(instance) == null ? null : (Double) f.get(instance);
+                  if (value != null)
+                  {
+                      into.putDouble((Double) f.get(instance));
+                  }
+                
               }
               else if (fieldType == Date.class)
               {
