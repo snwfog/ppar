@@ -13,6 +13,8 @@ import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,12 +29,13 @@ import java.util.Map;
 
 public class Manager
 {
+  static final Logger logger = LoggerFactory.getLogger(Manager.class);
 
   public static void main(String[] args)
   {
     Map<String, Object> cond = new HashMap<>();
     cond.put("userName", "Charles");
-    Manager.findAll("peers", cond);
+    System.out.println(Manager.findAll("peers", cond));
   }
 
   // find by id, return single row
@@ -133,6 +136,8 @@ public class Manager
     {
       connection = Connector.getConnection();
       stmt = connection.createStatement();
+      logger.info("SELECT * FROM " + tableName + where);
+
       rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
       while (rs.next())
       {
@@ -524,17 +529,12 @@ public class Manager
         converted.put(keyUnderscore, parser.format(dt));
         break;
       default:
-        System.out.println("Manager.java doesnt know this type: " + key + "=" + value);
+        logger.error("Manager.java doesn't know how to convert this type: "
+            + keyUnderscore + "(" + type + ") " + original.get(key));
         break;
       }
-    }
 
-    if (DEBUG)
-    {
-      for (String s : converted.keySet())
-      {
-        System.out.println("key:" + s + " " + converted.get(s));
-      }
+      logger.info("Key: " + keyUnderscore + " Value:" + converted.get(keyUnderscore));
     }
     return converted;
   }
@@ -578,48 +578,48 @@ public class Manager
     for (int i = 1; i < columnCount + 1; i++)
     {
       String columnName = rsmd.getColumnName(i); // underscore_case
-      String columnName_camel = toCamelCase(columnName); // columnName in
+      String columnNameCamelCase = toCamelCase(columnName); // columnName in
       // java var style
       String type = rsmd.getColumnTypeName(i);
 
       switch (type)
       {
       case "INT UNSIGNED":
-        converted.put(columnName_camel, (Long) resultset.getObject(columnName));
+        converted.put(columnNameCamelCase, resultset.getObject(columnName));
         break;
       case "INT":
-        converted.put(columnName_camel, (Integer) resultset.getObject(columnName));
+        converted.put(columnNameCamelCase, resultset.getObject(columnName));
         break;
 
       case "DOUBLE":
-        converted.put(columnName_camel, resultset.getDouble(columnName));
+        converted.put(columnNameCamelCase, resultset.getDouble(columnName));
         break;
 
       case "FLOAT"://TODO: replace second method with first
-        converted.put(columnName_camel, resultset.getObject(columnName) == null ? null : Double.parseDouble(resultset.getObject(columnName).toString()));
+        converted.put(columnNameCamelCase, resultset.getObject(columnName) == null ? null : Double.parseDouble(resultset.getObject(columnName).toString()));
         //converted.put( columnName_camel, resultset.getFloat( columnName ) );
         break;
 
       case "TINYINT": // boolean
-        converted.put(columnName_camel, resultset.getBoolean(columnName));
+        converted.put(columnNameCamelCase, resultset.getBoolean(columnName));
         break;
       case "VARCHAR":
       case "CHAR":
-        converted.put(columnName_camel, resultset.getString(columnName));
+        converted.put(columnNameCamelCase, resultset.getString(columnName));
         break;
+      case "DATE":
       case "DATETIME":
-        converted.put(columnName_camel, (Date) resultset.getDate(columnName));
+        converted.put(columnNameCamelCase, resultset.getDate(columnName));
         break;
       case "TIMESTAMP":
-        converted.put(columnName_camel, (Date) resultset.getTimestamp(columnName));
+        converted.put(columnNameCamelCase, resultset.getTimestamp(columnName));
         break;
       default:
-        System.out.println("Manager.java doesnt know this type: " + columnName + "=" + type + "=" + resultset.getObject(columnName));
+        logger.error("Manager.java doesn't know how to convert this type: "
+            + columnName + "(" + type + ") " + resultset);
         break;
       }
-
     }
-
     return converted;
   }
 
