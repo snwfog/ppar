@@ -604,6 +604,8 @@ public class Base implements IModel
     String canonicalClassName = this.getClass().getCanonicalName();
     List<Map<String, Object>> list =
         Manager.findAll(BaseHelper.getClassTableName(canonicalClassName), conditions);
+
+
     List<T> arrayList = new ArrayList<T>(list.size());
     Constructor cons = null;
     try
