@@ -201,8 +201,10 @@ public class Manager
       DatabaseMetaData md = connection.getMetaData();
       if (md.getColumns(null, null, tableName, "creation_date").next())
       {
-        SQLHashmap.put("creation_date", "NOW()");
-        SQLHashmap.put("last_modified_date", "NOW()");
+        String date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
+            .format(new Date());
+        SQLHashmap.put("creation_date", date);
+        SQLHashmap.put("last_modified_date", date);
       }
 
 
@@ -221,8 +223,11 @@ public class Manager
       // no id is provided (means auto-gen id)
       if (!hashMap.containsKey("id"))
       {
-        System.out.println("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")");
-        stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")", Statement.RETURN_GENERATED_KEYS);
+        logger.debug("INSERT INTO " + tableName
+            + " (" + columns + ") VALUES (" + values + ")");
+
+        stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns
+            + ") VALUES (" + values + ")", Statement.RETURN_GENERATED_KEYS);
         rs = stmt.getGeneratedKeys();
         if (rs.next())
         {
@@ -231,7 +236,8 @@ public class Manager
       }
       else // id is provided (means
       {
-        id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")") != 0 ? (int) hashMap.get("id") : 0;
+        id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns
+            + ") VALUES (" + values + ")") != 0 ? (int) hashMap.get("id") : 0;
       }
     }
     catch (SQLException e)
@@ -290,8 +296,10 @@ public class Manager
       DatabaseMetaData md = connection.getMetaData();
       if (md.getColumns(null, null, tableName, "creation_date").next())
       {
-        SQLHashmap.put("creation_date", "NOW()");
-        SQLHashmap.put("last_modified_date", "NOW()");
+        String date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
+          .format(new Date());
+        SQLHashmap.put("creation_date", date);
+        SQLHashmap.put("last_modified_date", date);
       }
 
 
