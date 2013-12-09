@@ -1,6 +1,5 @@
 package com.sunnyd.database.query;
 
-import com.sun.deploy.util.ArrayUtil;
 import com.sunnyd.database.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
