@@ -13,6 +13,7 @@ import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
+import com.sunnyd.database.query.SQLTableMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,7 @@ public class Manager
   public static void main(String[] args)
   {
     Map<String, Object> cond = new HashMap<>();
-    cond.put("userName", "Charles");
+    cond.put("userName", "snwfog");
     System.out.println(Manager.findAll("peers", cond));
   }
 
@@ -116,10 +117,11 @@ public class Manager
       //Return all if condition is null
       for (String key : SQLConditions.keySet())
       {
-        if (conditions.get(toCamelCase(key)) instanceof String)
+        if (conditions.get(toCamelCase(key)) instanceof String
+            && !SQLTableMetaData.hasUniqueKeyConstraint(tableName, key))
           where += key + " LIKE '%" + SQLConditions.get(key) + "%' AND ";
         else
-          where += key + " = " + SQLConditions.get(key) + " AND ";
+          where += key + " = '" + SQLConditions.get(key) + "' AND ";
       }
 
       // remove trailing comma
@@ -688,12 +690,11 @@ public class Manager
   private static synchronized void releaseLock(int id, String tableName)
   {
     Connection conn = null;
-    Statement stmt = null;
 
     try
     {
       conn = Connector.getConnection();
-      stmt = conn.createStatement();
+      Statement stmt = conn.createStatement();
       ResultSet rs = stmt.executeQuery("SELECT semaphore FROM " + tableName + " WHERE id = " + id);
       if (!rs.next())
       {
@@ -730,15 +731,12 @@ public class Manager
   private static <T extends Base> boolean checkIntegrity(int id, Class<T> klazz, Map<String, Object> map)
   {
     Connection conn = null;
-    Statement stmt = null;
-
-
     Constructor<T> cons = null;
     String tableName = BaseHelper.getClassTableName(klazz);
     try
     {
       conn = Connector.getConnection();
-      stmt = conn.createStatement();
+      Statement stmt = conn.createStatement();
       cons = klazz.getConstructor(Map.class);
       Funnel<T> funnel = FunnelFactory.getInstance(klazz);
       T latest = cons.newInstance(Manager.find(id, tableName));

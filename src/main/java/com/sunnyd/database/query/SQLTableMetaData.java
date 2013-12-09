@@ -10,13 +10,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by snw on 12/9/2013.
- */
 public class SQLTableMetaData
 {
+
   static final Logger logger = LoggerFactory.getLogger(SQLTableMetaData.class);
 
+  /**
+   * Given a table name, and a field name, check if this list contains
+   * an unique key constraint. Not very efficient for batch query. Field name
+   * is expected to be in the SQL (i.e. underscore format), and the unique
+   * key constraint must contain the name of the field by convention. Otherwise
+   * it will not work.
+   *
+   * @param tableName
+   * @param field
+   * @return
+   */
   public static boolean hasUniqueKeyConstraint(String tableName, String field)
   {
     for (String fieldConstraint : SQLTableMetaData.getTableUniqueConstraint(tableName))
@@ -36,6 +45,7 @@ public class SQLTableMetaData
   public static List<String> getTableUniqueConstraint(String tableName)
   {
     Connection connection = null;
+    List<String> uniqueField = new ArrayList<>();
     try
     {
       connection = Connector.getConnection();
@@ -55,10 +65,9 @@ public class SQLTableMetaData
               + "' AND TABLE_NAME = '" + tableName
               + "' AND CONSTRAINT_TYPE = 'UNIQUE'");
 
-      List<String> uniqueField = new ArrayList<>();
       while (rs.next())
       {
-        uniqueField.add(rs.getString("CONSTRAINT_NAME"))
+        uniqueField.add(rs.getString("CONSTRAINT_NAME"));
         logger.info(rs.getString("CONSTRAINT_NAME"));
       }
     }
@@ -67,11 +76,6 @@ public class SQLTableMetaData
       e.printStackTrace();
     }
 
-    return null;
-  }
-
-  public static void main(String[] args)
-  {
-    SQLTableMetaData.getTableUniqueConstraint("peers");
+    return uniqueField;
   }
 }
