@@ -52,6 +52,70 @@ public class Base implements IModel
     this.setUpdateFlag(false);
   }
 
+  public static void setAttributes(Class<?> classObject, Object instanceObject, Map<String, Object> data)
+  {
+    // Get all table attribute from this class
+    Field[] fields = BaseHelper.getTableField(classObject);
+    for (Field field : fields)
+    {
+      String fieldName = field.getName();
+      Class<?> fieldType = field.getType();
+
+      if (data.containsKey(fieldName))
+      {
+        Object value = data.get(fieldName);
+        String capitalizeField = StringUtils.capitalize(fieldName);
+        java.lang.reflect.Method method;
+        try
+        {
+          if (value != null)
+          {
+            method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
+            method.invoke(instanceObject, fieldType.cast(value));
+          }
+        }
+        catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException e)
+        {
+          e.printStackTrace();
+          break;// If method does not have setMethod then it is
+          // not a db Attribute
+        }
+
+      }
+    }
+
+    // Verify if model inherit another model
+    if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null)
+    {
+      setAttributes(classObject.getSuperclass(), instanceObject, data);
+    }
+
+  }
+
+  /**
+   * *****************************************************FIND*****************************************************************
+   */
+  // public static <T extends Base> T find(int id) {
+  // // BUG: if calling lets say Document.find in Peer main method, the
+  // class is peer...
+  // // Since this is a static method, to get caller of method we must look
+  // // in stack
+  // // At this point stack should look like this:
+  // // [java.lang.Thread.getStackTrace(Unknown Source),
+  // // com.sunnyd.Base.find(Base.java:79),
+  // // com.sunnyd.models.Person.main(Person.java:20), .....so on]
+  // // Need a better solution than stack to get caller class
+  // StackTraceElement[] ste = Thread.currentThread().getStackTrace();
+  // String className = ste[2].getClassName();
+  // System.out.println(Arrays.asList(Thread.currentThread().getStackTrace()).toString());
+  // return find(id, className);
+  // }
+  public <T> T find(int id)
+  {
+    return find(id, this.getClass().getCanonicalName());
+  }
+  
   @SuppressWarnings("unchecked")
   public static <T> T find(int id, String canonicalClassName)
   {
@@ -89,7 +153,6 @@ public class Base implements IModel
 
   @Deprecated
   @SuppressWarnings("unchecked")
-  // test find for hasOne
   public static <T> T find_hasOne(int id)
   {
     // Since this is a static method, to get caller of method we must look
@@ -98,7 +161,7 @@ public class Base implements IModel
     // [java.lang.Thread.getStackTrace(Unknown Source),
     // com.sunnyd.Base.find(Base.java:79),
     // com.sunnyd.models.Person.main(Person.java:20), .....so on]
-    // TODO:Need a better solution than stack to get caller class
+    // Need a better solution than stack to get caller class
     StackTraceElement[] ste = Thread.currentThread().getStackTrace();
     String className = ste[2].getClassName();
     try
@@ -126,6 +189,66 @@ public class Base implements IModel
     return null;
   }
 
+  @SuppressWarnings("unchecked")
+  public <T extends Base> List<T> findAll(Map<String, Object> conditions)
+  {
+    String canonicalClassName = this.getClass().getCanonicalName();
+    List<Map<String, Object>> list =
+        Manager.findAll(BaseHelper.getClassTableName(canonicalClassName), conditions);
+
+
+    List<T> arrayList = new ArrayList<T>(list.size());
+    Constructor cons = null;
+    try
+    {
+      cons = this.getClass().getConstructor(Map.class);
+      for (Map<String, Object> attr : list)
+        arrayList.add((T)cons.newInstance(attr));
+    }
+    catch (NoSuchMethodException e)
+    {
+      e.printStackTrace();
+    }
+    catch (InvocationTargetException e)
+    {
+      e.printStackTrace();
+    }
+    catch (InstantiationException e)
+    {
+      e.printStackTrace();
+    }
+    catch (IllegalAccessException e)
+    {
+      e.printStackTrace();
+    }
+
+    return arrayList;
+  }
+
+  /**
+   * ************************************************* UPDATE ******************************************************
+   */
+  public boolean update()
+  {
+    if (this.id != null)
+    {
+      if (this.getUpdateFlag())
+      {
+        boolean allUpdated = update(this.getClass(), this);
+        if (allUpdated)
+        {
+          this.setUpdateFlag(false);
+          return allUpdated;
+        }
+      }
+    }
+    else
+    {
+      System.out.println("new object try saving first");
+    }
+    return false;
+  }
+  
   private static <T extends Base> boolean update(Class<T> classObject, T instanceObject)
   {
     Map<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);
@@ -144,7 +267,8 @@ public class Base implements IModel
     updateRelation(classObject, instanceObject);
     return Manager.update(((Base) instanceObject).getId(), classObject, updateAttributes);
   }
-
+  
+  
   @SuppressWarnings("unchecked")
   private static <T extends Base> boolean updateRelation(Class<T> classObject, T instanceObject)
   {
@@ -378,17 +502,25 @@ public class Base implements IModel
     }
   }
 
-  // Delete Parent Data after child has been deleted
-  private static boolean destroyHierarchy(Class<?> classObject, Integer id)
+
+  /**
+   * ******************************************** SAVE *******************************************************
+   */
+  public boolean save()
   {
-    String tableName = BaseHelper.getClassTableName(classObject);
-    boolean success = Manager.destroy(id, tableName);
-    if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null)
+    int newId = 0;
+    if (this.getId() == null)
     {
-      success = Base.destroyHierarchy(classObject.getSuperclass(), id);
+      newId = save(this.getClass(), this);
+      if (newId != 0)
+      {
+        id = newId;
+        return true;
+      }
     }
-    return success;
+    return false;
   }
+
 
   private static <T extends Base> int save(Class<?> classObject, Object objectInstance)
   {
@@ -406,7 +538,7 @@ public class Base implements IModel
 
     // Save object before has many or ManyToMany relation fields
     id = Manager.save((Class<T>)classObject, attrToPersist);
-//      id = Manager.save(BaseHelper.getClassTableName(classObject), attrToPersist);
+    // id = Manager.save(BaseHelper.getClassTableName(classObject), attrToPersist);
     saveRelation(classObject, objectInstance, id);
     return id;
   }
@@ -532,132 +664,9 @@ public class Base implements IModel
       }
     }
   }
-
-  public static void setAttributes(Class<?> classObject, Object instanceObject, Map<String, Object> data)
-  {
-    // Get all table attribute from this class
-    Field[] fields = BaseHelper.getTableField(classObject);
-    for (Field field : fields)
-    {
-      String fieldName = field.getName();
-      Class<?> fieldType = field.getType();
-
-      if (data.containsKey(fieldName))
-      {
-        Object value = data.get(fieldName);
-        String capitalizeField = StringUtils.capitalize(fieldName);
-        java.lang.reflect.Method method;
-        try
-        {
-          if (value != null)
-          {
-            method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
-            method.invoke(instanceObject, fieldType.cast(value));
-          }
-        }
-        catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException e)
-        {
-          e.printStackTrace();
-          break;// If method does not have setMethod then it is
-          // not a db Attribute
-        }
-
-      }
-    }
-
-    // Verify if model inherit another model
-    if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null)
-    {
-      setAttributes(classObject.getSuperclass(), instanceObject, data);
-    }
-
-  }
-
-  /**
-   * *****************************************************FIND*****************************************************************
-   */
-  // public static <T extends Base> T find(int id) {
-  // //TODO BUG: if calling lets say Document.find in Peer main method, the
-  // class is peer...
-  // // Since this is a static method, to get caller of method we must look
-  // // in stack
-  // // At this point stack should look like this:
-  // // [java.lang.Thread.getStackTrace(Unknown Source),
-  // // com.sunnyd.Base.find(Base.java:79),
-  // // com.sunnyd.models.Person.main(Person.java:20), .....so on]
-  // // TODO:Need a better solution than stack to get caller class
-  // StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-  // String className = ste[2].getClassName();
-  // System.out.println(Arrays.asList(Thread.currentThread().getStackTrace()).toString());
-  // return find(id, className);
-  // }
-  public <T> T find(int id)
-  {
-    return find(id, this.getClass().getCanonicalName());
-  }
-
-  // TODO: Relation delete
-  @SuppressWarnings("unchecked")
-  public <T extends Base> List<T> findAll(Map<String, Object> conditions)
-  {
-    String canonicalClassName = this.getClass().getCanonicalName();
-    List<Map<String, Object>> list =
-        Manager.findAll(BaseHelper.getClassTableName(canonicalClassName), conditions);
-
-
-    List<T> arrayList = new ArrayList<T>(list.size());
-    Constructor cons = null;
-    try
-    {
-      cons = this.getClass().getConstructor(Map.class);
-      for (Map<String, Object> attr : list)
-        arrayList.add((T)cons.newInstance(attr));
-    }
-    catch (NoSuchMethodException e)
-    {
-      e.printStackTrace();
-    }
-    catch (InvocationTargetException e)
-    {
-      e.printStackTrace();
-    }
-    catch (InstantiationException e)
-    {
-      e.printStackTrace();
-    }
-    catch (IllegalAccessException e)
-    {
-      e.printStackTrace();
-    }
-
-    return arrayList;
-  }
-
-  /**
-   * ************************************************* UPDATE ******************************************************
-   */
-  public boolean update()
-  {
-    if (this.id != null)
-    {
-      if (this.getUpdateFlag())
-      {
-        boolean allUpdated = update(this.getClass(), this);
-        if (allUpdated)
-        {
-          this.setUpdateFlag(false);
-          return allUpdated;
-        }
-      }
-    }
-    else
-    {
-      System.out.println("new object try saving first");
-    }
-    return false;
-  }
-
+  
+  
+  
   /**
    * ******************************************** DELETE ******************************************************
    */
@@ -670,25 +679,20 @@ public class Base implements IModel
     }
     return success;
   }
-
-  /**
-   * ******************************************** SAVE *******************************************************
-   */
-  public boolean save()
+  
+  // Delete Parent Data after child has been deleted
+  private static boolean destroyHierarchy(Class<?> classObject, Integer id)
   {
-    int newId = 0;
-    if (this.getId() == null)
+    String tableName = BaseHelper.getClassTableName(classObject);
+    boolean success = Manager.destroy(id, tableName);
+    if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null)
     {
-      newId = save(this.getClass(), this);
-      if (newId != 0)
-      {
-        id = newId;
-        return true;
-      }
+      success = Base.destroyHierarchy(classObject.getSuperclass(), id);
     }
-    return false;
+    return success;
   }
-
+  
+  
   /**
    * ****************************** Relations Lazy load ***********************************************
    */
@@ -886,6 +890,9 @@ public class Base implements IModel
     }
   }
 
+  
+  
+  
   /**
    * *** MUTATOR ***************************************************
    */
