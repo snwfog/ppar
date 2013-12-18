@@ -35,18 +35,20 @@ public class Category extends Base implements IModel {
         return categoryName;
     }
 
-    public void setCategoryName(String categoryName) {
+    public Category setCategoryName(String categoryName) {
         this.categoryName = categoryName;
         setUpdateFlag(true);
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Category setDescription(String description) {
         this.description = description;
         setUpdateFlag(true);
+        return this;
     }
 
     public List<Group> getGroups() {
@@ -54,12 +56,13 @@ public class Category extends Base implements IModel {
         return groups;
     }
 
-    public void setGroups(List<Group> groups) {
+    public Category setGroups(List<Group> groups) {
         this.groups = groups;
+        return this;
     }
 
     public static void main(String[] args) {
-        Category a = new Category().find(1);
-        System.out.println(Arrays.asList(a.getGroups()).toString());
+//        Category a = new Category();
+//        System.out.println(Arrays.asList(a.getGroups()).toString());
     }
 }

@@ -14,6 +14,7 @@ import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
 import com.sunnyd.database.query.SQLTableMetaData;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,49 +189,19 @@ public class Manager
     Connection connection = null;
     Statement stmt = null;
     ResultSet rs = null;
-
-    String columns = "";
-    String values = "";
     String tableName = BaseHelper.getClassTableName(klazz);
 
     int id = 0;
 
     try
     {
-      connection = Connector.getConnection();
-      Map<String, String> SQLHashmap = convertJavaToSQL(hashMap);
-
-      DatabaseMetaData md = connection.getMetaData();
-      if (md.getColumns(null, null, tableName, "creation_date").next())
-      {
-        String date = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
-            .format(new Date());
-        SQLHashmap.put("creation_date", date);
-        SQLHashmap.put("last_modified_date", date);
-      }
-
-
-      // get column value pairs from hashmap as val,val,val...
-      for (String key : SQLHashmap.keySet())
-      {
-        columns += key + ",";
-        values += "'" + SQLHashmap.get(key) + "' ,";
-      }
-      // remove trailing comma
-      columns = columns.replaceAll(",$", "");
-      values = values.replaceAll(",$", "");
-
-      stmt = connection.createStatement();
-
+      connection = Connector.getConnection(); 
       // no id is provided (means auto-gen id)
       if (!hashMap.containsKey("id"))
       {
-        logger.debug("INSERT INTO " + tableName
-            + " (" + columns + ") VALUES (" + values + ")");
-
-        stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns
-            + ") VALUES (" + values + ")", Statement.RETURN_GENERATED_KEYS);
-        rs = stmt.getGeneratedKeys();
+        PreparedStatement stm = prepareInsertStatementSQL(hashMap, tableName, connection, true, klazz); 
+        stm.executeUpdate();
+        rs = stm.getGeneratedKeys();
         if (rs.next())
         {
           id = rs.getInt(1);
@@ -238,26 +209,21 @@ public class Manager
       }
       else // id is provided (means
       {
-        id = stmt.executeUpdate("INSERT INTO " + tableName + " (" + columns
-            + ") VALUES (" + values + ")") != 0 ? (int) hashMap.get("id") : 0;
+        PreparedStatement stm = prepareInsertStatementSQL(hashMap, tableName, connection, false, klazz); 
+        id = stm.executeUpdate() != 0 ? (int) hashMap.get("id") : 0;
       }
     }
     catch (SQLException e)
     {
       e.printStackTrace();
     }
-    finally
-    {
-      closeConnection(connection);
-    }
+
 
     try
     {
       T model = klazz.getConstructor(Map.class).newInstance(hashMap);
       String thisModelSha = Manager.getSha(model, funnel);
       Manager.updateSha(id, tableName, thisModelSha);
-
-
     }
     catch (NoSuchMethodException e)
     {
@@ -275,8 +241,128 @@ public class Manager
     {
       e.printStackTrace();
     }
+    
+    
     return id;
   }
+  
+    public static <T extends Base> PreparedStatement prepareInsertStatementSQL(Map<String, Object> original, String tableName, Connection connection, boolean generateKey, Class<T> klazz) {
+        if (original == null) {
+            return null;
+        }
+        
+        PreparedStatement stm = null;
+        try {
+            DatabaseMetaData md = connection.getMetaData();
+            if (md.getColumns(null, null, tableName, "creation_date").next()) {
+                original.put("creationDate", new Date());
+                original.put("lastModifiedDate", new Date());
+            }
+    
+            String columns = "(";
+            String values = "(";
+            for (String key : original.keySet()) // field, value pair
+            {
+                columns += toUnderscoreCase(key) + ",";
+                values += "?,";
+            }
+            columns = columns.substring(0, columns.length()-1)+")";
+            values = values.substring(0, values.length()-1)+")";
+            System.out.println("INSERT INTO " + tableName + " " + columns + " VALUES " + values);
+            if(generateKey){
+                stm = connection.prepareStatement("INSERT INTO " + tableName + " " + columns + " VALUES " + values, Statement.RETURN_GENERATED_KEYS);
+            }else{
+                stm = connection.prepareStatement("INSERT INTO " + tableName + " " + columns + " VALUES " + values);
+            }
+    
+            setJavaToSQL(stm, original, tableName, connection);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    
+        return stm;
+    }
+    
+    
+    
+    public static <T extends Base> PreparedStatement prepareUpdateStatementSQL(Integer id, Map<String, Object> original, String tableName, Connection connection, Class<T> klazz) {
+        if (original == null) {
+            return null;
+        }
+        
+        PreparedStatement stm = null;
+        try {
+            DatabaseMetaData md = connection.getMetaData();
+            if (md.getColumns(null, null, tableName, "last_modified_date").next()) {
+                original.put("lastModifiedDate", new Date());
+            }
+    
+    
+          String sets = "";
+          for (String key : original.keySet()) // field, value pair
+          {
+              sets += toUnderscoreCase(key) + " = ?," ;
+          }
+          sets = sets.substring(0, sets.length()-1);
+          System.out.println("UPDATE " + tableName + " SET " + sets + " WHERE ID ="+id);
+          stm = connection.prepareStatement("UPDATE " + tableName + " SET " + sets + " WHERE ID ="+id);
+          setJavaToSQL(stm, original, tableName, connection);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    
+        return stm;
+    }
+    
+
+
+    private static void setJavaToSQL(PreparedStatement stm, Map<String, Object> original, String tableName, Connection connection){
+        try {
+            int counter = 1;
+            for (String key : original.keySet()) // field, value pair
+            {
+                Object value = original.get(key); // value could be null
+                String type = "";
+                if (value != null) {
+                    type = value.getClass().getSimpleName();
+                    switch (type) {
+                    case "Boolean":
+                        stm.setBoolean(counter, (Boolean) value);
+                        break;
+                    case "Integer":
+                        stm.setInt(counter, (Integer) value);
+                        break;
+                    case "Double":
+                        stm.setDouble(counter, (Double) value);
+                        break;
+                    case "String":
+                        stm.setString(counter, (String) value);
+                        break;
+                    case "Date":
+                        stm.setDate(counter, new java.sql.Date(((java.util.Date)value).getTime()));
+                        break;
+                    default:
+                        logger.error("Manager.java doesn't know how to convert this type: " + key + "(" + type + ") "
+                                + original.get(key));
+                        break;
+                    }
+                }else{               
+                        DatabaseMetaData  md = connection.getMetaData();
+                        ResultSet column = md.getColumns(null, null, tableName, toUnderscoreCase(key));
+                        if (column.next()) {
+                            stm.setNull(counter, column.getType());  
+                        }
+                }       
+                counter+=1;
+            }
+       }catch(SQLException e){
+           e.printStackTrace();       
+       }
+    }
 
   public static int save(String tableName, Map<String, Object> hashMap) throws MySQLIntegrityConstraintViolationException
   {
@@ -309,7 +395,7 @@ public class Manager
       for (String key : SQLHashmap.keySet())
       {
         columns += key + ",";
-        values += "'" + SQLHashmap.get(key) + "', ";
+        values += "" + SQLHashmap.get(key) + ",";
       }
       // remove trailing comma
       columns = columns.replaceAll(",$", "");
@@ -434,22 +520,8 @@ public class Manager
       }
 
       connection = Connector.getConnection();
-      stmt = connection.createStatement();
-
-      Map<String, String> SQLHashMap = convertJavaToSQL(hashMap);
-
-      for (Object key : SQLHashMap.keySet())
-      {
-        String column = (String) key;
-        String newValue = "'" + SQLHashMap.get(key) + "'";
-        stmt.execute("UPDATE " + tableName + " SET " + column + " = " + newValue + " WHERE ID = " + id);
-      }
-
-      DatabaseMetaData md = connection.getMetaData();
-      if (md.getColumns(null, null, tableName, "creation_date").next())
-      {
-        stmt.execute("UPDATE " + tableName + " SET last_modified_date = NOW() WHERE ID = " + id);
-      }
+      PreparedStatement stm = prepareUpdateStatementSQL(id, hashMap, tableName, connection, klazz);
+      stm.executeUpdate();
 
       String klazzName = klazz.getSimpleName();
       String funnelName = "com.sunnyd.database.hash." + klazzName + "Funnel";

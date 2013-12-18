@@ -35,18 +35,20 @@ public class Group extends Base implements IModel {
         return groupName;
     }
 
-    public void setGroupName(String groupName) {
+    public Group setGroupName(String groupName) {
         this.groupName = groupName;
         setUpdateFlag(true);
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Group setDescription(String description) {
         this.description = description;
         setUpdateFlag(true);
+        return this;
     }
     
     public List<Category> getCategories() {
@@ -54,15 +56,27 @@ public class Group extends Base implements IModel {
         return categories;
     }
 
-    public void setCategories(List<Category> categories) {
+    public Group setCategories(List<Category> categories) {
         this.categories = categories;
         this.setUpdateFlag(true);
+        return this;
     }
     
     public static void main(String[] args) {
-        Group a = new Group().find(2);
-        a.setCategories(new ArrayList<Category>());
+        Group a = new Group().find(17);
+        a.setGroupName("morsen");
+
+        Category aaa = a.getCategories().remove(2);
+        System.out.println("REMOVEID"+aaa.getId());
+        
+        Category cat = new Category();
+        cat.setCategoryName("xxxxxx").setDescription("aidjoiajdoa");
+        cat.save();
+        
+        a.getCategories().add(cat);
+        
         a.update();
+        
     }
 
 }
