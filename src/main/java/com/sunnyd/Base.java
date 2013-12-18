@@ -249,7 +249,7 @@ public class Base implements IModel
     return false;
   }
   
-  private static <T extends Base> boolean update(Class<T> classObject, T instanceObject)
+  private static <T extends Base> boolean update(Class<? extends Base> classObject, T instanceObject)
   {
     Map<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);
     if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null)
@@ -270,7 +270,7 @@ public class Base implements IModel
   
   
   @SuppressWarnings("unchecked")
-  private static <T extends Base> boolean updateRelation(Class<T> classObject, T instanceObject)
+  private static <T extends Base> boolean updateRelation(Class<? extends Base> classObject, T instanceObject)
   {
     Field[] fields = classObject.getDeclaredFields();
     for (Field field : fields)
