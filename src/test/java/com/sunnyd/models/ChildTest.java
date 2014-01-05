@@ -12,6 +12,8 @@ import java.sql.SQLException;
 public class ChildTest extends PersonTest {
     public static final String tableName = "childs";
     public static final String parentTableName = "persons";
+    
+    private Integer childId = null;
 
 
     /****************************** TEST ********************************************************/
@@ -24,7 +26,6 @@ public class ChildTest extends PersonTest {
     }
 
     public void prepTable() throws SQLException {
-        
         Prep.purgeAllRecord("grand_childs", true);
         Prep.resetPrimaryKey("grand_childs");
         Prep.purgeAllRecord(tableName, true);
@@ -41,6 +42,12 @@ public class ChildTest extends PersonTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        
+        //Fake first person
+        Person tempPerson = new Person();
+        tempPerson.setFirstName("TEMPMPMPMPMP");
+        tempPerson.save();
+        
         Child c = new Child();
         Assert.assertNull(c.getId());
         Assert.assertNull(c.getCreationDate());
@@ -50,48 +57,58 @@ public class ChildTest extends PersonTest {
         Assert.assertNull(c.getLastName());
         Assert.assertNull(c.getStatus());
         Assert.assertFalse(c.getUpdateFlag());
+        
+        //Set Data
         c.setStatus("aoidjaoidja");
         c.setFirstName("monkey");
         c.setLastName("d");
         c.setChildName("luffy");
         Assert.assertTrue(c.save());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), c.getId().intValue());
+        
+        Assert.assertEquals(tempPerson.getId()+1, c.getId().intValue());
+        
+        //Validate Inheritance
+        Person a = new Person().find(c.getId());
+        Assert.assertEquals(a.getFirstName(), c.getFirstName());
+        Assert.assertEquals(a.getLastName(), c.getLastName());
+        
+        
+        //Prepare for find test
+        childId = c.getId();
+        
+        
     }
 
     @Test (dependsOnMethods = { "TestSave" })
-    public static void TestFind() {
-        Child c = new Child().find(1);
+    public void TestFind() {
+        Child c = new Child().find(childId);
         Assert.assertEquals("luffy", c.getChildName());
         Assert.assertEquals("monkey", c.getFirstName());
         Assert.assertEquals("d", c.getLastName());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), c.getId().intValue());
     }
 
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        Child c = new Child().find(1);
-        Assert.assertEquals("luffy", c.getChildName());
-        Assert.assertEquals("monkey", c.getFirstName());
-        Assert.assertEquals("d", c.getLastName());
+        Child c = new Child().find(childId);
         c.setChildName("mark");
         c.setFirstName("john");
         c.setLastName("malkovich");
         Assert.assertTrue(c.update());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), c.getId().intValue());
+        
+        
+        //Retrieve child from database to validate that it is saved
+        Child updateC = new Child().find(childId); 
+        Assert.assertEquals("mark", updateC.getChildName());
+        Assert.assertEquals("john", updateC.getFirstName());
+        Assert.assertEquals("malkovich", updateC.getLastName());
+        
+        
 
     }
    
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        Child c = new Child().find(1);
-        c.setChildName("a");
-        c.setFirstName("b");
-        c.setLastName("c");
-        c.update();
-       
+        Child c = new Child().find(childId);
         Assert.assertTrue(c.destroy());
         Assert.assertNull(c.getId());
     }

@@ -60,3 +60,6 @@ local.properties
 .git.commit.template
 !*.sql
 ppar.iml
+
+#Test outputs
+test-output/*

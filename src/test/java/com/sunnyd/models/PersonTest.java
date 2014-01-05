@@ -60,7 +60,7 @@ public class PersonTest extends Base implements IModel {
     }
 
     @Test(dependsOnMethods = { "TestSave" })
-    public static void TestFind() {
+    public void TestFind() {
         Person a = new Person().find(1);
         Date today = new Date();
         Assert.assertNull(a.getStatus());
