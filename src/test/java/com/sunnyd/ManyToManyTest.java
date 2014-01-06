@@ -1,9 +1,10 @@
-package com.sunnyd.models;
+package com.sunnyd;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,8 @@ import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Connector;
 import com.sunnyd.database.Manager;
 import com.sunnyd.database.fixtures.Prep;
+import com.sunnyd.models.Category;
+import com.sunnyd.models.Group;
 
 public class ManyToManyTest extends Base implements IModel{
     private static final boolean purgeExistingRecord = true;
@@ -172,6 +175,77 @@ public class ManyToManyTest extends Base implements IModel{
     
     
     @Test (dependsOnMethods = { "TestInitializing" })
+    public void TestReplacingCollection(){
+        Group g = new Group().find(groupId); 
+        List<Category> oldCategory = g.getCategories();
+        List<Category> newCategory = new ArrayList<Category>();
+        
+        Category newC1 = new Category();
+        newC1.setCategoryName("newnewnew1");
+        
+        Category newC2 = new Category();
+        newC2.setCategoryName("newnewnew2");
+        
+        Category newC3 = new Category();
+        newC3.setCategoryName("newnewnew3");
+        
+        newCategory.add(newC1);
+        newCategory.add(newC2);
+        newCategory.add(newC3);
+        
+        Category oldC1 = oldCategory.remove(0);
+        System.out.println("aoidjaodja"+oldCategory.size());
+        Category oldC2 = oldCategory.remove(0);
+        newCategory.add(oldC1);
+        
+        g.setCategories(newCategory);
+        g.update();
+        
+        
+        String query = "SELECT * FROM groups_categories WHERE category_id="+newC1.getId()+" AND group_id = "+g.getId();
+        String query2 = "SELECT * FROM groups_categories WHERE category_id="+newC2.getId()+" AND group_id = "+g.getId();
+        String query3 = "SELECT * FROM groups_categories WHERE category_id="+newC3.getId()+" AND group_id = "+g.getId();
+        String query4 = "SELECT * FROM groups_categories WHERE category_id="+oldC1.getId()+" AND group_id = "+g.getId();
+        String query5 = "SELECT * FROM groups_categories WHERE category_id="+oldC2.getId()+" AND group_id = "+g.getId();
+        ResultSet rs = Manager.rawSQLfind(query);
+        ResultSet rs2 = Manager.rawSQLfind(query2);
+        ResultSet rs3 = Manager.rawSQLfind(query3);
+        ResultSet rs4 = Manager.rawSQLfind(query4);
+        ResultSet rs5 = Manager.rawSQLfind(query5);
+         
+        try {
+            Assert.assertTrue(rs.next());
+            Assert.assertTrue(rs2.next());
+            Assert.assertTrue(rs3.next());
+            Assert.assertTrue(rs4.next());
+            Assert.assertFalse(rs5.next());
+        } catch (SQLException e1) {
+            e1.printStackTrace();
+        }finally{
+            try {
+                rs.close();
+                rs2.close();
+                rs3.close();
+                rs4.close();
+                rs5.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        try {
+            Connection a = Connector.getConnection();
+            if(!a.isClosed()){
+                a.close();
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }  
+        
+    } 
+    
+    @Test (dependsOnMethods = { "TestReplacingCollection" })
     public void TestRemovingObjectFromCollection(){
         Group g = new Group().find(groupId); 
         System.out.println(g);
@@ -206,12 +280,6 @@ public class ManyToManyTest extends Base implements IModel{
             e.printStackTrace();
         }  
         
-    } 
-    
-    
-    @Test (dependsOnMethods = { "TestInitializing" })
-    public void TestReplacingCollection(){
-        Group g = new Group().find(groupId); 
     } 
 
 }

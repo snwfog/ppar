@@ -80,7 +80,9 @@ public class PersonTest extends Base implements IModel {
         p.setLastName("malkovich");
         Assert.assertTrue(p.update());
         Integer id = 1;
-        Assert.assertEquals(id.intValue(), p.getId().intValue());
+        Person updateP = new Person().find(1);
+        Assert.assertEquals(id.intValue(), updateP.getId().intValue());
+        Assert.assertEquals("john", updateP.getFirstName());
 
     }
 
@@ -90,7 +92,6 @@ public class PersonTest extends Base implements IModel {
         p.setFirstName("b");
         p.setLastName("c");
         p.update();
-
         Assert.assertTrue(p.destroy());
         Assert.assertNull(p.getId());
 
