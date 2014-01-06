@@ -61,7 +61,7 @@ public class GrandChildTest extends ChildTest {
     }
 
     @Test(dependsOnMethods = { "TestSave" })
-    public static void TestFind() {
+    public void TestFind() {
         GrandChild gc = new GrandChild().find(1);
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());

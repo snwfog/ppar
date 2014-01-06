@@ -69,6 +69,27 @@ public class Manager
     }
     return null;
   }
+  
+  public static ResultSet rawSQLfind(String queryString)
+  {
+    //Connection remains open
+    Connection connection = null;
+    Statement stmt = null;
+    ResultSet rs = null;
+
+    try
+    {
+      connection = Connector.getConnection();
+      stmt = connection.createStatement();
+      rs = stmt.executeQuery(queryString);
+      return rs;
+    }
+    catch (SQLException e)
+    {
+      e.printStackTrace();
+    }
+    return null;
+  }
 
   // find by id, return single row
   public static Integer[] find(String tableName, String column, Object value)

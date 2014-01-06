@@ -336,6 +336,7 @@ public class Base implements IModel
         Integer collectionObjectId = (Integer) getId.invoke(collection.get(i));
         if (collectionObjectId == null)
         {
+          //Object in collection is new
           switch (relationName.toString())
           {
 
@@ -400,8 +401,6 @@ public class Base implements IModel
               Manager.destroy(relationTable, condition);
             }
           }
-
-
         }
 
       }
