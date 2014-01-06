@@ -105,22 +105,16 @@ public class ManyToManyTest extends Base implements IModel{
     public void TestInitializing(){
         Group g = new Group().find(groupId); 
         //Verify lazy loading
+
+        Field field;
         try {
-           Field field = g.getClass().getField("categories");
-           Assert.assertNull(field.get(g));
-        } catch (NoSuchFieldException e) {
-            // TODO Auto-generated catch block
+            field = g.getClass().getDeclaredField("categories");
+            field.setAccessible(true);
+            Assert.assertNull(field.get(g));
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            Assert.fail();
             e.printStackTrace();
-        } catch (SecurityException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } 
+        }
         Assert.assertNotNull(g.getCategories());
     }
     
@@ -174,8 +168,50 @@ public class ManyToManyTest extends Base implements IModel{
         }  
 
     }
-
     
     
+    
+    @Test (dependsOnMethods = { "TestInitializing" })
+    public void TestRemovingObjectFromCollection(){
+        Group g = new Group().find(groupId); 
+        System.out.println(g);
+        Category c1 = g.getCategories().remove(0);
+        g.setUpdateFlag(true);
+        g.update();
+        
+        String query = "SELECT * FROM groups_categories WHERE category_id="+c1.getId()+" AND group_id = "+g.getId();
+        ResultSet rs = Manager.rawSQLfind(query);
+        
+        try {
+            Assert.assertFalse(rs.next());
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }finally{
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        try {
+            Connection a = Connector.getConnection();
+            if(!a.isClosed()){
+                a.close();
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }  
+        
+    } 
+    
+    
+    @Test (dependsOnMethods = { "TestInitializing" })
+    public void TestReplacingCollection(){
+        Group g = new Group().find(groupId); 
+    } 
 
 }
