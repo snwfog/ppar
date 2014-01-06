@@ -34,9 +34,10 @@ public class ManyToManyTest extends Base implements IModel{
     
     public void prepTable() throws SQLException {
         Prep.purgeAllRecord("groups", false);
-        Prep.resetPrimaryKey("peers");    
+        Prep.resetPrimaryKey("groups");    
         Prep.purgeAllRecord("categories", false);
         Prep.resetPrimaryKey("categories");
+        Prep.purgeAllRecord("groups_categories", false);
     }
 
     @Test
@@ -121,6 +122,57 @@ public class ManyToManyTest extends Base implements IModel{
             e.printStackTrace();
         } 
         Assert.assertNotNull(g.getCategories());
+    }
+    
+    
+    
+    @Test
+    public void TestSaveWithNewObject() {
+        Group g = new Group();
+        g.setGroupName("group group group");
+        
+        Category c1 = new Category();
+        c1.setCategoryName("new_category1");
+
+        Category c2 = new Category();
+        c2.setCategoryName("new_category2"); 
+
+        
+        g.getCategories().add(c1);
+        g.getCategories().add(c2);
+        g.save();
+        
+        String query = "SELECT * FROM groups_categories WHERE category_id="+c1.getId()+" AND group_id = "+g.getId();
+        String query2 = "SELECT * FROM groups_categories WHERE category_id="+c2.getId()+" AND group_id = "+g.getId();
+        ResultSet rs = Manager.rawSQLfind(query);
+        ResultSet rs2 = Manager.rawSQLfind(query2);
+         
+        try {
+            Assert.assertTrue(rs.next());
+            Assert.assertTrue(rs2.next());
+        } catch (SQLException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }finally{
+            try {
+                rs.close();
+                rs2.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        try {
+            Connection a = Connector.getConnection();
+            if(!a.isClosed()){
+                a.close();
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }  
+
     }
 
     
