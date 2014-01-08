@@ -139,10 +139,10 @@ public class Manager
       //Return all if condition is null
       for (String key : SQLConditions.keySet())
       {
-        if (conditions.get(toCamelCase(key)) instanceof String
-            && !SQLTableMetaData.hasUniqueKeyConstraint(tableName, key))
-          where += key + " LIKE '%" + SQLConditions.get(key) + "%' AND ";
-        else
+//        if (conditions.get(toCamelCase(key)) instanceof String
+//            && !SQLTableMetaData.hasUniqueKeyConstraint(tableName, key))
+//          where += key + " == " + SQLConditions.get(key) + "%' AND ";
+//        else
           where += key + " = '" + SQLConditions.get(key) + "' AND ";
       }
 
