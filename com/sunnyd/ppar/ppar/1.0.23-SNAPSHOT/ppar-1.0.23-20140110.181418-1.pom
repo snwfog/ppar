@@ -35,7 +35,7 @@
                     <meminitial>128m</meminitial>
                     <maxmem>512m</maxmem>
                     <excludes>
-                        <exclude>**/resources/db/*</exclude>
+                        <exclude>**/db/*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
