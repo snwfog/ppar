@@ -84,6 +84,9 @@
           <noJekyll>true</noJekyll>
           <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
           <branch>refs/heads/mvn-repo</branch>
+          <excludes>
+              <exclude>**/resources/db/*</exclude>
+          </excludes>
           <includes>
             <include>**/*</include>
           </includes>
