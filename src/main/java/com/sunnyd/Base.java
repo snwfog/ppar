@@ -5,13 +5,18 @@ import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
 import com.sunnyd.annotations.ActiveRelationManyToMany;
 import com.sunnyd.database.Manager;
+
 import org.apache.commons.lang3.StringUtils;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.jooq.impl.DSL;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.*;
 
 /**
@@ -116,6 +121,26 @@ public class Base implements IModel
     return find(id, this.getClass().getCanonicalName());
   }
   
+  @SuppressWarnings({ "rawtypes", "unchecked"})
+  public <T> T find(Map<String, Object> conditions)
+  {
+    List<Map<String,Object>> resultList = Manager.findAll(this.getClass().getCanonicalName(), conditions);
+    if(resultList.size()==1){
+        Constructor cons;
+        try {
+            cons = (Constructor<T>) this.getClass().getConstructor(Map.class);
+            return (T) cons.newInstance(resultList.get(0));
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        
+    }else{
+        System.out.println("Found more than 1 matching condition");
+    }
+    return null;
+  }
+  
   @SuppressWarnings("unchecked")
   public static <T> T find(int id, String canonicalClassName)
   {
@@ -151,51 +176,12 @@ public class Base implements IModel
     return null;
   }
 
-  @Deprecated
-  @SuppressWarnings("unchecked")
-  public static <T> T find_hasOne(int id)
-  {
-    // Since this is a static method, to get caller of method we must look
-    // in stack
-    // At this point stack should look like this:
-    // [java.lang.Thread.getStackTrace(Unknown Source),
-    // com.sunnyd.Base.find(Base.java:79),
-    // com.sunnyd.models.Person.main(Person.java:20), .....so on]
-    // Need a better solution than stack to get caller class
-    StackTraceElement[] ste = Thread.currentThread().getStackTrace();
-    String className = ste[2].getClassName();
-    try
-    {
-      // Get class attribute from database
-      String tableName = BaseHelper.getClassTableName(className);
-      Map<String, Object> HM = Manager.find(id, tableName);
-
-      // Get inherited values from parent table
-      Map<String, Object> parentDatas = BaseHelper
-          .getSuperDatas((Integer) HM.get("id"), Class.forName(className));
-
-      if (parentDatas != null)
-      {
-        // Merge parent's table data's into map
-        HM.putAll(parentDatas);
-      }
-      return (T) Class.forName(className).getConstructor(Map.class).newInstance(HM);
-    }
-    catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException
-        | InvocationTargetException | NoSuchMethodException | SecurityException e)
-    {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
   @SuppressWarnings("unchecked")
   public <T extends Base> List<T> findAll(Map<String, Object> conditions)
   {
     String canonicalClassName = this.getClass().getCanonicalName();
     List<Map<String, Object>> list =
         Manager.findAll(BaseHelper.getClassTableName(canonicalClassName), conditions);
-
 
     List<T> arrayList = new ArrayList<T>(list.size());
     Constructor cons = null;
@@ -223,6 +209,49 @@ public class Base implements IModel
     }
 
     return arrayList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public <T extends Base> List<T> queryAll(String sqlQuery)
+  {
+    List<Map<String, Object>> list = Manager.findAll(sqlQuery);
+    List<T> arrayList = new ArrayList<T>(list.size());
+    Constructor<T> cons = null;
+    try
+    {
+      cons = (Constructor<T>) this.getClass().getConstructor(Map.class);
+      for (Map<String, Object> attr : list)
+        arrayList.add((T)cons.newInstance(attr));
+    }
+    catch (NoSuchMethodException e)
+    {
+      e.printStackTrace();
+    }
+    catch (InvocationTargetException e)
+    {
+      e.printStackTrace();
+    }
+    catch (InstantiationException e)
+    {
+      e.printStackTrace();
+    }
+    catch (IllegalAccessException e)
+    {
+      e.printStackTrace();
+    }
+
+    return arrayList;
+  }
+  
+  
+  /**
+   * ************************************************* UPDATE 
+ * @return ******************************************************
+   */
+  
+  public static DSLContext startQuery(){
+      Connection conn = null;
+      return DSL.using(conn, SQLDialect.MYSQL);
   }
 
   /**

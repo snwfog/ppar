@@ -10,7 +10,7 @@ public class JDBITest
 {
   public static void main(String[] args)
   {
-    DBI dbi = new DBI("jdbc:mysql://localhost:3306/ppardb", "root", "root");
+    DBI dbi = new DBI(null, null, null);
     Handle h = dbi.open();
     Query<Map<String, Object>> rs = h.createQuery("select * from peers");
 

@@ -168,6 +168,22 @@
       <version>1.8</version>
     </dependency>
 
+	<dependency>
+		<groupId>org.jooq</groupId>
+		<artifactId>jooq</artifactId>
+		<version>3.2.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.jooq</groupId>
+		<artifactId>jooq-meta</artifactId>
+		<version>3.2.2</version>
+	</dependency>
+	<dependency>
+		<groupId>org.jooq</groupId>
+		<artifactId>jooq-codegen</artifactId>
+		<version>3.2.2</version>
+	</dependency>
+
   </dependencies>
 
   <!-- http://stackoverflow.com/questions/14013644/hosting-a-maven-repository-on-github -->

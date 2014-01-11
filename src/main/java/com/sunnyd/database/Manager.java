@@ -43,31 +43,35 @@ public class Manager
   // find by id, return single row
   public static Map<String, Object> find(int id, String tableName)
   {
-    Connection connection = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-
-    try
-    {
-      connection = Connector.getConnection();
-      stmt = connection.createStatement();
-      rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE ID = " + id);
-
-      if (rs.next())
+      return find("SELECT * FROM " + tableName + " WHERE ID = " + id);
+  }
+  
+  
+  public static Map<String, Object> find(String sqlQuery){
+      Connection connection = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      try
       {
-        return convertSQLToJava(rs);
-      }
+        connection = Connector.getConnection();
+        stmt = connection.createStatement();
+        rs = stmt.executeQuery(sqlQuery);
 
-    }
-    catch (SQLException e)
-    {
-      e.printStackTrace();
-    }
-    finally
-    {
-      closeConnection(connection);
-    }
-    return null;
+        if (rs.next())
+        {
+          return convertSQLToJava(rs);
+        }
+
+      }
+      catch (SQLException e)
+      {
+        e.printStackTrace();
+      }
+      finally
+      {
+        closeConnection(connection);
+      }
+      return null;
   }
   
   public static ResultSet rawSQLfind(String queryString)
@@ -126,9 +130,6 @@ public class Manager
   // find multiple by criteria
   public static ArrayList<Map<String, Object>> findAll(String tableName, Map<String, Object> conditions)
   {
-    Connection connection = null;
-    Statement stmt = null;
-    ResultSet rs = null;
     ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
     String where = "";
@@ -155,47 +156,38 @@ public class Manager
       }
     }
 
-    //TODO: Should you return all result when variable "where" is ""(empty)?
-    try
-    {
-      connection = Connector.getConnection();
-      stmt = connection.createStatement();
-      logger.info("SELECT * FROM " + tableName + where);
 
-      rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
-      while (rs.next())
+    return findAll("SELECT * FROM " + tableName + where);
+  }
+  
+  public static ArrayList<Map<String,Object>> findAll(String sqlQuery){
+      Connection connection = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+      
+      try
       {
-        try
+        connection = Connector.getConnection();
+        stmt = connection.createStatement();
+        logger.info(sqlQuery);
+        rs = stmt.executeQuery(sqlQuery);
+        while (rs.next())
         {
-          connection = Connector.getConnection();
-          stmt = connection.createStatement();
-          rs = stmt.executeQuery("SELECT * FROM " + tableName + where);
-          while (rs.next())
-          {
-            Map<String, Object> row = new HashMap<String, Object>();
-            row = convertSQLToJava(rs);
-            results.add(row);
-          }
+          Map<String, Object> row = new HashMap<String, Object>();
+          row = convertSQLToJava(rs);
+          results.add(row);
         }
-        catch (SQLException e)
-        {
-          e.printStackTrace();
-        }
-        return results;
-
       }
-    }
-    catch (SQLException e)
-    {
-      e.printStackTrace();
-    }
-    finally
-    {
-      closeConnection(connection);
-    }
-
-
-    return results;
+      catch (SQLException e)
+      {
+        e.printStackTrace();
+      }
+      finally
+      {
+        closeConnection(connection);
+      }
+      return results;
   }
 
   public static <T extends Base> int save(Class<T> klazz, Map<String, Object> hashMap)
