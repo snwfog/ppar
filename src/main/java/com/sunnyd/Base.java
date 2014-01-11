@@ -140,7 +140,7 @@ public class Base implements IModel
     }
     return null;
   }
-  
+
   @SuppressWarnings("unchecked")
   public static <T> T find(int id, String canonicalClassName)
   {
@@ -149,7 +149,7 @@ public class Base implements IModel
       // Get class attribute from database
       String tableName = BaseHelper.getClassTableName(canonicalClassName);
       Map<String, Object> HM = Manager.find(id, tableName);
-      
+
       //NullCheck
       if(HM == null){
           return null;
@@ -296,8 +296,8 @@ public class Base implements IModel
     updateRelation(classObject, instanceObject);
     return Manager.update(((Base) instanceObject).getId(), classObject, updateAttributes);
   }
-  
-  
+
+
   @SuppressWarnings("unchecked")
   private static <T extends Base> boolean updateRelation(Class<? extends Base> classObject, T instanceObject)
   {
@@ -308,7 +308,7 @@ public class Base implements IModel
 
       // ActiveRelationManyToMany
       if (annotations.length > 0)
-        if (annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationManyToMany") |
+        if (annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationManyToMany") ||
             annotations[0].annotationType().getSimpleName().contentEquals("ActiveRelationHasMany"))
           updateManyRelation(field, annotations[0], classObject, instanceObject);
 
@@ -692,9 +692,9 @@ public class Base implements IModel
       }
     }
   }
-  
-  
-  
+
+
+
   /**
    * ******************************************** DELETE ******************************************************
    */
@@ -707,7 +707,7 @@ public class Base implements IModel
     }
     return success;
   }
-  
+
   // Delete Parent Data after child has been deleted
   private static boolean destroyHierarchy(Class<?> classObject, Integer id)
   {
@@ -719,8 +719,8 @@ public class Base implements IModel
     }
     return success;
   }
-  
-  
+
+
   /**
    * ****************************** Relations Lazy load ***********************************************
    */
@@ -918,9 +918,9 @@ public class Base implements IModel
     }
   }
 
-  
-  
-  
+
+
+
   /**
    * *** MUTATOR ***************************************************
    */
