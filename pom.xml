@@ -216,5 +216,4 @@
             <url>file://${project.build.directory}/mvn-repo</url>
         </repository>
     </distributionManagement>
->>>>>>> 4839c78539f9a0b75bea05d3a43014b3a7a08b79
 </project>
