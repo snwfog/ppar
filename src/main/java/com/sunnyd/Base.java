@@ -86,7 +86,8 @@ public class Base implements IModel
           break;// If method does not have setMethod then it is
           // not a db Attribute
         }
-
+      }else{
+          System.out.println("Result MAP does not contain"+fieldName);
       }
     }
 
