@@ -22,12 +22,6 @@ import com.sunnyd.database.Manager;
 import org.apache.commons.lang3.StringUtils;
 
 public class BaseHelper {
-    
-    public static void main(String[] args) {
-        BaseHelper a = new BaseHelper();
-        System.out.println(BaseHelper.getClassTableName(a.getClass()));
-    }
-
 
     //Get classObject attribute and value
     static Map<String, Object> getTableFieldNameAndValue(Object classObject) {
@@ -45,7 +39,6 @@ public class BaseHelper {
                 try {
                     field.setAccessible(true);
                     Object value = field.get(classObject);
-                    System.out.println(value);
                     tableAttributes.put(field.getName(), value);
                 } catch (IllegalArgumentException | SecurityException | IllegalAccessException  e) {
                     e.printStackTrace();

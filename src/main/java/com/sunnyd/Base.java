@@ -136,8 +136,10 @@ public class Base implements IModel
             e1.printStackTrace();
         }
         
-    }else{
+    }else if(resultList.size() >  1){
         System.out.println("Found more than 1 matching condition");
+    }else{
+        System.out.println("Found none");
     }
     return null;
   }
@@ -986,6 +988,10 @@ public class Base implements IModel
       e.printStackTrace();
     }
     return null;
+  }
+  
+  public Map<String, Object> toMap(){
+      return BaseHelper.getTableFieldNameAndValue(this);
   }
 
 }
