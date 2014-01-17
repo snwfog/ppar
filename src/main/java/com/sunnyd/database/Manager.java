@@ -441,6 +441,7 @@ public class Manager {
         try {
             connection = Connector.getConnection();
             stmt = connection.createStatement();
+            System.out.println("DELETE FROM " + tableName + " WHERE ID = " + id);
             stmt.execute( "DELETE FROM " + tableName + " WHERE ID = " + id );
         } catch ( SQLException e ) {
 
