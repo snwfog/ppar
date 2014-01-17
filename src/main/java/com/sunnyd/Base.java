@@ -125,7 +125,9 @@ public class Base implements IModel
   @SuppressWarnings({ "rawtypes", "unchecked"})
   public <T> T find(Map<String, Object> conditions)
   {
-    List<Map<String,Object>> resultList = Manager.findAll(this.getClass().getCanonicalName(), conditions);
+      
+    String tableName = BaseHelper.getClassTableName(this.getClass().getCanonicalName());
+    List<Map<String,Object>> resultList = Manager.findAll(tableName, conditions);
     if(resultList.size()==1){
         Constructor cons;
         try {
