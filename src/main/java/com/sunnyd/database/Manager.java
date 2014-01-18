@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -350,7 +351,9 @@ public class Manager {
                             stm.setString( counter, (String) value );
                             break;
                         case "Date":
-                            stm.setDate( counter, new java.sql.Date( ((java.util.Date) value).getTime() ) );
+                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            String currentTime = sdf.format(value);
+                            stm.setTimestamp(counter, Timestamp.valueOf(currentTime) );   
                             break;
                         default:
                             logger.error(
