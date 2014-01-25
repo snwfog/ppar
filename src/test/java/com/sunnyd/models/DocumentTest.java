@@ -28,13 +28,19 @@ public class DocumentTest extends Base implements IModel{
     @BeforeClass
     public void init() throws SQLException {
         Prep.init(tableName);
+        Prep.init("peers");
+        
     }
     
     public void prepTable() throws SQLException {
-        Prep.purgeAllRecord("peers", false);
-        Prep.resetPrimaryKey("peers");    
         Prep.purgeAllRecord(tableName, false);
-        Prep.resetPrimaryKey(tableName);
+        Prep.resetPrimaryKey(tableName, false);
+        Prep.purgeAllRecord("peers", false);
+        Prep.resetPrimaryKey("peers", false);
+
+
+    
+
     }
 
     @Test

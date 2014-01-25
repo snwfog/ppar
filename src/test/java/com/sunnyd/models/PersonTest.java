@@ -27,11 +27,11 @@ public class PersonTest extends Base implements IModel {
     public void prepTable() throws SQLException {
 
         Prep.purgeAllRecord("grand_childs", false);
-        Prep.resetPrimaryKey("grand_childs");
+        Prep.resetPrimaryKey("grand_childs", false);
         Prep.purgeAllRecord("childs", false);
-        Prep.resetPrimaryKey("childs");
+        Prep.resetPrimaryKey("childs", false);
         Prep.purgeAllRecord(tableName, false);
-        Prep.resetPrimaryKey(tableName);
+        Prep.resetPrimaryKey(tableName, false);
     }
 
     @Test

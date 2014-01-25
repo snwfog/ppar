@@ -37,9 +37,9 @@ public class ManyToManyTest extends Base implements IModel{
     
     public void prepTable() throws SQLException {
         Prep.purgeAllRecord("groups", false);
-        Prep.resetPrimaryKey("groups");    
+        Prep.resetPrimaryKey("groups", false);    
         Prep.purgeAllRecord("categories", false);
-        Prep.resetPrimaryKey("categories");
+        Prep.resetPrimaryKey("categories", false);
         Prep.purgeAllRecord("groups_categories", false);
     }
 

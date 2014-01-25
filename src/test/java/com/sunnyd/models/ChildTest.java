@@ -26,12 +26,12 @@ public class ChildTest extends PersonTest {
     }
 
     public void prepTable() throws SQLException {
-        Prep.purgeAllRecord("grand_childs", true);
-        Prep.resetPrimaryKey("grand_childs");
-        Prep.purgeAllRecord(tableName, true);
-        Prep.resetPrimaryKey(tableName);
-        Prep.purgeAllRecord(parentTableName, true);
-        Prep.resetPrimaryKey(parentTableName);
+        Prep.purgeAllRecord("grand_childs", false);
+        Prep.resetPrimaryKey("grand_childs", false);
+        Prep.purgeAllRecord(tableName, false);
+        Prep.resetPrimaryKey(tableName, false);
+        Prep.purgeAllRecord(parentTableName, false);
+        Prep.resetPrimaryKey(parentTableName, false);
     }
 
     @Test

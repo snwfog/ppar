@@ -28,9 +28,9 @@ public class GrandChildTest extends ChildTest {
         Prep.purgeAllRecord(tableName, false);
         Prep.purgeAllRecord(parentTableName, false);
         Prep.purgeAllRecord(grandParentTableName, false);
-        Prep.resetPrimaryKey(tableName);
-        Prep.resetPrimaryKey(parentTableName);
-        Prep.resetPrimaryKey(grandParentTableName);
+        Prep.resetPrimaryKey(tableName, false);
+        Prep.resetPrimaryKey(parentTableName, false);
+        Prep.resetPrimaryKey(grandParentTableName, false);
     }
 
     @Test

@@ -27,9 +27,9 @@ public class PeerTest extends Base implements IModel {
     
     public void prepTable() throws SQLException {
         Prep.purgeAllRecord(relatedTableName, false);
-        Prep.resetPrimaryKey(relatedTableName);    
+        Prep.resetPrimaryKey(relatedTableName, false);    
         Prep.purgeAllRecord(tableName, false);
-        Prep.resetPrimaryKey(tableName);
+        Prep.resetPrimaryKey(tableName, false);
     }
 
     @Test

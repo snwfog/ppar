@@ -37,7 +37,7 @@ public class ManagerTest extends DatabaseTestSetup {
         logger.info( "Cleaning records and reset increment key..." );
         Prep.init( tableName );
         Prep.purgeAllRecord( tableName, false );
-        Prep.resetPrimaryKey( tableName );
+        Prep.resetPrimaryKey( tableName, false );
     }
 
     @Test
