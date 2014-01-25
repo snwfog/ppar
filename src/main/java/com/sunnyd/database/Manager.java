@@ -424,11 +424,9 @@ public class Manager {
                 id = stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" ) !=
                         0 ? (int) hashMap.get( "id" ) : 0;
             }
+        } catch (MySQLIntegrityConstraintViolationException e){
+            throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
         } catch ( SQLException e ) {
-            if ( e.getClass().getCanonicalName() ==
-                    "com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException" ) {
-                throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
-            }
             e.printStackTrace();
         } finally {
             closeConnection( connection );

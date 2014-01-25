@@ -62,7 +62,8 @@ public class Category extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-//        Category a = new Category();
-//        System.out.println(Arrays.asList(a.getGroups()).toString());
+        Category a = new Category();
+        a.save();
+        System.out.println(Arrays.asList(a.getGroups()).toString());
     }
 }
