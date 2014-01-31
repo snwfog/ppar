@@ -29,6 +29,7 @@ public class Person extends Base implements IModel {
 
     public Person(){
         super();
+        status = "defaultStatus";
     }
     public Person(Map<String, Object> HM) {
         super(HM);

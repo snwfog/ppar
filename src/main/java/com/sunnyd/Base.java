@@ -3,6 +3,7 @@ package com.sunnyd;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.annotations.ActiveRecordInheritFrom;
+import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRelationManyToMany;
 import com.sunnyd.database.Manager;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.sql.Connection;
 import java.util.*;
 
@@ -43,12 +45,19 @@ public class Base implements IModel {
         id = (Integer) HM.get("id");
         creationDate = (Date) HM.get("creationDate");
         lastModifiedDate = (Date) HM.get("lastModifiedDate");
-
+        
         // Get Caller ClassName
         Class<?> classObject = this.getClass();
 
+        //Default values
+        Map<String, Object> defaultValues = getDefaultValues();    
+        
+        //HM has data is more valuable than defaultValues
+        defaultValues.putAll(HM);
+        
+
         // Set Attribute
-        Base.setAttributes(classObject, this, HM);
+        Base.setAttributes(classObject, this, defaultValues);
 
         // Set updateDateFlag to false after setter methods
         this.setUpdateFlag(false);
@@ -57,7 +66,7 @@ public class Base implements IModel {
     public static void setAttributes(Class<?> classObject, Object instanceObject, Map<String, Object> data) {
         
         // Get all activeRecord/table attribute from THIS class
-        Field[] fields = BaseHelper.getTableField(classObject);
+        Field[] fields = classObject.getDeclaredFields();
         for (Field field : fields) {
             String fieldName = field.getName();
             Class<?> fieldType = field.getType();
@@ -65,23 +74,20 @@ public class Base implements IModel {
             //set field value from MAP using field name
             if (data.containsKey(fieldName)) {
                 Object value = data.get(fieldName);
-                String capitalizeField = StringUtils.capitalize(fieldName);
-                java.lang.reflect.Method method;
                 try {
                     if (value != null) {
-                        //Active Record field must have setter and getter
-                        method = classObject.getDeclaredMethod("set" + capitalizeField, fieldType);
-                        method.invoke(instanceObject, fieldType.cast(value));
+                        
+                        if(!Modifier.isFinal(field.getModifiers())){
+                            field.setAccessible(true);
+                            field.set(instanceObject, fieldType.cast(value));
+                        }
                     }
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                    System.out.println("ActiveRecord Field does not have setter and getter");
-                    break;
-                }catch(Exception e){
+                } catch(Exception e){
                     e.printStackTrace(); 
                 }
             } else {
-                System.out.println("MAP does not contain " + fieldName);
+                if(field.getAnnotation(ActiveRecordField.class) != null)
+                    System.out.println("MAP does not contain activeRecord Field " + fieldName);
             }
         }
 
@@ -798,9 +804,66 @@ public class Base implements IModel {
         }
         return null;
     }
+    
+    private Map<String, Object> getDefaultValues(){
+        try {
+            return this.getClass().getConstructor().newInstance().toMap(true);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public Map<String, Object> toMap() {
         return BaseHelper.getTableFieldNameAndValue(this);
+    }
+    
+
+    
+//    private Map<String, Object> getDefaultValues(){
+//        try {
+//            Base temp = (Base)this.getClass().getConstructor().newInstance();
+//            return temp.toMapExcludeNullField();
+//        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+//                | NoSuchMethodException | SecurityException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+    
+    
+    
+    
+    public Map<String, Object> toMap(boolean excludeNull){     
+        Map<String, Object> attributes = new HashMap<String, Object>();
+        Class<?> classObject = this.getClass();
+        boolean hasSuper = true;
+        
+        while(hasSuper){
+            Field[] classFields = classObject.getDeclaredFields();
+            for (int i = 0; i < classFields.length; i++) {
+                Field field = classFields[i];
+                    try {
+                        field.setAccessible(true);
+                        Object value = field.get(this);
+                        if( value == null && excludeNull)
+                            continue;
+                        attributes.put(field.getName(), value);
+                    } catch (IllegalArgumentException | SecurityException | IllegalAccessException  e) {
+                        e.printStackTrace();
+                    }
+            }
+            
+            if(classObject.getAnnotation(ActiveRecordInheritFrom.class) != null){
+                classObject = classObject.getSuperclass();
+            }else{
+                hasSuper = false;
+            }
+            
+        }
+        return attributes;   
     }
 
 }

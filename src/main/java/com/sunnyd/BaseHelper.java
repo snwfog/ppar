@@ -122,20 +122,20 @@ public class BaseHelper {
     
     static Field[] getTableField(Class<?> classObject) {
         Field[] classFields = classObject.getDeclaredFields();
-        List<Field> tableAttributes = new ArrayList<Field>();
+        List<Field> classARFields = new ArrayList<Field>();
         for (int i = 0; i < classFields.length; i++) {
             Field field = classFields[i];
             Annotation attrAnnotation = field.getAnnotation(ActiveRecordField.class);
             if (attrAnnotation != null) {
                 try {
-                    tableAttributes.add(field);
+                    classARFields.add(field);
                 } catch (IllegalArgumentException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
         }
-        return tableAttributes.toArray(new Field[tableAttributes.size()]);
+        return classARFields.toArray(new Field[classARFields.size()]);
     }
    
     

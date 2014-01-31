@@ -22,12 +22,12 @@ public class GrandChild extends Child{
     }
     
     public static void main(String[] args) {
-        GrandChild b = new GrandChild().find(1);
-        b.setGrandChildName("adsad");
-        b.setChildName("grandMoney");
-        b.setFirstName("aaaaaaa");
-        b.setLastName("GrandLuffy");
-        b.update();
+        
+        Map<String, Object> qqq = new HashMap<>();
+        qqq.put("grandChildName", "bitch");
+        qqq.put("childName", "bbbbbb");
+        GrandChild b = new GrandChild(qqq);
+        System.out.println(b.toMap(true));
 //        Integer id = b.getId();
 //        System.out.println(id);
 //        GrandChild a = new GrandChild().find(id);

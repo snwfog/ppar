@@ -19,6 +19,7 @@ public class Child extends Person {
     
     public Child(){
         super();
+        childName = "defaultChildName";
     }
     
     public Child(Map<String, Object> HM) {

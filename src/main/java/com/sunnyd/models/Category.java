@@ -25,6 +25,8 @@ public class Category extends Base implements IModel {
 
     public Category() {
         super();
+        categoryName = "mmmmmm";
+        description = "1111122";
     }
 
     public Category(Map<String, Object> HM) {
@@ -62,8 +64,11 @@ public class Category extends Base implements IModel {
     }
 
     public static void main(String[] args) {
-        Category a = new Category();
-        a.save();
-        System.out.println(Arrays.asList(a.getGroups()).toString());
+      Map<String, Object> qqq = new HashMap<>();
+      qqq.put("description", "asdasdads");
+      Category a = new Category(qqq);
+      System.out.println(a.toMap(true));
+      
+      System.out.println(Arrays.asList(a.getGroups()).toString());
     }
 }

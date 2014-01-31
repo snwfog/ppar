@@ -46,10 +46,10 @@ public class GrandChildTest extends ChildTest {
         Assert.assertNull(gc.getCreationDate());
         Assert.assertNull(gc.getLastModifiedDate());
         Assert.assertNull(gc.getGrandChildName());
-        Assert.assertNull(gc.getChildName());
+        Assert.assertEquals(gc.getChildName(), "defaultChildName");
         Assert.assertNull(gc.getFirstName());
         Assert.assertNull(gc.getLastName());
-        Assert.assertNull(gc.getStatus());
+        Assert.assertEquals(gc.getStatus(), "defaultStatus");
         Assert.assertFalse(gc.getUpdateFlag());
         gc.setChildName("grandMonkey");
         gc.setFirstName("GrandD");

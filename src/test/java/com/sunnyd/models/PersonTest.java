@@ -48,11 +48,12 @@ public class PersonTest extends Base implements IModel {
         Assert.assertNull(a.getLastModifiedDate());
         Assert.assertNull(a.getFirstName());
         Assert.assertNull(a.getLastName());
-        Assert.assertNull(a.getStatus());
+        Assert.assertEquals(a.getStatus(), "defaultStatus");
         Assert.assertFalse(a.getUpdateFlag());
         a.setStatus("aoidjaoidja");
         a.setFirstName("a");
         a.setLastName("b");
+        a.setStatus("aisdjoaijd");
         Assert.assertTrue(a.save());
         Integer id = 1;
         Assert.assertEquals(a.getId().intValue(), id.intValue());
@@ -63,7 +64,7 @@ public class PersonTest extends Base implements IModel {
     public void TestFind() {
         Person a = new Person().find(1);
         Date today = new Date();
-        Assert.assertNull(a.getStatus());
+        Assert.assertEquals(a.getStatus(), "defaultStatus");
         Assert.assertEquals("a", a.getFirstName());
         Assert.assertEquals("b", a.getLastName());
         Integer id = 1;

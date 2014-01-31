@@ -52,10 +52,10 @@ public class ChildTest extends PersonTest {
         Assert.assertNull(c.getId());
         Assert.assertNull(c.getCreationDate());
         Assert.assertNull(c.getLastModifiedDate());
-        Assert.assertNull(c.getChildName());
+        Assert.assertEquals(c.getChildName(), "defaultChildName");
         Assert.assertNull(c.getFirstName());
         Assert.assertNull(c.getLastName());
-        Assert.assertNull(c.getStatus());
+        Assert.assertEquals(c.getStatus(), "defaultStatus");
         Assert.assertFalse(c.getUpdateFlag());
         
         //Set Data
