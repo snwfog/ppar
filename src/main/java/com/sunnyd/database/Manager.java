@@ -507,32 +507,27 @@ public class Manager {
             PreparedStatement stm = prepareUpdateStatementSQL( id, hashMap, tableName, connection );
             stm.executeUpdate();
 
-            String klazzName = klazz.getSimpleName();
-            String funnelName = "com.sunnyd.database.hash." + klazzName + "Funnel";
-
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
             String thisModelSha = Manager.getSha( model, funnel );
             Manager.updateSha( id, tableName, thisModelSha );
 
-        } catch ( SQLException e ) {
-
+        } catch ( SQLException | VersionChangedException e ) {
             isUpdated = false;
-        } catch ( VersionChangedException e ) {
-            isUpdated = false;
+            logger.error("Could not update the model, semaphore is locked ", e);
             throw Throwables.propagate( e );
-        } catch ( InvocationTargetException e ) {
+        } catch ( InvocationTargetException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException e ) {
+            logger.error("Problem with model serialization and hash id generation, possible unstable model ", e);
+        }
 
-        } catch ( NoSuchMethodException e ) {
-
-        } catch ( InstantiationException e ) {
-
-        } catch ( IllegalAccessException e ) {
-
-        } finally {
+        try {
             // Release mutex lock
             closeConnection( connection );
             Manager.releaseLock( id, tableName );
+        } catch ( SQLException e ) {
+            logger.error( "Could not release lock on model active record model, possible locked forever ", e );
+            throw Throwables.propagate( e );
         }
 
         return isUpdated;
@@ -686,46 +681,27 @@ public class Manager {
         return camel.replaceAll( "([a-z])([A-Z])", "$1_$2" ).toLowerCase();
     }
 
-    private static synchronized void acquireLock( int id, String tableName ) {
-        Connection conn = null;
-        Statement stmt = null;
-
-        try {
-            conn = Connector.getConnection();
-            stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
-            if ( !rs.next() ) {
-                throw new NonExistingRecordException( id, tableName );
-            } else if ( rs.getInt( 1 ) != 0 ) {
-                throw new CannotAcquireSemaphoreException( id, tableName );
-            } else {
-                stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 1 WHERE id = " + id );
-            }
-        } catch ( SQLException e ) {
-
-        } finally {
-            closeConnection( conn );
+    private static synchronized void acquireLock( int id, String tableName ) throws SQLException {
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
+        if ( !rs.next() ) {
+            throw new NonExistingRecordException( id, tableName );
+        } else if ( rs.getInt( 1 ) != 0 ) {
+            throw new CannotAcquireSemaphoreException( id, tableName );
+        } else {
+            stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 1 WHERE id = " + id );
         }
     }
 
-    private static synchronized void releaseLock( int id, String tableName ) {
-        Connection conn = null;
-
-        try {
-            conn = Connector.getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
-            if ( !rs.next() ) {
-                throw new NonExistingRecordException( id, tableName );
-            } else if ( rs.getInt( 1 ) != 1 ) {
-                throw new CannotReleaseSemaphoreException( id, tableName );
-            } else {
-                stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 0 WHERE id = " + id );
-            }
-        } catch ( SQLException e ) {
-
-        } finally {
-            closeConnection( conn );
+    private static synchronized void releaseLock( int id, String tableName ) throws SQLException {
+        Statement stmt = connection.createStatement();
+        ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
+        if ( !rs.next() ) {
+            throw new NonExistingRecordException( id, tableName );
+        } else if ( rs.getInt( 1 ) != 1 ) {
+            throw new CannotReleaseSemaphoreException( id, tableName );
+        } else {
+            stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 0 WHERE id = " + id );
         }
     }
 
