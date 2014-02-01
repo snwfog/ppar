@@ -489,10 +489,8 @@ public class Manager {
 
     // update 1 or more fields of a single row
     public static <T extends Base> boolean update( int id, Class<T> klazz, Map<String, Object> hashMap ) {
-        Connection connection = null;
-        Statement stmt = null;
         String tableName = BaseHelper.getClassTableName( klazz );
-        boolean isUpdated = true;
+        boolean isUpdated = false;
 
         try {
             // Acquire mutex lock
@@ -512,10 +510,11 @@ public class Manager {
             String thisModelSha = Manager.getSha( model, funnel );
             Manager.updateSha( id, tableName, thisModelSha );
 
+            // Set is updated true
+            isUpdated = true;
+
         } catch ( SQLException | VersionChangedException e ) {
-            isUpdated = false;
             logger.error("Could not update the model, semaphore is locked ", e);
-            throw Throwables.propagate( e );
         } catch ( InvocationTargetException | NoSuchMethodException
                 | InstantiationException | IllegalAccessException e ) {
             logger.error("Problem with model serialization and hash id generation, possible unstable model ", e);
