@@ -257,6 +257,7 @@ public class Manager {
         PreparedStatement stmt = null;
 
         try {
+            Connection con = Connector.getConnection();
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 original.put( "creationDate", new Date() );
@@ -522,8 +523,9 @@ public class Manager {
 
         try {
             // Release mutex lock
-            closeConnection( connection );
+
             Manager.releaseLock( id, tableName );
+            closeConnection( connection );
         } catch ( SQLException e ) {
             logger.error( "Could not release lock on model active record model, possible locked forever ", e );
             throw Throwables.propagate( e );
@@ -766,7 +768,10 @@ public class Manager {
     private static void closeConnection( Connection connection ) {
         try {
             if ( !connection.isClosed() ) {
-                connection.close();
+                System.out.println("Closing Connection");
+                //DISABLED TEMPORARY will caause to many connection problem
+//                connection.close();
+//                connection = Connector.getConnection();
             }
         } catch ( SQLException e ) {
 
