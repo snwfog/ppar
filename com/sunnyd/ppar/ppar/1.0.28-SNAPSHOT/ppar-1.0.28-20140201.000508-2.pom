@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sunnyd.ppar</groupId>
     <artifactId>ppar</artifactId>
-    <version>1.0.23-SNAPSHOT</version>
+    <version>1.0.28-SNAPSHOT</version>
     <properties>
         <ppar.database>ppardb</ppar.database>
         <ppar.host>localhost</ppar.host>
@@ -189,6 +189,22 @@
             <artifactId>commons-codec</artifactId>
             <version>1.8</version>
         </dependency>
+
+		<dependency>
+			<groupId>org.jooq</groupId>
+			<artifactId>jooq</artifactId>
+			<version>3.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jooq</groupId>
+			<artifactId>jooq-meta</artifactId>
+			<version>3.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jooq</groupId>
+			<artifactId>jooq-codegen</artifactId>
+			<version>3.2.2</version>
+		</dependency>
 
     </dependencies>
 
