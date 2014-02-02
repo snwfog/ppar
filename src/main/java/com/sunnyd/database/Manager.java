@@ -11,7 +11,6 @@ import com.sunnyd.database.concurrency.exception.CannotAcquireSemaphoreException
 import com.sunnyd.database.concurrency.exception.CannotReleaseSemaphoreException;
 import com.sunnyd.database.concurrency.exception.NonExistingRecordException;
 import com.sunnyd.database.concurrency.exception.VersionChangedException;
-import com.sunnyd.database.query.SQLTableMetaData;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class Manager {
+
     static final Logger logger = LoggerFactory.getLogger( Manager.class );
 
     private static Connection connection;
@@ -48,155 +48,129 @@ public class Manager {
 
     }
 
-  // find by id, return single row
-  public static Map<String, Object> find(int id, String tableName)
-  {
-      return find("SELECT * FROM " + tableName + " WHERE ID = " + id);
-  }
-  
-  
-  public static Map<String, Object> find(String sqlQuery){
-      Connection connection = null;
-      Statement stmt = null;
-      ResultSet rs = null;
-      try
-      {
-        connection = Connector.getConnection();
-        stmt = connection.createStatement();
-        rs = stmt.executeQuery(sqlQuery);
+    // find by id, return single row
+    public static Map<String, Object> find( int id, String tableName ) {
+        return find( "SELECT * FROM " + tableName + " WHERE ID = " + id );
+    }
 
-        if (rs.next())
-        {
-          return convertSQLToJava(rs);
+
+    public static Map<String, Object> find( String sqlQuery ) {
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( sqlQuery );
+
+            if ( rs.next() ) {
+                return convertSQLToJava( rs );
+            }
+
+        } catch ( SQLException e ) {
+            e.printStackTrace();
+        } finally {
+            closeConnection( connection );
+        }
+        return null;
+    }
+
+    public static ResultSet rawSQLfind( String queryString ) {
+        //Connection remains open
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( queryString );
+            return rs;
+        } catch ( SQLException e ) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Find by id, return single row of the result
+     *
+     * @param tableName
+     * @param column
+     * @param value
+     * @return
+     */
+    public static Integer[] find( String tableName, String column, Object value ) {
+
+        value = convertJavaToSql( value );
+
+        try {
+            ArrayList<Integer> result = new ArrayList<Integer>();
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tableName + " WHERE " + column + "=" + value );
+
+            while ( rs.next() ) {
+                result.add( rs.getInt( "id" ) );
+            }
+            return result.toArray( new Integer[result.size()] );
+
+        } catch ( SQLException e ) {
+            logger.error( "Error trying to find by id " + tableName + " " + column + " " + value.toString() );
+        } finally {
+            closeConnection( connection );
+        }
+        return null;
+    }
+
+    // find multiple by criteria
+    public static ArrayList<Map<String, Object>> findAll( String tableName, Map<String, Object> conditions ) {
+
+        String where = "";
+        Map<String, String> SQLConditions = convertJavaToSQL( conditions );
+
+        if ( conditions != null ) {
+            // Return all if condition is null
+            for ( String key : SQLConditions.keySet() ) {
+                //        if (conditions.get(toCamelCase(key)) instanceof String
+                //            && !SQLTableMetaData.hasUniqueKeyConstraint(tableName, key))
+                //          where += key + " == " + SQLConditions.get(key) + "%' AND ";
+                //        else
+                where += key + " = '" + SQLConditions.get( key ) + "' AND ";
+            }
+
+            // remove trailing comma
+            where = where.replaceAll( " AND $", "" ); // col1, col2, col3
+
+            if ( !where.equals( "" ) ) {
+                where = " WHERE " + where;
+            }
         }
 
-      }
-      catch (SQLException e)
-      {
-        e.printStackTrace();
-      }
-      finally
-      {
-        closeConnection(connection);
-      }
-      return null;
-  }
-  
-  public static ResultSet rawSQLfind(String queryString)
-  {
-    //Connection remains open
-    Connection connection = null;
-    Statement stmt = null;
-    ResultSet rs = null;
 
-    try
-    {
-      connection = Connector.getConnection();
-      stmt = connection.createStatement();
-      rs = stmt.executeQuery(queryString);
-      return rs;
-    }
-    catch (SQLException e)
-    {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
-  // find by id, return single row
-  public static Integer[] find(String tableName, String column, Object value)
-  {
-    Connection connection = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    value = convertJavaToSql(value);
-    try
-    {
-      ArrayList<Integer> result = new ArrayList<Integer>();
-      connection = Connector.getConnection();
-      stmt = connection.createStatement();
-      rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE " + column + "=" + value);
-
-      while (rs.next())
-      {
-        result.add(rs.getInt("id"));
-      }
-      return (Integer[]) result.toArray(new Integer[result.size()]);
-
-    }
-    catch (SQLException e)
-    {
-      e.printStackTrace();
-    }
-    finally
-    {
-      closeConnection(connection);
-    }
-    return null;
-  }
-
-  // find multiple by criteria
-  public static ArrayList<Map<String, Object>> findAll(String tableName, Map<String, Object> conditions)
-  {
-    ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-
-    String where = "";
-    Map<String, String> SQLConditions = convertJavaToSQL(conditions);
-
-    if (conditions != null)
-    {
-      //Return all if condition is null
-      for (String key : SQLConditions.keySet())
-      {
-//        if (conditions.get(toCamelCase(key)) instanceof String
-//            && !SQLTableMetaData.hasUniqueKeyConstraint(tableName, key))
-//          where += key + " == " + SQLConditions.get(key) + "%' AND ";
-//        else
-          where += key + " = '" + SQLConditions.get(key) + "' AND ";
-      }
-
-      // remove trailing comma
-      where = where.replaceAll(" AND $", ""); // col1, col2, col3
-
-      if (!where.equals(""))
-      {
-        where = " WHERE " + where;
-      }
+        return findAll( "SELECT * FROM " + tableName + where );
     }
 
+    public static ArrayList<Map<String, Object>> findAll( String sqlQuery ) {
+        ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
-    return findAll("SELECT * FROM " + tableName + where);
-  }
-  
-  public static ArrayList<Map<String,Object>> findAll(String sqlQuery){
-      Connection connection = null;
-      Statement stmt = null;
-      ResultSet rs = null;
-      ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
-      
-      try
-      {
-        connection = Connector.getConnection();
-        stmt = connection.createStatement();
-        logger.info(sqlQuery);
-        rs = stmt.executeQuery(sqlQuery);
-        while (rs.next())
-        {
-          Map<String, Object> row = new HashMap<String, Object>();
-          row = convertSQLToJava(rs);
-          results.add(row);
+        try {
+            Statement stmt = connection.createStatement();
+
+            logger.info( sqlQuery );
+
+            ResultSet rs = stmt.executeQuery( sqlQuery );
+            while ( rs.next() ) {
+                Map<String, Object> row = convertSQLToJava( rs );
+                results.add( row );
+            }
+        } catch ( SQLException e ) {
+            logger.error( "Error trying to retrieve all results for " + sqlQuery, e );
+        } finally {
+            closeConnection( connection );
         }
-      }
-      catch (SQLException e)
-      {
-        e.printStackTrace();
-      }
-      finally
-      {
-        closeConnection(connection);
-      }
-      return results;
-  }
+
+        return results;
+    }
 
 
     public static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap ) {
@@ -206,43 +180,36 @@ public class Manager {
     }
 
     private static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap, Funnel<T> funnel ) {
-        Connection connection = null;
-        Statement stmt = null;
-        ResultSet rs = null;
-        String tableName = BaseHelper.getClassTableName( klazz );
 
+        String tableName = BaseHelper.getClassTableName( klazz );
         int id = 0;
 
         try {
             // no id is provided (means auto-gen id)
             if ( !hashMap.containsKey( "id" ) ) {
-                PreparedStatement stm = prepareInsertStatementSQL( hashMap, tableName, true );
-                stm.executeUpdate();
-                rs = stm.getGeneratedKeys();
+                PreparedStatement stmt = prepareInsertStatementSQL( hashMap, tableName, true );
+                stmt.executeUpdate();
+                ResultSet rs = stmt.getGeneratedKeys();
                 if ( rs.next() ) {
                     id = rs.getInt( 1 );
                 }
             } else // id is provided (means
             {
-                PreparedStatement stm = prepareInsertStatementSQL( hashMap, tableName, false );
-                id = stm.executeUpdate() != 0 ? (int) hashMap.get( "id" ) : 0;
+                PreparedStatement stmt = prepareInsertStatementSQL( hashMap, tableName, false );
+                id = stmt.executeUpdate() != 0 ? (int) hashMap.get( "id" ) : 0;
             }
         } catch ( SQLException e ) {
-            e.printStackTrace();
+            logger.error( "Error trying to save model for attributes " + hashMap.toString() + ", auto generated id",
+                    e );
         }
 
         try {
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
             String thisModelSha = Manager.getSha( model, funnel );
             Manager.updateSha( id, tableName, thisModelSha );
-        } catch ( InvocationTargetException e ) {
-            e.printStackTrace();
-        } catch ( NoSuchMethodException e ) {
-            e.printStackTrace();
-        } catch ( InstantiationException e ) {
-            e.printStackTrace();
-        } catch ( IllegalAccessException e ) {
-            e.printStackTrace();
+        } catch ( InvocationTargetException | NoSuchMethodException
+                | InstantiationException | IllegalAccessException e ) {
+            logger.error( "Error trying to update the SHA for recently saved model" );
         }
 
         return id;
@@ -257,7 +224,6 @@ public class Manager {
         PreparedStatement stmt = null;
 
         try {
-            Connection con = Connector.getConnection();
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 original.put( "creationDate", new Date() );
@@ -266,15 +232,15 @@ public class Manager {
 
             String columns = "(";
             String values = "(";
+
             for ( String key : original.keySet() ) // field, value pair
             {
                 columns += toUnderscoreCase( key ) + ",";
                 values += "?,";
             }
+
             columns = columns.substring( 0, columns.length() - 1 ) + ")";
             values = values.substring( 0, values.length() - 1 ) + ")";
-
-            logger.info( "INSERT INTO " + tableName + " " + columns + " VALUES " + values );
 
             if ( generateKey ) {
                 stmt = connection.prepareStatement( "INSERT INTO " + tableName + " " + columns + " VALUES " + values,
@@ -283,7 +249,8 @@ public class Manager {
                 stmt = connection.prepareStatement( "INSERT INTO " + tableName + " " + columns + " VALUES " + values );
             }
 
-            setJavaToSQL( stmt, original, tableName, connection );
+            logger.info( "General the statement from " + original.toString() + " for " + tableName );
+            setJavaToSQL( stmt, original, tableName );
 
         } catch ( SQLException e ) {
             return null;
@@ -295,7 +262,7 @@ public class Manager {
 
 
     public static PreparedStatement prepareUpdateStatementSQL( Integer id, Map<String, Object> original,
-            String tableName, Connection connection ) {
+            String tableName ) {
 
         if ( original == null ) {
             return null;
@@ -314,13 +281,14 @@ public class Manager {
             {
                 sets += toUnderscoreCase( key ) + " = ?,";
             }
+
             sets = sets.substring( 0, sets.length() - 1 );
-            System.out.println( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
+            logger.warn( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
             stmt = connection.prepareStatement( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
-            setJavaToSQL( stmt, original, tableName, connection );
+            setJavaToSQL( stmt, original, tableName );
 
         } catch ( SQLException e ) {
-            return null;
+            logger.error( "Error preparing SQL update statement" );
         }
 
         return stmt;
@@ -328,8 +296,7 @@ public class Manager {
 
 
 
-    private static void setJavaToSQL( PreparedStatement stm, Map<String, Object> original, String tableName,
-            Connection connection ) {
+    private static void setJavaToSQL( PreparedStatement stm, Map<String, Object> original, String tableName ) {
         try {
             int counter = 1;
             for ( String key : original.keySet() ) // field, value pair
@@ -352,9 +319,9 @@ public class Manager {
                             stm.setString( counter, (String) value );
                             break;
                         case "Date":
-                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            String currentTime = sdf.format(value);
-                            stm.setTimestamp(counter, Timestamp.valueOf(currentTime) );   
+                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+                            String currentTime = sdf.format( value );
+                            stm.setTimestamp( counter, Timestamp.valueOf( currentTime ) );
                             break;
                         default:
                             logger.error(
@@ -372,15 +339,15 @@ public class Manager {
                 counter += 1;
             }
         } catch ( SQLException e ) {
-            e.printStackTrace();
+            logger.error( "Error while setting Java to SQL", e );
         }
+
+        logger.info( "Logger " + stm.toString() );
     }
 
     public static int save( String tableName, Map<String, Object> hashMap )
             throws MySQLIntegrityConstraintViolationException {
         //for table not related to any model (i.e relation table)
-        Connection connection = null;
-        Statement stmt = null;
         ResultSet rs = null;
 
         String columns = "";
@@ -389,27 +356,26 @@ public class Manager {
         int id = 0;
 
         try {
-            connection = Connector.getConnection();
-            Map<String, String> SQLHashmap = convertJavaToSQL( hashMap );
+            Map<String, String> SQLHashMap = convertJavaToSQL( hashMap );
 
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 String date = (new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" )).format( new Date() );
-                SQLHashmap.put( "creation_date", date );
-                SQLHashmap.put( "last_modified_date", date );
+                SQLHashMap.put( "creation_date", date );
+                SQLHashMap.put( "last_modified_date", date );
             }
 
 
             // get column value pairs from hashmap as val,val,val...
-            for ( String key : SQLHashmap.keySet() ) {
+            for ( String key : SQLHashMap.keySet() ) {
                 columns += key + ",";
-                values += "" + SQLHashmap.get( key ) + ",";
+                values += "" + SQLHashMap.get( key ) + ",";
             }
             // remove trailing comma
             columns = columns.replaceAll( ",$", "" );
             values = values.replaceAll( ",$", "" );
 
-            stmt = connection.createStatement();
+            Statement stmt = connection.createStatement();
 
             // no id is provided (means auto-gen id)
             if ( !hashMap.containsKey( "id" ) ) {
@@ -425,10 +391,10 @@ public class Manager {
                 id = stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" ) !=
                         0 ? (int) hashMap.get( "id" ) : 0;
             }
-        } catch (MySQLIntegrityConstraintViolationException e){
-            throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
+        } catch ( MySQLIntegrityConstraintViolationException e ) {
+            throw new MySQLIntegrityConstraintViolationException();
         } catch ( SQLException e ) {
-            e.printStackTrace();
+            logger.error( "Error while saving model where " + values, e );
         } finally {
             closeConnection( connection );
         }
@@ -436,18 +402,15 @@ public class Manager {
     }
 
     public static boolean destroy( int id, String tableName ) {
-        Connection connection = null;
-        Statement stmt = null;
         boolean isDestroyed = true;
-
         try {
-            connection = Connector.getConnection();
-            stmt = connection.createStatement();
-            System.out.println("DELETE FROM " + tableName + " WHERE ID = " + id);
+            Statement stmt = connection.createStatement();
+            System.out.println( "DELETE FROM " + tableName + " WHERE ID = " + id );
             stmt.execute( "DELETE FROM " + tableName + " WHERE ID = " + id );
         } catch ( SQLException e ) {
-
             isDestroyed = false;
+            logger.error( "Error while trying to delete model where id = " + id, e );
+
         } finally {
             closeConnection( connection );
         }
@@ -455,18 +418,14 @@ public class Manager {
     }
 
     public static ArrayList<HashMap<String, Object>> destroy( String tableName, Map<String, Object> conditions ) {
-        Connection connection = null;
-        Statement stmt = null;
-        ResultSet rs = null;
         ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
-
         String where = "";
-
         Map<String, String> SQLConditions = convertJavaToSQL( conditions );
 
         for ( String key : SQLConditions.keySet() ) {
             where += key + " = '" + SQLConditions.get( key ) + "' AND ";
         }
+
         // remove trailing comma
         where = where.replaceAll( " AND $", "" ); // col1, col2, col3
 
@@ -476,11 +435,10 @@ public class Manager {
 
         //TODO: Should you return all result when variable "where" is ""(empty)?
         try {
-            connection = Connector.getConnection();
-            stmt = connection.createStatement();
+            Statement stmt = connection.createStatement();
             stmt.execute( "DELETE FROM " + tableName + where );
         } catch ( SQLException e ) {
-
+            logger.error( "Error while trying to delete model where " + where, e );
         } finally {
             closeConnection( connection );
         }
@@ -502,8 +460,7 @@ public class Manager {
                 return false;
             }
 
-            connection = Connector.getConnection();
-            PreparedStatement stm = prepareUpdateStatementSQL( id, hashMap, tableName, connection );
+            PreparedStatement stm = prepareUpdateStatementSQL( id, hashMap, tableName );
             stm.executeUpdate();
 
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
@@ -515,15 +472,14 @@ public class Manager {
             isUpdated = true;
 
         } catch ( SQLException | VersionChangedException e ) {
-            logger.error("Could not update the model, semaphore is locked ", e);
+            logger.error( "Could not update the model, semaphore is locked ", e );
         } catch ( InvocationTargetException | NoSuchMethodException
                 | InstantiationException | IllegalAccessException e ) {
-            logger.error("Problem with model serialization and hash id generation, possible unstable model ", e);
+            logger.error( "Problem with model serialization and hash id generation, possible unstable model ", e );
         }
 
         try {
             // Release mutex lock
-
             Manager.releaseLock( id, tableName );
             closeConnection( connection );
         } catch ( SQLException e ) {
@@ -536,7 +492,6 @@ public class Manager {
 
     // java (firstName:"bob") --> sql (first_name: "bob")
     public static Map<String, String> convertJavaToSQL( Map<String, Object> original ) {
-        boolean DEBUG = true;
         HashMap<String, String> converted = new HashMap<String, String>();
         if ( original == null ) {
             return converted;
@@ -605,7 +560,7 @@ public class Manager {
                 DateFormat parser = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
                 return "'" + parser.format( dt ) + "'";
             default:
-                System.out.println( "Manager.java doesnt know this type:" + value );
+                logger.warn( "Manager.java doesn't know this type: " + value );
         }
         return null;
     }
@@ -682,6 +637,13 @@ public class Manager {
         return camel.replaceAll( "([a-z])([A-Z])", "$1_$2" ).toLowerCase();
     }
 
+    /**
+     * Will try to acquire the semaphore lock on this database row
+     *
+     * @param id
+     * @param tableName
+     * @throws SQLException
+     */
     private static synchronized void acquireLock( int id, String tableName ) throws SQLException {
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
@@ -694,6 +656,13 @@ public class Manager {
         }
     }
 
+    /**
+     * Synchronously release the semaphore lock on the database row.
+     *
+     * @param id
+     * @param tableName
+     * @throws SQLException
+     */
     private static synchronized void releaseLock( int id, String tableName ) throws SQLException {
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
@@ -706,22 +675,25 @@ public class Manager {
         }
     }
 
+    /**
+     * This method will return a MD5 hash representation (serialization) of the object using the funnel class
+     * (template). The funnel is built using reflection and getting all the field that are declared as
+     * active record field.
+     *
+     * @param model
+     * @param funnelKlazz
+     * @param <T>
+     * @return
+     */
     private static <T extends Base> String getSha( T model, Funnel<T> funnelKlazz ) {
         Hasher hasher = Hashing.sha256().newHasher();
-        String newHashCode = "";
-        newHashCode = hasher.putObject( model, funnelKlazz ).hash().toString();
-
-        return newHashCode;
+        return hasher.putObject( model, funnelKlazz ).hash().toString();
     }
 
     private static <T extends Base> boolean checkIntegrity( int id, Class<T> klazz, Map<String, Object> map ) {
-        Connection conn = null;
-        Constructor<T> cons = null;
-        String tableName = BaseHelper.getClassTableName( klazz );
         try {
-            conn = Connector.getConnection();
-            Statement stmt = conn.createStatement();
-            cons = klazz.getConstructor( Map.class );
+            String tableName = BaseHelper.getClassTableName( klazz );
+            Constructor<T> cons = klazz.getConstructor( Map.class );
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T latest = cons.newInstance( Manager.find( id, tableName ) );
             String newHashCode = Manager.getSha( latest, funnel );
@@ -730,52 +702,52 @@ public class Manager {
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
-        } catch ( SQLException e ) {
-
-        } catch ( NoSuchMethodException e ) {
-
-        } catch ( InvocationTargetException e ) {
-
-        } catch ( InstantiationException e ) {
-
-        } catch ( IllegalAccessException e ) {
-
+        } catch ( NoSuchMethodException | InvocationTargetException
+                | InstantiationException | IllegalAccessException e ) {
+            logger.error( "Error while checking for model integrity check " + e.toString(), e );
         } finally {
-            closeConnection( conn );
+            closeConnection( connection );
         }
 
         return true;
     }
 
+    /**
+     * Update the SHA representation (serialization) of the database model object
+     *
+     * @param id
+     * @param tableName
+     * @param sha
+     * @return
+     */
     private static boolean updateSha( int id, String tableName, String sha ) {
-        Connection conn = null;
-        Statement stmt = null;
         try {
-            conn = Connector.getConnection();
-            stmt = conn.createStatement();
+            Statement stmt = connection.createStatement();
             stmt.executeUpdate( "UPDATE " + tableName + " SET etag = '" + sha + "' WHERE ID = " + id );
         } catch ( SQLException e ) {
-
             return false;
         } finally {
-            closeConnection( conn );
+            closeConnection( connection );
         }
 
         return true;
     }
 
-
+    /**
+     * Close the database connection of the connection object
+     *
+     * @param connection
+     */
     private static void closeConnection( Connection connection ) {
         try {
             if ( !connection.isClosed() ) {
-                System.out.println("Closing Connection");
+                //System.out.println( "Closing Connection" );
                 //DISABLED TEMPORARY will caause to many connection problem
-//                connection.close();
-//                connection = Connector.getConnection();
+                connection.close();
             }
         } catch ( SQLException e ) {
+            logger.error( "Error closing database connection " + connection.toString(), e );
 
         }
-
     }
 }
