@@ -245,7 +245,7 @@ public class Base implements IModel {
             }
 
         }
-        return false;
+        return true;
     }
 
     @SuppressWarnings("unchecked")

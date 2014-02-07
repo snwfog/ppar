@@ -56,45 +56,44 @@ public class Manager {
   
   
   public static Map<String, Object> find(String sqlQuery){
-      Connection connection = null;
       Statement stmt = null;
       ResultSet rs = null;
       try
       {
-        connection = Connector.getConnection();
-        stmt = connection.createStatement();
-        rs = stmt.executeQuery(sqlQuery);
-
-        if (rs.next())
-        {
-          return convertSQLToJava(rs);
-        }
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery(sqlQuery);
+            
+            if (rs.next())
+            {
+              return convertSQLToJava(rs);
+            }
 
       }
       catch (SQLException e)
       {
         e.printStackTrace();
       }
-      finally
-      {
-        closeConnection(connection);
-      }
+      
       return null;
   }
   
   public static ResultSet rawSQLfind(String queryString)
   {
     //Connection remains open
-    Connection connection = null;
     Statement stmt = null;
     ResultSet rs = null;
 
     try
     {
-      connection = Connector.getConnection();
-      stmt = connection.createStatement();
-      rs = stmt.executeQuery(queryString);
-      return rs;
+        if(connection.isClosed()){
+            connection = Connector.getConnection();
+        }
+        stmt = connection.createStatement();
+        rs = stmt.executeQuery(queryString);
+        return rs;
     }
     catch (SQLException e)
     {
@@ -106,14 +105,16 @@ public class Manager {
   // find by id, return single row
   public static Integer[] find(String tableName, String column, Object value)
   {
-    Connection connection = null;
     Statement stmt = null;
     ResultSet rs = null;
     value = convertJavaToSql(value);
     try
     {
+      if(connection.isClosed()){
+        connection = Connector.getConnection();
+      }  
+        
       ArrayList<Integer> result = new ArrayList<Integer>();
-      connection = Connector.getConnection();
       stmt = connection.createStatement();
       rs = stmt.executeQuery("SELECT * FROM " + tableName + " WHERE " + column + "=" + value);
 
@@ -127,10 +128,6 @@ public class Manager {
     catch (SQLException e)
     {
       e.printStackTrace();
-    }
-    finally
-    {
-      closeConnection(connection);
     }
     return null;
   }
@@ -169,14 +166,15 @@ public class Manager {
   }
   
   public static ArrayList<Map<String,Object>> findAll(String sqlQuery){
-      Connection connection = null;
       Statement stmt = null;
       ResultSet rs = null;
       ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
       
       try
       {
-        connection = Connector.getConnection();
+        if(connection.isClosed()){
+            connection = Connector.getConnection();
+        }
         stmt = connection.createStatement();
         logger.info(sqlQuery);
         rs = stmt.executeQuery(sqlQuery);
@@ -191,23 +189,24 @@ public class Manager {
       {
         e.printStackTrace();
       }
-      finally
-      {
-        closeConnection(connection);
-      }
       return results;
   }
 
 
     public static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap ) {
-        Funnel<T> funnel = FunnelFactory.getInstance( klazz );
-
-        return Manager.save( klazz, hashMap, funnel );
+        try {
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }        
+            Funnel<T> funnel = FunnelFactory.getInstance( klazz );
+            return Manager.save( klazz, hashMap, funnel );
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     private static <T extends Base> int save( Class<T> klazz, Map<String, Object> hashMap, Funnel<T> funnel ) {
-        Connection connection = null;
-        Statement stmt = null;
         ResultSet rs = null;
         String tableName = BaseHelper.getClassTableName( klazz );
 
@@ -248,7 +247,7 @@ public class Manager {
         return id;
     }
 
-    public static PreparedStatement prepareInsertStatementSQL( Map<String, Object> original, String tableName,
+    private static PreparedStatement prepareInsertStatementSQL( Map<String, Object> original, String tableName,
             boolean generateKey ) {
         if ( original == null ) {
             return null;
@@ -257,7 +256,6 @@ public class Manager {
         PreparedStatement stmt = null;
 
         try {
-            Connection con = Connector.getConnection();
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 original.put( "creationDate", new Date() );
@@ -283,7 +281,7 @@ public class Manager {
                 stmt = connection.prepareStatement( "INSERT INTO " + tableName + " " + columns + " VALUES " + values );
             }
 
-            setJavaToSQL( stmt, original, tableName, connection );
+            setJavaToSQL( stmt, original, tableName );
 
         } catch ( SQLException e ) {
             return null;
@@ -294,8 +292,8 @@ public class Manager {
 
 
 
-    public static PreparedStatement prepareUpdateStatementSQL( Integer id, Map<String, Object> original,
-            String tableName, Connection connection ) {
+    private static PreparedStatement prepareUpdateStatementSQL( Integer id, Map<String, Object> original,
+            String tableName) {
 
         if ( original == null ) {
             return null;
@@ -303,21 +301,23 @@ public class Manager {
 
         PreparedStatement stmt = null;
         try {
-            DatabaseMetaData md = connection.getMetaData();
-            if ( md.getColumns( null, null, tableName, "last_modified_date" ).next() ) {
-                original.put( "lastModifiedDate", new Date() );
-            }
-
-
-            String sets = "";
-            for ( String key : original.keySet() ) // field, value pair
-            {
-                sets += toUnderscoreCase( key ) + " = ?,";
-            }
-            sets = sets.substring( 0, sets.length() - 1 );
-            System.out.println( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
-            stmt = connection.prepareStatement( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
-            setJavaToSQL( stmt, original, tableName, connection );
+                assert !connection.isClosed(); 
+                
+                DatabaseMetaData md = connection.getMetaData();
+                if ( md.getColumns( null, null, tableName, "last_modified_date" ).next() ) {
+                    original.put( "lastModifiedDate", new Date() );
+                }
+        
+        
+                String sets = "";
+                for ( String key : original.keySet() ) // field, value pair
+                {
+                    sets += toUnderscoreCase( key ) + " = ?,";
+                }
+                sets = sets.substring( 0, sets.length() - 1 );
+                System.out.println( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
+                stmt = connection.prepareStatement( "UPDATE " + tableName + " SET " + sets + " WHERE ID =" + id );
+                setJavaToSQL( stmt, original, tableName );
 
         } catch ( SQLException e ) {
             return null;
@@ -326,11 +326,11 @@ public class Manager {
         return stmt;
     }
 
-
-
-    private static void setJavaToSQL( PreparedStatement stm, Map<String, Object> original, String tableName,
-            Connection connection ) {
+    private static void setJavaToSQL( PreparedStatement stm, Map<String, Object> original, String tableName) {
         try {
+            
+            assert !connection.isClosed();
+            
             int counter = 1;
             for ( String key : original.keySet() ) // field, value pair
             {
@@ -352,6 +352,7 @@ public class Manager {
                             stm.setString( counter, (String) value );
                             break;
                         case "Date":
+                        case "Timestamp":
                             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             String currentTime = sdf.format(value);
                             stm.setTimestamp(counter, Timestamp.valueOf(currentTime) );   
@@ -379,7 +380,6 @@ public class Manager {
     public static int save( String tableName, Map<String, Object> hashMap )
             throws MySQLIntegrityConstraintViolationException {
         //for table not related to any model (i.e relation table)
-        Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
 
@@ -388,8 +388,10 @@ public class Manager {
 
         int id = 0;
 
-        try {
-            connection = Connector.getConnection();
+        try {          
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
             Map<String, String> SQLHashmap = convertJavaToSQL( hashMap );
 
             DatabaseMetaData md = connection.getMetaData();
@@ -429,33 +431,29 @@ public class Manager {
             throw new com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException();
         } catch ( SQLException e ) {
             e.printStackTrace();
-        } finally {
-            closeConnection( connection );
         }
         return id;
     }
 
     public static boolean destroy( int id, String tableName ) {
-        Connection connection = null;
         Statement stmt = null;
         boolean isDestroyed = true;
 
         try {
-            connection = Connector.getConnection();
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
             stmt = connection.createStatement();
             System.out.println("DELETE FROM " + tableName + " WHERE ID = " + id);
             stmt.execute( "DELETE FROM " + tableName + " WHERE ID = " + id );
         } catch ( SQLException e ) {
 
             isDestroyed = false;
-        } finally {
-            closeConnection( connection );
         }
         return isDestroyed;
     }
 
     public static ArrayList<HashMap<String, Object>> destroy( String tableName, Map<String, Object> conditions ) {
-        Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
         ArrayList<HashMap<String, Object>> results = new ArrayList<HashMap<String, Object>>();
@@ -476,13 +474,13 @@ public class Manager {
 
         //TODO: Should you return all result when variable "where" is ""(empty)?
         try {
-            connection = Connector.getConnection();
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
             stmt = connection.createStatement();
             stmt.execute( "DELETE FROM " + tableName + where );
         } catch ( SQLException e ) {
 
-        } finally {
-            closeConnection( connection );
         }
         return results;
 
@@ -493,7 +491,13 @@ public class Manager {
         String tableName = BaseHelper.getClassTableName( klazz );
         boolean isUpdated = false;
 
-        try {
+        try {            
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
+            
+            assert !connection.isClosed();
+            
             // Acquire mutex lock
             Manager.acquireLock( id, tableName );
 
@@ -501,9 +505,8 @@ public class Manager {
             if ( !Manager.checkIntegrity( id, klazz, hashMap ) ) {
                 return false;
             }
-
-            connection = Connector.getConnection();
-            PreparedStatement stm = prepareUpdateStatementSQL( id, hashMap, tableName, connection );
+            
+            PreparedStatement stm = prepareUpdateStatementSQL( id, hashMap, tableName );
             stm.executeUpdate();
 
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
@@ -513,6 +516,7 @@ public class Manager {
 
             // Set is updated true
             isUpdated = true;
+            
 
         } catch ( SQLException | VersionChangedException e ) {
             logger.error("Could not update the model, semaphore is locked ", e);
@@ -520,12 +524,13 @@ public class Manager {
                 | InstantiationException | IllegalAccessException e ) {
             logger.error("Problem with model serialization and hash id generation, possible unstable model ", e);
         }
-
+        
         try {
-            // Release mutex lock
-
-            Manager.releaseLock( id, tableName );
-            closeConnection( connection );
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
+            
+            Manager.releaseLock( id, tableName );          
         } catch ( SQLException e ) {
             logger.error( "Could not release lock on model active record model, possible locked forever ", e );
             throw Throwables.propagate( e );
@@ -683,6 +688,10 @@ public class Manager {
     }
 
     private static synchronized void acquireLock( int id, String tableName ) throws SQLException {
+        if(connection.isClosed()){
+            connection = Connector.getConnection();
+        }
+        
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
         if ( !rs.next() ) {
@@ -691,10 +700,14 @@ public class Manager {
             throw new CannotAcquireSemaphoreException( id, tableName );
         } else {
             stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 1 WHERE id = " + id );
-        }
+        }     
     }
 
     private static synchronized void releaseLock( int id, String tableName ) throws SQLException {
+        if(connection.isClosed()){
+            connection = Connector.getConnection();
+        }
+        
         Statement stmt = connection.createStatement();
         ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
         if ( !rs.next() ) {
@@ -715,12 +728,9 @@ public class Manager {
     }
 
     private static <T extends Base> boolean checkIntegrity( int id, Class<T> klazz, Map<String, Object> map ) {
-        Connection conn = null;
         Constructor<T> cons = null;
         String tableName = BaseHelper.getClassTableName( klazz );
         try {
-            conn = Connector.getConnection();
-            Statement stmt = conn.createStatement();
             cons = klazz.getConstructor( Map.class );
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T latest = cons.newInstance( Manager.find( id, tableName ) );
@@ -730,8 +740,6 @@ public class Manager {
             if ( !oldHashCode.equalsIgnoreCase( newHashCode ) ) {
                 throw new VersionChangedException( id, tableName, newHashCode );
             }
-        } catch ( SQLException e ) {
-
         } catch ( NoSuchMethodException e ) {
 
         } catch ( InvocationTargetException e ) {
@@ -740,42 +748,25 @@ public class Manager {
 
         } catch ( IllegalAccessException e ) {
 
-        } finally {
-            closeConnection( conn );
         }
 
         return true;
     }
 
     private static boolean updateSha( int id, String tableName, String sha ) {
-        Connection conn = null;
         Statement stmt = null;
         try {
-            conn = Connector.getConnection();
-            stmt = conn.createStatement();
+            if(connection.isClosed()){
+                connection = Connector.getConnection();
+            }
+            stmt = connection.createStatement();
             stmt.executeUpdate( "UPDATE " + tableName + " SET etag = '" + sha + "' WHERE ID = " + id );
         } catch ( SQLException e ) {
 
             return false;
-        } finally {
-            closeConnection( conn );
         }
 
         return true;
     }
 
-
-    private static void closeConnection( Connection connection ) {
-        try {
-            if ( !connection.isClosed() ) {
-                System.out.println("Closing Connection");
-                //DISABLED TEMPORARY will caause to many connection problem
-//                connection.close();
-//                connection = Connector.getConnection();
-            }
-        } catch ( SQLException e ) {
-
-        }
-
-    }
 }

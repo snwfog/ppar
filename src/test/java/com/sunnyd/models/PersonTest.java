@@ -59,6 +59,7 @@ public class PersonTest extends Base implements IModel {
         Assert.assertEquals(a.getId().intValue(), id.intValue());
 
     }
+    
 
     @Test(dependsOnMethods = { "TestSave" })
     public void TestFind() {
@@ -86,7 +87,7 @@ public class PersonTest extends Base implements IModel {
         Assert.assertEquals("john", updateP.getFirstName());
 
     }
-
+    
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
         Person p = new Person().find(1);
@@ -95,7 +96,7 @@ public class PersonTest extends Base implements IModel {
         p.update();
         Assert.assertTrue(p.destroy());
         Assert.assertNull(p.getId());
-
+        
     }
 
 }
