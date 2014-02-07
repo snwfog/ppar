@@ -53,7 +53,6 @@ public class Manager {
         return find( "SELECT * FROM " + tableName + " WHERE ID = " + id );
     }
 
-
     public static Map<String, Object> find( String sqlQuery ) {
         Connection connection = null;
         Statement stmt = null;

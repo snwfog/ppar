@@ -1,8 +1,10 @@
 package com.sunnyd.database;
 
+import com.jolbox.bonecp.BoneCP;
+import com.jolbox.bonecp.BoneCPConfig;
+
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -21,8 +23,9 @@ public class Connector {
     private static String url;
     //static reference to itself
     private static Connector instance;
+    private static BoneCP connectionPool;
 
-    public static void main( String[] args ) throws Throwable {
+    public static void main( String[] args ) throws SQLException {
         Connector.getConnection();
     }
 
@@ -34,7 +37,6 @@ public class Connector {
             // Load the files from the default path
             // Which is located at resources/config
             prop.load( this.getClass().getResourceAsStream( "/config/database.properties" ) );
-
 
             // Statically init the JDBC class
             Class.forName( driverClass );
@@ -54,13 +56,22 @@ public class Connector {
     }
 
     public static Connection getConnection() throws SQLException {
+        return createConnection().getConnection();
+    }
+
+    private static BoneCP createConnection() throws SQLException {
         if ( instance == null ) {
             instance = new Connector();
         }
-        return instance.createConnection();
-    }
 
-    private Connection createConnection() throws SQLException {
-        return DriverManager.getConnection( url, username, password );
+        if ( connectionPool == null ) {
+            BoneCPConfig config = new BoneCPConfig();
+            config.setJdbcUrl( url );
+            config.setUsername( username );
+            config.setPassword( password );
+            connectionPool = new BoneCP( config );
+        }
+
+        return connectionPool;
     }
 }
