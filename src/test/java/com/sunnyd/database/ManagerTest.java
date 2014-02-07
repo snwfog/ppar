@@ -3,7 +3,6 @@ package com.sunnyd.database;
 import com.sunnyd.database.fixtures.Prep;
 import com.sunnyd.models.Peer;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;

@@ -1,6 +1,7 @@
 package com.sunnyd.database;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
@@ -32,21 +33,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Best practice: http://java.sys-con.com/node/46653
+ * As summary:
+ * 1. Use a database pool
+ * 2. Close prepare statement, connection, and resultset
+ */
 public class Manager {
 
     static final Logger logger = LoggerFactory.getLogger( Manager.class );
-
-    private static Connection connection;
-
-    static {
-        try {
-            connection = Connector.getConnection();
-        } catch ( SQLException e ) {
-            logger.error( "Failed statically initiate database connection." );
-        }
-
-    }
 
     // find by id, return single row
     public static Map<String, Object> find( int id, String tableName ) {
@@ -65,17 +60,18 @@ public class Manager {
             if ( rs.next() ) {
                 return convertSQLToJava( rs );
             }
-
         } catch ( SQLException e ) {
-            e.printStackTrace();
+            logger.error( "Error find by " + sqlQuery );
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
+            closeResultSet( rs );
         }
-        return null;
+
+        return Maps.newHashMap(); // Else return empty hash map
     }
 
     public static ResultSet rawSQLfind( String queryString ) {
-        //Connection remains open
         Connection connection = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -84,10 +80,15 @@ public class Manager {
             connection = Connector.getConnection();
             stmt = connection.createStatement();
             rs = stmt.executeQuery( queryString );
+
             return rs;
         } catch ( SQLException e ) {
-            e.printStackTrace();
+            logger.error( "Error while doing raw SQL find for " + queryString );
+        } finally {
+            //closeConnection( connection );
+            //closeStatement( stmt );
         }
+
         return null;
     }
 
@@ -102,38 +103,41 @@ public class Manager {
     public static Integer[] find( String tableName, String column, Object value ) {
 
         value = convertJavaToSql( value );
-
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
         try {
             ArrayList<Integer> result = new ArrayList<Integer>();
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tableName + " WHERE " + column + "=" + value );
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( "SELECT * FROM " + tableName + " WHERE " + column + "=" + value );
 
             while ( rs.next() ) {
                 result.add( rs.getInt( "id" ) );
             }
             return result.toArray( new Integer[result.size()] );
-
         } catch ( SQLException e ) {
             logger.error( "Error trying to find by id " + tableName + " " + column + " " + value.toString() );
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
+            closeResultSet( rs );
         }
         return null;
     }
 
-    // find multiple by criteria
+    /**
+     * Find multiple by criteria
+     * @param tableName
+     * @param conditions
+     * @return
+     */
     public static ArrayList<Map<String, Object>> findAll( String tableName, Map<String, Object> conditions ) {
-
         String where = "";
         Map<String, String> SQLConditions = convertJavaToSQL( conditions );
-
         if ( conditions != null ) {
             // Return all if condition is null
             for ( String key : SQLConditions.keySet() ) {
-                //        if (conditions.get(toCamelCase(key)) instanceof String
-                //            && !SQLTableMetaData.hasUniqueKeyConstraint(tableName, key))
-                //          where += key + " == " + SQLConditions.get(key) + "%' AND ";
-                //        else
                 where += key + " = '" + SQLConditions.get( key ) + "' AND ";
             }
 
@@ -144,20 +148,23 @@ public class Manager {
                 where = " WHERE " + where;
             }
         }
-
-
         return findAll( "SELECT * FROM " + tableName + where );
     }
 
     public static ArrayList<Map<String, Object>> findAll( String sqlQuery ) {
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
 
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
         try {
-            Statement stmt = connection.createStatement();
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
 
             logger.info( sqlQuery );
 
-            ResultSet rs = stmt.executeQuery( sqlQuery );
+            rs = stmt.executeQuery( sqlQuery );
             while ( rs.next() ) {
                 Map<String, Object> row = convertSQLToJava( rs );
                 results.add( row );
@@ -166,6 +173,8 @@ public class Manager {
             logger.error( "Error trying to retrieve all results for " + sqlQuery, e );
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
+            closeResultSet( rs );
         }
 
         return results;
@@ -182,24 +191,29 @@ public class Manager {
 
         String tableName = BaseHelper.getClassTableName( klazz );
         int id = 0;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
 
         try {
             // no id is provided (means auto-gen id)
             if ( !hashMap.containsKey( "id" ) ) {
-                PreparedStatement stmt = prepareInsertStatementSQL( hashMap, tableName, true );
+                stmt = prepareInsertStatementSQL( hashMap, tableName, true );
                 stmt.executeUpdate();
-                ResultSet rs = stmt.getGeneratedKeys();
+                rs = stmt.getGeneratedKeys();
                 if ( rs.next() ) {
                     id = rs.getInt( 1 );
                 }
             } else // id is provided (means
             {
-                PreparedStatement stmt = prepareInsertStatementSQL( hashMap, tableName, false );
+                stmt = prepareInsertStatementSQL( hashMap, tableName, false );
                 id = stmt.executeUpdate() != 0 ? (int) hashMap.get( "id" ) : 0;
             }
         } catch ( SQLException e ) {
             logger.error( "Error trying to save model for attributes " + hashMap.toString() + ", auto generated id",
                     e );
+        } finally {
+            closeStatement( stmt );
+            closeResultSet( rs );
         }
 
         try {
@@ -221,8 +235,10 @@ public class Manager {
         }
 
         PreparedStatement stmt = null;
+        Connection connection = null;
 
         try {
+            connection = Connector.getConnection();
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 original.put( "creationDate", new Date() );
@@ -248,17 +264,17 @@ public class Manager {
                 stmt = connection.prepareStatement( "INSERT INTO " + tableName + " " + columns + " VALUES " + values );
             }
 
-            logger.info( "General the statement from " + original.toString() + " for " + tableName );
+            logger.info( "Generate the statement from " + original.toString() + " for " + tableName );
             setJavaToSQL( stmt, original, tableName );
 
         } catch ( SQLException e ) {
             return null;
+        } finally {
+            closeConnection( connection );
         }
 
         return stmt;
     }
-
-
 
     public static PreparedStatement prepareUpdateStatementSQL( Integer id, Map<String, Object> original,
             String tableName ) {
@@ -268,12 +284,13 @@ public class Manager {
         }
 
         PreparedStatement stmt = null;
+        Connection connection = null;
         try {
+            connection = Connector.getConnection();
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "last_modified_date" ).next() ) {
                 original.put( "lastModifiedDate", new Date() );
             }
-
 
             String sets = "";
             for ( String key : original.keySet() ) // field, value pair
@@ -288,14 +305,17 @@ public class Manager {
 
         } catch ( SQLException e ) {
             logger.error( "Error preparing SQL update statement" );
+        } finally {
+            closeConnection( connection );
         }
 
         return stmt;
     }
 
-
-
     private static void setJavaToSQL( PreparedStatement stm, Map<String, Object> original, String tableName ) {
+        Connection connection = null;
+        ResultSet column = null;
+
         try {
             int counter = 1;
             for ( String key : original.keySet() ) // field, value pair
@@ -317,6 +337,7 @@ public class Manager {
                         case "String":
                             stm.setString( counter, (String) value );
                             break;
+                        case "Timestamp":
                         case "Date":
                             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
                             String currentTime = sdf.format( value );
@@ -329,8 +350,9 @@ public class Manager {
                             break;
                     }
                 } else {
+                    connection = Connector.getConnection();
                     DatabaseMetaData md = connection.getMetaData();
-                    ResultSet column = md.getColumns( null, null, tableName, toUnderscoreCase( key ) );
+                    column = md.getColumns( null, null, tableName, toUnderscoreCase( key ) );
                     if ( column.next() ) {
                         stm.setNull( counter, column.getType() );
                     }
@@ -339,24 +361,29 @@ public class Manager {
             }
         } catch ( SQLException e ) {
             logger.error( "Error while setting Java to SQL", e );
+        } finally {
+            closeConnection( connection );
+            closeResultSet( column );
         }
 
-        logger.info( "Logger " + stm.toString() );
+        logger.info( stm.toString() );
     }
 
     public static int save( String tableName, Map<String, Object> hashMap )
             throws MySQLIntegrityConstraintViolationException {
         //for table not related to any model (i.e relation table)
-        ResultSet rs = null;
 
         String columns = "";
         String values = "";
 
         int id = 0;
 
+        Connection connection = null;
+        Statement stmt = null;
+
         try {
             Map<String, String> SQLHashMap = convertJavaToSQL( hashMap );
-
+            connection = Connector.getConnection();
             DatabaseMetaData md = connection.getMetaData();
             if ( md.getColumns( null, null, tableName, "creation_date" ).next() ) {
                 String date = (new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" )).format( new Date() );
@@ -374,14 +401,14 @@ public class Manager {
             columns = columns.replaceAll( ",$", "" );
             values = values.replaceAll( ",$", "" );
 
-            Statement stmt = connection.createStatement();
+            stmt = connection.createStatement();
 
             // no id is provided (means auto-gen id)
             if ( !hashMap.containsKey( "id" ) ) {
                 System.out.println( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")" );
                 stmt.executeUpdate( "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + values + ")",
                         Statement.RETURN_GENERATED_KEYS );
-                rs = stmt.getGeneratedKeys();
+                ResultSet rs = stmt.getGeneratedKeys();
                 if ( rs.next() ) {
                     id = rs.getInt( 1 );
                 }
@@ -396,23 +423,29 @@ public class Manager {
             logger.error( "Error while saving model where " + values, e );
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
         }
         return id;
     }
 
     public static boolean destroy( int id, String tableName ) {
         boolean isDestroyed = true;
+        Connection connection = null;
+        Statement stmt = null;
+
         try {
-            Statement stmt = connection.createStatement();
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
             System.out.println( "DELETE FROM " + tableName + " WHERE ID = " + id );
             stmt.execute( "DELETE FROM " + tableName + " WHERE ID = " + id );
         } catch ( SQLException e ) {
             isDestroyed = false;
             logger.error( "Error while trying to delete model where id = " + id, e );
-
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
         }
+
         return isDestroyed;
     }
 
@@ -433,13 +466,17 @@ public class Manager {
         }
 
         //TODO: Should you return all result when variable "where" is ""(empty)?
+        Connection connection = null;
+        Statement stmt = null;
         try {
-            Statement stmt = connection.createStatement();
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
             stmt.execute( "DELETE FROM " + tableName + where );
         } catch ( SQLException e ) {
             logger.error( "Error while trying to delete model where " + where, e );
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
         }
         return results;
 
@@ -450,6 +487,8 @@ public class Manager {
         String tableName = BaseHelper.getClassTableName( klazz );
         boolean isUpdated = false;
 
+        PreparedStatement stmt = null;
+
         try {
             // Acquire mutex lock
             Manager.acquireLock( id, tableName );
@@ -459,8 +498,8 @@ public class Manager {
                 return false;
             }
 
-            PreparedStatement stm = prepareUpdateStatementSQL( id, hashMap, tableName );
-            stm.executeUpdate();
+            stmt = prepareUpdateStatementSQL( id, hashMap, tableName );
+            stmt.executeUpdate();
 
             Funnel<T> funnel = FunnelFactory.getInstance( klazz );
             T model = klazz.getConstructor( Map.class ).newInstance( hashMap );
@@ -475,12 +514,13 @@ public class Manager {
         } catch ( InvocationTargetException | NoSuchMethodException
                 | InstantiationException | IllegalAccessException e ) {
             logger.error( "Problem with model serialization and hash id generation, possible unstable model ", e );
+        } finally {
+            closeStatement( stmt );
         }
 
         try {
             // Release mutex lock
             Manager.releaseLock( id, tableName );
-            closeConnection( connection );
         } catch ( SQLException e ) {
             logger.error( "Could not release lock on model active record model, possible locked forever ", e );
             throw Throwables.propagate( e );
@@ -644,15 +684,30 @@ public class Manager {
      * @throws SQLException
      */
     private static synchronized void acquireLock( int id, String tableName ) throws SQLException {
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
-        if ( !rs.next() ) {
-            throw new NonExistingRecordException( id, tableName );
-        } else if ( rs.getInt( 1 ) != 0 ) {
-            throw new CannotAcquireSemaphoreException( id, tableName );
-        } else {
-            stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 1 WHERE id = " + id );
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
+            if ( !rs.next() ) {
+                throw new NonExistingRecordException( id, tableName );
+            } else if ( rs.getInt( 1 ) != 0 ) {
+                throw new CannotAcquireSemaphoreException( id, tableName );
+            } else {
+                stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 1 WHERE id = " + id );
+            }
+        } catch ( SQLException e ) {
+            logger.error( "Error trying acquire mutex lock for " + id + " on table " + tableName );
+            throw Throwables.propagate( e );
+        } finally {
+            closeConnection( connection );
+            closeStatement( stmt );
+            closeResultSet( rs );
         }
+
     }
 
     /**
@@ -663,14 +718,27 @@ public class Manager {
      * @throws SQLException
      */
     private static synchronized void releaseLock( int id, String tableName ) throws SQLException {
-        Statement stmt = connection.createStatement();
-        ResultSet rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
-        if ( !rs.next() ) {
-            throw new NonExistingRecordException( id, tableName );
-        } else if ( rs.getInt( 1 ) != 1 ) {
-            throw new CannotReleaseSemaphoreException( id, tableName );
-        } else {
-            stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 0 WHERE id = " + id );
+        Connection connection = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
+            rs = stmt.executeQuery( "SELECT semaphore FROM " + tableName + " WHERE id = " + id );
+            if ( !rs.next() ) {
+                throw new NonExistingRecordException( id, tableName );
+            } else if ( rs.getInt( 1 ) != 1 ) {
+                throw new CannotReleaseSemaphoreException( id, tableName );
+            } else {
+                stmt.executeUpdate( "UPDATE " + tableName + " SET semaphore = 0 WHERE id = " + id );
+            }
+        } catch ( SQLException e ) {
+            logger.error( "Error trying release mutex lock for " + id + " on table " + tableName );
+            throw Throwables.propagate( e );
+        } finally {
+            closeConnection( connection );
+            closeStatement( stmt );
+            closeResultSet( rs );
         }
     }
 
@@ -704,8 +772,6 @@ public class Manager {
         } catch ( NoSuchMethodException | InvocationTargetException
                 | InstantiationException | IllegalAccessException e ) {
             logger.error( "Error while checking for model integrity check " + e.toString(), e );
-        } finally {
-            closeConnection( connection );
         }
 
         return true;
@@ -720,33 +786,71 @@ public class Manager {
      * @return
      */
     private static boolean updateSha( int id, String tableName, String sha ) {
+        Connection connection = null;
+        Statement stmt = null;
+
         try {
-            Statement stmt = connection.createStatement();
+            connection = Connector.getConnection();
+            stmt = connection.createStatement();
             stmt.executeUpdate( "UPDATE " + tableName + " SET etag = '" + sha + "' WHERE ID = " + id );
         } catch ( SQLException e ) {
+            logger.error( "Error updating SHA for " + id + " table " + tableName + " for SHA (" + sha + ")" );
             return false;
         } finally {
             closeConnection( connection );
+            closeStatement( stmt );
         }
 
         return true;
     }
 
     /**
-     * Close the database connection of the connection object
+     * Closing a connection from pool
      *
      * @param connection
      */
     private static void closeConnection( Connection connection ) {
         try {
-            if ( !connection.isClosed() ) {
-                //System.out.println( "Closing Connection" );
-                //DISABLED TEMPORARY will caause to many connection problem
+            if ( connection != null && !connection.isClosed() ) {
+                logger.warn( "Closing up a connection from pool " + connection.getClientInfo() );
                 connection.close();
             }
         } catch ( SQLException e ) {
-            logger.error( "Error closing database connection " + connection.toString(), e );
-
+            logger.error( "Error while trying to close a connection from pool" );
         }
     }
+
+    /**
+     * Closing a prepared statement from the pool
+     * @param stmt
+     */
+    private static void closeStatement( Statement stmt ) {
+        try {
+            if ( stmt != null && !stmt.isClosed() ) {
+                logger.warn( "Closing up a prepared statement for " + stmt.toString() );
+                stmt.close();
+            }
+        } catch ( SQLException e ) {
+            logger.error( "Error while trying to close a prepared statement from pool" );
+        }
+    }
+
+    /**
+     * Closing a result set from the pool
+     * @param set
+     */
+    private static void closeResultSet( ResultSet set ) {
+        try {
+            if ( set != null && !set.isClosed() ) {
+                logger.warn( "Closing up a result set for " + set.toString() );
+                set.close();
+            }
+        } catch ( SQLException e ) {
+            logger.error( "Error while trying to close a result set from pool" );
+        }
+
+    }
+
+
+
 }

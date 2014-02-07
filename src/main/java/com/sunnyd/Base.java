@@ -233,8 +233,8 @@ public class Base implements IModel {
             @SuppressWarnings("unchecked")
             boolean updated = Base.update( (Class<T>) classObject.getSuperclass(), instanceObject );
             if ( !updated ) {
-                System.out
-                        .println( "Could not update " + ((Base) instanceObject).getId() + " " + classObject.getName() );
+                System.out.println(
+                        "Could not update " + ((Base) instanceObject).getId() + " " + classObject.getName() );
                 return false;
             }
         }
@@ -514,27 +514,24 @@ public class Base implements IModel {
                             continue;
                         }
 
-                        for ( int i = 0; i < hasManyCollection.size(); i++ ) {
+                        for ( Object ob : hasManyCollection ) {
                             String setterMethod = "set" + StringUtils.capitalize( classObject.getSimpleName() ) + "Id";
-
-                            // Set objects in the has many collection id to current
-                            // id
+                            // Set objects in the has many collection id to current id
                             Method setRelationIdMethod = Class.forName( relationCanonicalName )
                                     .getDeclaredMethod( setterMethod, Integer.class );
-                            setRelationIdMethod.invoke( hasManyCollection.get( i ), id );
+                            setRelationIdMethod.invoke( ob, id );
 
                             // Get collection object id
                             Method getId = Class.forName( relationCanonicalName ).getMethod( "getId" );
-                            Integer collectionObjectId = (Integer) getId.invoke( hasManyCollection.get( i ) );
+                            Integer collectionObjectId = (Integer) getId.invoke( ob );
 
-                            // if collection object id is null, save the objects in
-                            // the hasMany collection
+                            // if collection object id is null, save the objects in the hasMany collection
                             if ( collectionObjectId == null ) {
                                 Method save = Class.forName( relationCanonicalName ).getMethod( "save" );
-                                save.invoke( hasManyCollection.get( i ) );
+                                save.invoke( ob );
                             } else {
                                 Method update = Class.forName( relationCanonicalName ).getMethod( "update" );
-                                update.invoke( hasManyCollection.get( i ) );
+                                update.invoke( ob );
                             }
                         }
 
@@ -553,10 +550,10 @@ public class Base implements IModel {
                             continue;
                         }
 
-                        for ( int i = 0; i < manyToManyCollection.size(); i++ ) {
+                        for ( Object ob : manyToManyCollection ) {
 
                             Method getId = Class.forName( relationCanonicalName ).getMethod( "getId" );
-                            Integer collectionObjectId = (Integer) getId.invoke( manyToManyCollection.get( i ) );
+                            Integer collectionObjectId = (Integer) getId.invoke( ob );
 
                             if ( collectionObjectId == null ) {
                                 // Collection object id is null, save the objects in
@@ -564,8 +561,8 @@ public class Base implements IModel {
                                 // If id is null, therefore the object id could not
                                 // have exist in the relation table
                                 Method save = Class.forName( relationCanonicalName ).getMethod( "save" );
-                                save.invoke( manyToManyCollection.get( i ) );
-                                int newCollectionId = (int) getId.invoke( manyToManyCollection.get( i ) );
+                                save.invoke( ob );
+                                int newCollectionId = (int) getId.invoke( ob );
 
                                 // Save relation
                                 Map<String, Object> conditions = new HashMap<String, Object>();
