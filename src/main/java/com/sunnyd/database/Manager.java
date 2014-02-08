@@ -321,9 +321,8 @@ public class Manager {
             for ( String key : original.keySet() ) // field, value pair
             {
                 Object value = original.get( key ); // value could be null
-                String type = "";
                 if ( value != null ) {
-                    type = value.getClass().getSimpleName();
+                    String type = value.getClass().getSimpleName();
                     switch ( type ) {
                         case "Boolean":
                             stm.setBoolean( counter, (Boolean) value );
@@ -339,7 +338,7 @@ public class Manager {
                             break;
                         case "Timestamp":
                         case "Date":
-                            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+                            SimpleDateFormat sdf = new java.text.SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
                             String currentTime = sdf.format( value );
                             stm.setTimestamp( counter, Timestamp.valueOf( currentTime ) );
                             break;
@@ -347,7 +346,6 @@ public class Manager {
                             logger.error(
                                     "Manager.java doesn't know how to convert this type: " + key + "(" + type + ") " +
                                             original.get( key ) );
-                            break;
                     }
                 } else {
                     connection = Connector.getConnection();
@@ -356,6 +354,7 @@ public class Manager {
                     if ( column.next() ) {
                         stm.setNull( counter, column.getType() );
                     }
+                    closeConnection( connection );
                 }
                 counter += 1;
             }
@@ -812,7 +811,7 @@ public class Manager {
     private static void closeConnection( Connection connection ) {
         try {
             if ( connection != null && !connection.isClosed() ) {
-                logger.warn( "Closing up a connection from pool " + connection.getClientInfo() );
+                logger.warn( "Closing up a connection for pool" );
                 connection.close();
             }
         } catch ( SQLException e ) {
@@ -827,7 +826,7 @@ public class Manager {
     private static void closeStatement( Statement stmt ) {
         try {
             if ( stmt != null && !stmt.isClosed() ) {
-                logger.warn( "Closing up a prepared statement for " + stmt.toString() );
+                logger.warn( "Closing up a prepared statement" );
                 stmt.close();
             }
         } catch ( SQLException e ) {
@@ -842,7 +841,7 @@ public class Manager {
     private static void closeResultSet( ResultSet set ) {
         try {
             if ( set != null && !set.isClosed() ) {
-                logger.warn( "Closing up a result set for " + set.toString() );
+                logger.warn( "Closing up a result set" );
                 set.close();
             }
         } catch ( SQLException e ) {

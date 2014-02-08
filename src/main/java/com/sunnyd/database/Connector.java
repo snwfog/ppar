@@ -56,7 +56,12 @@ public class Connector {
     }
 
     public static Connection getConnection() throws SQLException {
+        logger.warn( "Total connection created: " + Connector.getTotalCreatedConnections() );
         return createConnection().getConnection();
+    }
+
+    public static int getTotalCreatedConnections() throws SQLException {
+        return createConnection().getTotalCreatedConnections();
     }
 
     private static BoneCP createConnection() throws SQLException {
@@ -69,6 +74,7 @@ public class Connector {
             config.setJdbcUrl( url );
             config.setUsername( username );
             config.setPassword( password );
+            config.setMaxConnectionsPerPartition( 100 );
             connectionPool = new BoneCP( config );
         }
 
