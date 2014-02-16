@@ -12,6 +12,8 @@ import com.sunnyd.database.fixtures.Prep;
 @ActiveRecordInheritFrom(childClassof = "ChildTest")
 public class GrandChildTest extends ChildTest {
     public static final String tableName = "grand_childs";
+    
+    int id = 0;
     public static final String parentTableName = "childs";
     public static final String grandParentTableName = "persons";
 
@@ -56,13 +58,13 @@ public class GrandChildTest extends ChildTest {
         gc.setLastName("GrandLuffy");
         gc.setGrandChildName("GrandChild");
         Assert.assertTrue(gc.save());
-        Integer id = 1;
-        Assert.assertEquals(id.intValue(), gc.getId().intValue());
+        id = gc.getId();
+        Assert.assertEquals(1, gc.getId().intValue());
     }
 
     @Test(dependsOnMethods = { "TestSave" })
     public void TestFind() {
-        GrandChild gc = new GrandChild().find(1);
+        GrandChild gc = new GrandChild().find(id);
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());
         Assert.assertEquals("GrandLuffy", gc.getLastName());
@@ -73,7 +75,7 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestFind" })
     public void TestUpdate() {
-        GrandChild gc = new GrandChild().find(1);
+        GrandChild gc = new GrandChild().find(id);
         Assert.assertEquals("GrandChild", gc.getGrandChildName());
         Assert.assertEquals("grandMonkey", gc.getChildName());
         Assert.assertEquals("GrandD", gc.getFirstName());
@@ -90,13 +92,12 @@ public class GrandChildTest extends ChildTest {
 
     @Test(dependsOnMethods = { "TestUpdate" })
     public void TestDestroy() {
-        GrandChild gc = new GrandChild().find(1);
+        GrandChild gc = new GrandChild().find(id);
         gc.setGrandChildName("d");
         gc.setChildName("a");
         gc.setFirstName("b");
         gc.setLastName("c");
         gc.update();
-       
         Assert.assertTrue(gc.destroy());
         Assert.assertNull(gc.getId());
     }

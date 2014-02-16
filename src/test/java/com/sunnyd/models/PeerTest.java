@@ -6,6 +6,7 @@ import com.sunnyd.database.fixtures.Prep;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -52,7 +53,7 @@ public class PeerTest extends Base implements IModel {
         a.setLastName("b");
         Document d = new Document();
         d.setDocName("aiodjoadjoia");
-        ArrayList<Document> docArray = a.getDocuments();
+        List<Document> docArray = a.getDocuments();
         docArray.add(d);
         a.setDocuments(docArray);
         Assert.assertTrue(d.save());
@@ -86,7 +87,7 @@ public class PeerTest extends Base implements IModel {
         
         Document d = new Document().find(1);
         d.setDocName("bbbbbbb");
-        ArrayList<Document> docArray = p.getDocuments();
+        List<Document> docArray = p.getDocuments();
         docArray.add(d);
         p.setDocuments(docArray);
         Assert.assertTrue(p.update());

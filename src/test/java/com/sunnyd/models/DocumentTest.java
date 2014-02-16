@@ -75,6 +75,7 @@ public class DocumentTest extends Base implements IModel{
         Document d = new Document().find(1);
         Assert.assertEquals("footb", d.getDocName());
         Assert.assertEquals("wais", d.getPeer().getFirstName());
+        Assert.assertEquals("wais", d.getPb().getFirstName());
         //Assert.assertEquals("aiodjoadjoia", a.getDocuments());
         Integer id = 1;
         Assert.assertEquals(id.intValue(), d.getId().intValue());

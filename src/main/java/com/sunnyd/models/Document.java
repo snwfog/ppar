@@ -22,13 +22,21 @@ public class Document extends Base implements IModel {
     private Date lastModifiedDate;
     @ActiveRecordField
     private Date creationDate;
+    
     @ActiveRelationHasOne
     private Peer peer;
+    
+    @ActiveRelationHasOne
+    private Peer Pb;
+    
     @ActiveRecordField
     private Integer peerId;
     
     @ActiveRecordField
     private String docType;
+    
+    @ActiveRecordField
+    private Integer pId;
 
 
     public Document() {
@@ -70,12 +78,9 @@ public class Document extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public static void main(String[] args) {
-        Document d = new Document();
-        d.setDocName("mydoc");
-        System.out.println(d.getPeer().getFirstName());
-        System.out.println(d.getPeer().getLastName());
-        //System.out.println(d.getPeer().getCreationDate());
+    public static void main(String[] args) {    
+        Document doc = new Document().find(1);
+        System.out.println(doc.getPb());
     }
 
     public Date getLastModifiedDate() {
@@ -106,6 +111,25 @@ public class Document extends Base implements IModel {
             this.docType = type;
             setUpdateFlag(true);
         }
+    }
+
+    public Integer getpId() {
+        return pId;
+    }
+
+    public void setpId(Integer pId) {
+        this.pId = pId;
+        setUpdateFlag(true);
+    }
+
+    public Peer getPb() {
+        initRelation("Pb");
+        return Pb;
+    }
+
+    public void setPb(Peer pb) {
+        Pb = pb;
+        setUpdateFlag(true);
     }
 
 

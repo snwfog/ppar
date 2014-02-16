@@ -22,6 +22,10 @@ public class Category extends Base implements IModel {
     
     @ActiveRelationManyToMany(relationTable = "groups_categories")
     private List<Group> groups;
+    
+    
+    @ActiveRelationManyToMany(relationTable = "g_c", thisForeignKeyName = "cId", collectionForeignKeyName = "gId") 
+    private List<Group> gs;
 
     public Category() {
         super();
@@ -70,5 +74,15 @@ public class Category extends Base implements IModel {
       System.out.println(a.toMap(true));
       
       System.out.println(Arrays.asList(a.getGroups()).toString());
+    }
+
+    public List<Group> getGs() {
+        initRelation("gs");
+        return gs;
+    }
+
+    public void setGs(List<Group> gs) {
+        this.gs = gs;
+        this.setUpdateFlag(true);
     }
 }

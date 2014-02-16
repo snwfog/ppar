@@ -13,5 +13,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ActiveRelationManyToMany {
     String relationTable();
-    
+    String thisForeignKeyName() default ""; 
+    String collectionForeignKeyName() default ""; 
 }

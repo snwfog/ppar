@@ -6,6 +6,7 @@ import com.sunnyd.annotations.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
@@ -40,7 +41,10 @@ public class Peer extends Base implements IModel {
     private String personalWebsite;
 
     @ActiveRelationHasMany
-    private ArrayList<Document> documents;
+    private List<Document> documents;
+    
+    @ActiveRelationHasMany (thisForeignKeyName = "pId")
+    private List<Document> blubberFUK;
 
     public Peer() {
         super();
@@ -113,36 +117,39 @@ public class Peer extends Base implements IModel {
         setUpdateFlag(true);
     }
 
-    public ArrayList<Document> getDocuments() {
+    public List<Document> getDocuments() {
         initRelation("documents");
         return documents;
     }
 
-    public void setDocuments(ArrayList<Document> documents) {
+    public void setDocuments(List<Document> documents) {
         this.documents = documents;
     }
     
     public static void main(String[] args) {
-        System.out.println(new Peer().findAll(null));
-        Peer a = new Peer();
-        a.setFirstName("fdf");
-        System.out.println(a.getRankId());
-        System.out.println(a.getDocuments());
+//        System.out.println(new Peer().findAll(null));
+//        Peer a = new Peer();
+//        a.setFirstName("fdf");
+//        System.out.println(a.getRankId());
+//        System.out.println(a.getDocuments());
+//        
+//        Document d = new Document();
+//        d.setDocName("aiodjoadjoia");
+//        List<Document> docArray = a.getDocuments();
+//        docArray.add(d);
+//        a.setDocuments(docArray);
+//        d.save();
+//        
+//        
+//        
+//        a.save();
+//        a.find(a.getId());
+//        //a.destroy();
+//        System.out.println(a.getFirstName());
+//        a.destroy();
         
-        Document d = new Document();
-        d.setDocName("aiodjoadjoia");
-        ArrayList<Document> docArray = a.getDocuments();
-        docArray.add(d);
-        a.setDocuments(docArray);
-        d.save();
-        
-        
-        
-        a.save();
-        a.find(a.getId());
-        //a.destroy();
-        System.out.println(a.getFirstName());
-        a.destroy();
+        Peer a = new Peer().find(1);
+        System.out.println(a.getBlubberFUK());
     }
 
     public Integer getRankId() {
@@ -160,5 +167,15 @@ public class Peer extends Base implements IModel {
 
     public void setDateOfBirth(Date dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public List<Document> getBlubberFUK() {
+        initRelation("blubberFUK");
+        return blubberFUK;
+    }
+
+    public void setBlubberFUK(List<Document> blubberFUK) {
+        this.blubberFUK = blubberFUK;
+        
     }
 }

@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 public class ManagerTest extends DatabaseTestSetup {
 
     final Logger logger = LoggerFactory.getLogger( ManagerTest.class );
-
+    int id = 0;
     private static final String tableName = "peers";
 
     public static Map<String, Object> getTestHash() {
@@ -51,11 +51,14 @@ public class ManagerTest extends DatabaseTestSetup {
         p.setPersonalWebsite( "http://charlescy.com" );
 
         Assert.assertTrue( p.save() );
+        id = p.getId();
+        
     }
 
     @Test(dependsOnMethods = { "saveTest" })
     public void findTest() throws SQLException {
-        String sql = String.format( "SELECT * FROM %s WHERE id = %s", tableName, 1 );
+        String sql = String.format( "SELECT * FROM %s WHERE id = %s", tableName, id );
+        System.out.println(sql);
         ResultSet rs = exec.executeQuery( sql );
         rs.next();
         Map<String, Object> peerAttributes = Manager.convertSQLToJava( rs );
