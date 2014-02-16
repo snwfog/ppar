@@ -2,29 +2,29 @@
 <metadata modelVersion="1.1.0">
   <groupId>com.sunnyd.ppar</groupId>
   <artifactId>ppar</artifactId>
-  <version>1.0.33-SNAPSHOT</version>
+  <version>1.0.28-SNAPSHOT</version>
   <versioning>
     <snapshot>
-      <timestamp>20140216.202959</timestamp>
-      <buildNumber>1</buildNumber>
+      <timestamp>20140201.000508</timestamp>
+      <buildNumber>2</buildNumber>
     </snapshot>
-    <lastUpdated>20140216202959</lastUpdated>
+    <lastUpdated>20140201000508</lastUpdated>
     <snapshotVersions>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>1.0.33-20140216.202959-1</value>
-        <updated>20140216202959</updated>
+        <value>1.0.28-20140201.000508-2</value>
+        <updated>20140201000508</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>1.0.33-20140216.202959-1</value>
-        <updated>20140216202959</updated>
+        <value>1.0.28-20140201.000508-2</value>
+        <updated>20140201000508</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>sources</classifier>
         <extension>jar</extension>
-        <value>1.0.33-20140216.202959-1</value>
-        <updated>20140216202959</updated>
+        <value>1.0.28-20140201.000508-2</value>
+        <updated>20140201000508</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
