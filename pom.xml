@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sunnyd.ppar</groupId>
     <artifactId>ppar</artifactId>
-    <version>1.0.33-SNAPSHOT</version>
+    <version>1.0.34-SNAPSHOT</version>
     <properties>
         <ppar.database>ppardb</ppar.database>
         <ppar.host>localhost</ppar.host>

@@ -616,8 +616,9 @@ public class Manager {
             String type = rsmd.getColumnTypeName( i );
 
             switch ( type ) {
+                case "BIGINT UNSIGNED":
                 case "INT UNSIGNED":
-                    converted.put( columnNameCamelCase, resultset.getObject( columnName ) );
+                    converted.put( columnNameCamelCase, resultset.getInt( columnName ) );
                     break;
                 case "INT":
                     converted.put( columnNameCamelCase, resultset.getObject( columnName ) );
