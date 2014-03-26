@@ -12,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -19,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
 import java.util.*;
 
@@ -29,7 +32,7 @@ import java.util.*;
  *         parent's primary key
  */
 
-public class Base implements IModel {
+public class Base {
 
     @ActiveRecordField
     private Integer id;
@@ -38,6 +41,8 @@ public class Base implements IModel {
     @ActiveRecordField
     private Date    lastModifiedDate;
     private Boolean updateFlag = false;
+    
+    static final Logger logger = LoggerFactory.getLogger( Manager.class );
 
     public Base() {
     }
@@ -49,7 +54,7 @@ public class Base implements IModel {
         //Default values
         Map<String, Object> defaultValues = getDefaultValues();    
         
-        //HM has data is more valuable than defaultValues
+        //HM data is more valuable than defaultValues
         defaultValues.putAll(HM);
         
         // Set Attribute
@@ -82,7 +87,7 @@ public class Base implements IModel {
                 }
             } else {
                 if(field.getAnnotation(ActiveRecordField.class) != null)
-                    System.out.println("MAP does not contain activeRecord Field " + fieldName);
+                    logger.info("MAP does not contain activeRecord Field, leaving as NULL " + fieldName);
             }
         }
 
@@ -98,17 +103,17 @@ public class Base implements IModel {
 
     }
 
-/**
- **********************************FIND****************************************
-**/
+    /**
+     **********************************FIND****************************************
+    **/
     
     public <T> T find(int id) {
-        return find(id, this);
+        assert id > 0;
+        return (T) find(id, this);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public <T> T find(Map<String, Object> conditions) {
-
+    public <T extends Base> T find(Map<String, Object> conditions) {    
         String tableName = BaseHelper.getClassTableName(this.getClass().getCanonicalName());
         List<Map<String, Object>> resultList = Manager.findAll(tableName, conditions);
         if (resultList.size() == 1) {
@@ -121,15 +126,15 @@ public class Base implements IModel {
             }
 
         } else if (resultList.size() > 1) {
-            System.out.println("Found more than 1 matching condition");
+            logger.info( "find(conditions) expected one result");
         } else {
-            System.out.println("Found none");
+            logger.info( "find(conditions) found none");
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T find(int id, Object instanceObject) {
+    private static <T extends Base> T find(int id, T instanceObject) {
         String canonicalClassName = instanceObject.getClass().getCanonicalName();
         try {
             // Get class attribute from database
@@ -161,6 +166,7 @@ public class Base implements IModel {
         return null;
     }
 
+    //Class|Table bound search
     @SuppressWarnings("unchecked")
     public <T extends Base> List<T> findAll(Map<String, Object> conditions) {
         String canonicalClassName = this.getClass().getCanonicalName();
@@ -179,6 +185,7 @@ public class Base implements IModel {
         return arrayList;
     }
 
+    //Custom Query
     @SuppressWarnings("unchecked")
     public <T extends Base> List<T> queryAll(String sqlQuery) {
         List<Map<String, Object>> list = Manager.findAll(sqlQuery);
@@ -206,6 +213,7 @@ public class Base implements IModel {
     **/
     public boolean update() {
         if (this.id != null) {
+            //Check dirty flag
             if (this.getUpdateFlag()) {
                 boolean allUpdated = update(this.getClass(), this);
                 if (allUpdated) {
@@ -214,23 +222,22 @@ public class Base implements IModel {
                 }
             }
         } else {
-            System.out.println("UH OH new object. Try saving first");
+            logger.error( "find(conditions) found none");
         }
         return false;
     }
 
     private static <T extends Base> boolean update(Class<? extends Base> classObject, T instanceObject) {
-        Map<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);
-        if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null) {
-
-            @SuppressWarnings("unchecked")
+        //Attribute of this class(does not include parent)
+        Map<String, Object> updateAttributes = BaseHelper.getTableFieldNameAndValue(classObject, instanceObject);       
+        if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null) {        
+            @SuppressWarnings("unchecked") //Single table inheritance
             boolean updated = Base.update((Class<T>) classObject.getSuperclass(), instanceObject);
             if (!updated) {
-                System.out.println("Could not update " + ((Base) instanceObject).getId() + " " + classObject.getName());
+                logger.error("Could not update" + ((Base) instanceObject).getId() + " " + classObject.getName());
                 return false;
             }
         }
-
         updateRelation(classObject, instanceObject);
         return Manager.update(((Base) instanceObject).getId(), classObject, updateAttributes);
     }
@@ -247,15 +254,13 @@ public class Base implements IModel {
                 if (annotationName.contentEquals("ActiveRelationManyToMany") || annotationName.contentEquals("ActiveRelationHasMany"))
                     updateManyRelation(field, annotations[0], classObject, instanceObject);
             }
-            
-            //TODO handling has one
 
         }
         return true;
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Base> void updateManyRelation(Field field, Annotation annotation, Class<T> classObject, Object instanceObject) {
+    private static <T extends Base> void updateManyRelation(Field field, Annotation annotation, Class<? extends Base> classObject, T instanceObject) {
         
         int id = ((Base) instanceObject).getId();
         field.setAccessible(true);
@@ -269,21 +274,22 @@ public class Base implements IModel {
         try {
             collection = (List<Object>) field.get(instanceObject);
             if (collection == null) {
-                // Either not initiated or no collection
+                //Not initiated
                 return;
             }
         } catch (IllegalArgumentException | IllegalAccessException e1) {
             e1.printStackTrace();
         }
         
-        // Get old collection from database by querying the table for [className]Id
+        //This class foreign key
         String thisForeignKeyName = getClassFKName(field, relationName.contentEquals("ActiveRelationManyToMany"));
         thisForeignKeyName = thisForeignKeyName.isEmpty() ? StringUtils.uncapitalize(classObject.getSimpleName()) + "Id" : thisForeignKeyName;
         
-
+        //collection foreign key
         String CollectionFKName = getCollectionFKName(field);          
         CollectionFKName = CollectionFKName.isEmpty() ? StringUtils.uncapitalize(relationSimpleName) + "Id" : CollectionFKName;
         
+        // Get old collection from database by querying the table for [className]Id
         Map<String, Object> condition = new HashMap<String, Object>();
         condition.put(thisForeignKeyName, id);
         ArrayList<Map<String, Object>> results = Manager.findAll(relationTable, condition);
@@ -292,8 +298,7 @@ public class Base implements IModel {
         Iterator<Map<String, Object>> savedCollection = results.iterator();
         List<Integer> oldIds = new ArrayList<Integer>();
         while (savedCollection.hasNext()) {
-            Map<String, Object> object = savedCollection.next();
-            
+            Map<String, Object> object = savedCollection.next();           
             //Many to many fieldname is [objectname]Id
             String idFieldName = relationName.contentEquals("ActiveRelationManyToMany") ? CollectionFKName : "id";
             oldIds.add((Integer) object.get(idFieldName));
@@ -311,11 +316,11 @@ public class Base implements IModel {
                     switch (relationName.toString()) {
 
                         case "ActiveRelationManyToMany":
-                            newObjectManyToMany(id, collection.get(i),  field, classObject);
+                            newObjectManyToMany(id, (T) collection.get(i),  field, classObject);
                             break;
 
                         case "ActiveRelationHasMany":
-                            newObjectHasMany(id, collection.get(i), field, classObject);
+                            newObjectHasMany(id, (T) collection.get(i), field, classObject);
                             break;
                         default:
                             break;
@@ -331,7 +336,7 @@ public class Base implements IModel {
                             break;
 
                         case "ActiveRelationHasMany":
-                            existingObjectHasMany(id, collection.get(i), field, classObject);
+                            existingObjectHasMany(id, (T) collection.get(i), field, classObject);
                             break;
                         default:
                             break;
@@ -349,7 +354,7 @@ public class Base implements IModel {
                 Iterator<Integer> oldIdIter = oldIds.iterator();
                 while (oldIdIter.hasNext()) {
                     if (relationName.contentEquals("ActiveRelationHasMany")) {
-                        //null the foreign key
+                        //Null the foreign key
                         int oldId = oldIdIter.next();
                         Map<String, Object> nullField = new HashMap<String, Object>();
                         nullField.put(thisForeignKeyName, null);
@@ -374,7 +379,7 @@ public class Base implements IModel {
         }
     }
 
-    private static void newObjectManyToMany(Integer id, Object collectionObject, Field field, Class<?> classObject) {
+    private static <T extends Base> void newObjectManyToMany(Integer id, T collectionObject, Field field, Class<? extends Base> classObject) {
         
         String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
         String relationSimpleName = BaseHelper.getGenericSimpleName(field);
@@ -413,7 +418,7 @@ public class Base implements IModel {
 
     }
 
-    private static void existingObjectManyToMany(Integer id, Integer collectionObjectId, Field field, Class<?> classObject) {
+    private static void existingObjectManyToMany(Integer id, Integer collectionObjectId, Field field, Class<? extends Base> classObject) {
         String relationSimpleName = BaseHelper.getGenericSimpleName(field);
         String relationTable = field.getAnnotation(ActiveRelationManyToMany.class).relationTable();
         
@@ -432,26 +437,23 @@ public class Base implements IModel {
         conditions.put(CollectionFKName, collectionObjectId);
         try {
             Manager.save(relationTable, conditions);
-
         } catch (com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException e) {
             // Do nothing, user must have added the same
-            // object twice in the collection
         }
 
     }
 
-    private static void newObjectHasMany(Integer id, Object collectionObject, Field field, Class<?> classObject) {
+    private static <T extends Base> void newObjectHasMany(Integer id, T collectionObject, Field field, Class<? extends Base> classObject) {
         String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
         
         String thisForeignKeyName = getClassFKName(field, false);
         thisForeignKeyName = thisForeignKeyName.isEmpty() ? StringUtils.capitalize(classObject.getSimpleName()) + "Id" : thisForeignKeyName;
         
         
-        // Handling: New collection object but doesn't exists in database
+        //Handling: New collection object but doesn't exists in database
         try {
             String setterMethod = "set" + thisForeignKeyName;
-            // Set objects in the has many collection to current instanceObject
-            // id
+            // Set objects, in the has many collection, to current instanceObject
             Method setRelationIdMethod = Class.forName(relationCanonicalName).getDeclaredMethod(setterMethod,
                     Integer.class);
             setRelationIdMethod.invoke(collectionObject, id);
@@ -464,10 +466,8 @@ public class Base implements IModel {
         }
     }
 
-    private static void existingObjectHasMany(Integer id, Object collectionObject, Field field, Class<?> classObject) {
-        // Handling: An existing object in database added to
-        // update collection object relation
-        
+    private static <T extends Base> void existingObjectHasMany(Integer id, T collectionObject, Field field, Class<? extends Base> classObject) {
+        // Handles: An existing object in database with new relation    
         String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
         String thisForeignKeyName = getClassFKName(field, false);
         thisForeignKeyName = thisForeignKeyName.isEmpty() ? StringUtils.capitalize(classObject.getSimpleName()) + "Id" : thisForeignKeyName;
@@ -504,7 +504,7 @@ public class Base implements IModel {
         return false;
     }
 
-    private static <T extends Base> int save(Class<?> classObject, Object objectInstance) {
+    private static <T extends Base> int save(Class<?> classObject, T objectInstance) {
         Map<String, Object> attrToPersist = BaseHelper.getTableFieldNameAndValue(classObject, objectInstance);
         int id = 0;
         if (classObject.getAnnotation(ActiveRecordInheritFrom.class) != null) {
@@ -516,17 +516,13 @@ public class Base implements IModel {
 
         // Save object before has many or ManyToMany relation fields
         id = Manager.save((Class<T>) classObject, attrToPersist);
-        // id = Manager.save(BaseHelper.getClassTableName(classObject),
-        // attrToPersist);
         saveRelation(classObject, objectInstance, id);
         return id;
     }
 
-    // objectInstance contains all the data related to that instance
-    // classObject is the class of interest
-    public static void saveRelation(Class<?> classObject, Object objectInstance, Integer id) {
+    // ObjectInstance contains all the data related to that instance, classObject is the class of interest
+    private static <T extends Base> void saveRelation(Class<?> classObject, T objectInstance, Integer id) {
 
-        // TODO Refactor large method
         Field[] fields = classObject.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
@@ -542,7 +538,7 @@ public class Base implements IModel {
         }
     }
       
-    private static void saveHasMany(Field field, Object objectInstance, Class<?> classObject, Integer id){
+    private static <T extends Base> void saveHasMany(Field field, T objectInstance, Class<?> classObject, Integer id){
         String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
         try {
             @SuppressWarnings("unchecked")
@@ -583,7 +579,7 @@ public class Base implements IModel {
         }
     }
         
-    private static void saveManyToMany(Field field, Object objectInstance, Class<?> classObject, Integer id){
+    private static <T extends Base> void saveManyToMany(Field field, T objectInstance, Class<?> classObject, Integer id){
         String relationCanonicalName = BaseHelper.getGenericCanonicalClassName(field);
         String relationSimpleName = BaseHelper.getGenericSimpleName(field);
         String relationTable = field.getAnnotation(ActiveRelationManyToMany.class).relationTable();
@@ -637,7 +633,6 @@ public class Base implements IModel {
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchMethodException | SecurityException
                 | ClassNotFoundException | InvocationTargetException
                 | MySQLIntegrityConstraintViolationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -662,6 +657,7 @@ public class Base implements IModel {
         }
         return success;
     }
+    
 
     /**
      **********************************Relation Lazy Load****************************************
@@ -712,7 +708,6 @@ public class Base implements IModel {
             }
 
         } catch (NoSuchFieldException | SecurityException | NegativeArraySizeException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -720,17 +715,16 @@ public class Base implements IModel {
     private boolean relationLoaded(Field relation) {
         try {
             if (relation.get(this) != null) {
-                System.out.println("alreadyInitialized");
+                logger.info("alreadyInitialized, skipping");
                 return true;
             }
         } catch (IllegalArgumentException | IllegalAccessException e2) {
-            // TODO Auto-generated catch block
             e2.printStackTrace();
         }
         return false;
     }
 
-    private void relationHasOne(Field relation) {
+    private <T extends Base> void relationHasOne(Field relation) {
         String relationCanonicalClassName = relation.getType().getCanonicalName();
         String relationSimpleName = relation.getType().getSimpleName();
         Object relationObject = null;
@@ -739,15 +733,14 @@ public class Base implements IModel {
             IdFKFieldName =  IdFKFieldName.isEmpty() ? StringUtils.uncapitalize(relationSimpleName)+"Id" : IdFKFieldName;
             Field relationIdField = this.getClass().getDeclaredField(IdFKFieldName);
             relationIdField.setAccessible(true);
-            Method findMethod = Class.forName(relationCanonicalClassName).getMethod("find", int.class, Object.class);
-            Object newInstance = Class.forName(relationCanonicalClassName).getConstructor().newInstance();
+            
+            T newInstance = (T) Class.forName(relationCanonicalClassName).getConstructor().newInstance();
             if (relationIdField.get(this) == null) {
                 return;
             }
-            relationObject = findMethod.invoke(newInstance, relationIdField.get(this), newInstance);
+            relationObject = this.find((Integer)relationIdField.get(this), newInstance);
         } catch (NoSuchMethodException | SecurityException | ClassNotFoundException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException | NoSuchFieldException | InstantiationException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -755,7 +748,6 @@ public class Base implements IModel {
         try {
             relation.set(this, relationObject);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -777,7 +769,6 @@ public class Base implements IModel {
         try {
             relationClass = Class.forName(relationCanonicalClassName);
         } catch (ClassNotFoundException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
 
@@ -800,7 +791,6 @@ public class Base implements IModel {
                     collection.add(relationClass.getConstructor(Map.class).newInstance(results.get(i)));
                 } else {
                     // ActiveRelationManyToMany
-                    //collection object foreign field name
                     String collectionForeignKeyName = getCollectionFKName(relation);
                     collectionForeignKeyName =  collectionForeignKeyName.isEmpty() ? StringUtils.uncapitalize(relationSimpleClassName) + "Id" : collectionForeignKeyName;   
                     Class<?> classObjectOfRelation = Class.forName(relationCanonicalClassName);
@@ -817,7 +807,6 @@ public class Base implements IModel {
         try {
             relation.set(this, collection);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -871,7 +860,6 @@ public class Base implements IModel {
         try {
             return this.getClass().getDeclaredField("tableName").get(null).toString();
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return null;
@@ -881,7 +869,6 @@ public class Base implements IModel {
         try {
             return this.getClass().getConstructor().newInstance().toMap(true);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return null;
@@ -890,20 +877,6 @@ public class Base implements IModel {
     public Map<String, Object> toMap() {
         return BaseHelper.getTableFieldNameAndValue(this);
     }
-    
-
-    
-//    private Map<String, Object> getDefaultValues(){
-//        try {
-//            Base temp = (Base)this.getClass().getConstructor().newInstance();
-//            return temp.toMapExcludeNullField();
-//        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-//                | NoSuchMethodException | SecurityException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
     
     public Map<String, Object> toMap(boolean excludeNull){     
         Map<String, Object> attributes = new HashMap<String, Object>();

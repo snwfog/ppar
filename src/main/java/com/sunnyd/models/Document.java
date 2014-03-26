@@ -5,13 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.ActiveRelationHasMany;
 import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
 
-public class Document extends Base implements IModel {
+public class Document extends Base {
     public static final String tableName = "documents";
 
     @ActiveRecordField

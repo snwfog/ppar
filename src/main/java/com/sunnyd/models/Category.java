@@ -1,7 +1,6 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 
 import java.util.Arrays;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @ActiveRecordModel
-public class Category extends Base implements IModel {
+public class Category extends Base{
 
     public static final String tableName = "categories";
 

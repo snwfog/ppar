@@ -15,7 +15,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Connector;
@@ -24,7 +23,7 @@ import com.sunnyd.database.fixtures.Prep;
 import com.sunnyd.models.Category;
 import com.sunnyd.models.Group;
 
-public class ManyToManyCustomNamesTest extends Base implements IModel{
+public class ManyToManyCustomNamesTest extends Base{
     private static final boolean purgeExistingRecord = true;
     
     private Integer groupId = null;

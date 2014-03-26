@@ -19,7 +19,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class ManyToManyTest extends Base implements IModel {
+public class ManyToManyTest extends Base {
 
     static final Logger logger = LoggerFactory.getLogger( ManyToManyTest.class );
     private Integer groupId = null;
@@ -137,6 +137,9 @@ public class ManyToManyTest extends Base implements IModel {
 
         g.getCategories().add( c1 );
         g.getCategories().add( c2 );
+        
+        c2.save();
+       
         g.save();
 
         String query =

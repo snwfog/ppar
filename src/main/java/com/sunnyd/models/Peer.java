@@ -1,7 +1,6 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 
 import java.sql.Date;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class Peer extends Base implements IModel {
+public class Peer extends Base {
     public static final String tableName = "peers";
 
     @ActiveRecordField
@@ -43,8 +42,6 @@ public class Peer extends Base implements IModel {
     @ActiveRelationHasMany
     private List<Document> documents;
     
-    @ActiveRelationHasMany (thisForeignKeyName = "pId")
-    private List<Document> blubberFUK;
 
     public Peer() {
         super();
@@ -149,7 +146,7 @@ public class Peer extends Base implements IModel {
 //        a.destroy();
         
         Peer a = new Peer().find(1);
-        System.out.println(a.getBlubberFUK());
+//        System.out.println(a.getBlubberFUK());
     }
 
     public Integer getRankId() {
@@ -169,13 +166,4 @@ public class Peer extends Base implements IModel {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public List<Document> getBlubberFUK() {
-        initRelation("blubberFUK");
-        return blubberFUK;
-    }
-
-    public void setBlubberFUK(List<Document> blubberFUK) {
-        this.blubberFUK = blubberFUK;
-        
-    }
 }

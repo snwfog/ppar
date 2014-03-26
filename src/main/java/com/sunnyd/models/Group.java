@@ -1,7 +1,6 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Group extends Base implements IModel {
+public class Group extends Base {
 
     public static final String tableName = "comments";
 
@@ -65,26 +64,6 @@ public class Group extends Base implements IModel {
         return this;
     }
     
-    public static void main(String[] args) {
-//        Group a = new Group().find(1);
-//        a.setGroupName("morsen");
-//
-//        Category aaa = a.getCategories().remove(2);
-//        System.out.println("REMOVEID"+aaa.getId());
-//        
-//        Category cat = new Category();
-//        cat.setCategoryName("xxxxxx").setDescription("aidjoiajdoa");
-//        cat.save();
-//        
-//        a.getCategories().add(cat);
-//        a.getCategories().contains(aaa);
-//        
-//        a.update();
-        
-      Group a = new Group().find(1);
-      System.out.println(a.getCs());
-        
-    }
 
     public List<Category> getCs() {
         initRelation("cs");

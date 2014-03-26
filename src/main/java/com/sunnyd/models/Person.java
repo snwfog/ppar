@@ -1,7 +1,6 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.*;
 import com.sunnyd.database.Manager;
 
@@ -10,7 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class Person extends Base implements IModel {
+public class Person extends Base {
     public static final String tableName = "persons";
 
     @ActiveRecordField

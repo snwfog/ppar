@@ -73,15 +73,4 @@ public class FunnelFactory {
 
         return funnel;
     }
-
-    public static void main( String[] args ) {
-        Funnel<Person> personFunnel = FunnelFactory.getInstance( Person.class );
-        Person p = new Person();
-        p.setFirstName( "Charles" );
-        p.setLastName( "Yang" );
-
-        Hasher hasher = Hashing.sha256().newHasher();
-        String newHashCode = "";
-        newHashCode = hasher.putObject( p, personFunnel ).hash().toString();
-    }
 }

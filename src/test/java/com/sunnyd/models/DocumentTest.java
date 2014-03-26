@@ -11,13 +11,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.annotations.ActiveRelationHasOne;
 import com.sunnyd.annotations.ActiveRecordField;
 import com.sunnyd.database.Manager;
 import com.sunnyd.database.fixtures.Prep;
 
-public class DocumentTest extends Base implements IModel{
+public class DocumentTest extends Base{
     
     public static final String tableName = "documents";
     

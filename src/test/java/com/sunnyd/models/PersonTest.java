@@ -1,7 +1,6 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.database.fixtures.Prep;
 
 import org.testng.Assert;
@@ -11,7 +10,7 @@ import org.testng.annotations.Test;
 import java.sql.SQLException;
 import java.util.Date;
 
-public class PersonTest extends Base implements IModel {
+public class PersonTest extends Base {
 
     public static final String tableName = "persons";
 

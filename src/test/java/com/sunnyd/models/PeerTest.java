@@ -1,7 +1,6 @@
 package com.sunnyd.models;
 
 import com.sunnyd.Base;
-import com.sunnyd.IModel;
 import com.sunnyd.database.fixtures.Prep;
 
 import java.sql.SQLException;
@@ -12,7 +11,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class PeerTest extends Base implements IModel {
+public class PeerTest extends Base {
     
     public static final String tableName = "peers";
     public static final String relatedTableName = "documents";
