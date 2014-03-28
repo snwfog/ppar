@@ -25,10 +25,6 @@ public class Connector {
     private static Connector instance;
     private static BoneCP connectionPool;
 
-    public static void main( String[] args ) throws SQLException {
-        Connector.getConnection();
-    }
-
     //private constructor
     private Connector() {
         // Initiate the URL from properties files or fall back to default

@@ -55,22 +55,22 @@ public class ManagerTest extends DatabaseTestSetup {
         
     }
 
-    @Test(dependsOnMethods = { "saveTest" })
-    public void findTest() throws SQLException {
-        String sql = String.format( "SELECT * FROM %s WHERE id = %s", tableName, id );
-        System.out.println(sql);
-        ResultSet rs = exec.executeQuery( sql );
-        rs.next();
-        Map<String, Object> peerAttributes = Manager.convertSQLToJava( rs );
-        Peer p = new Peer( peerAttributes );
-        Assert.assertEquals( p.getFirstName(), "Charles" );
-        Assert.assertEquals( p.getLastName(), "Yang" );
-        Assert.assertEquals( p.getEmail(), "donchoa@gmail.com" );
-        Assert.assertEquals( p.getUserName(), "snwfog" );
-        Assert.assertEquals( p.getPassword(), "1234" );
-        Assert.assertEquals( p.getPoint(), new Integer( 9000 ) );
-        Assert.assertEquals( p.getPersonalWebsite(), "http://charlescy.com" );
-    }
+//    @Test(dependsOnMethods = { "saveTest" })
+//    public void findTest() throws SQLException {
+//        String sql = String.format( "SELECT * FROM %s WHERE id = %s", tableName, id );
+//        System.out.println(sql);
+//        ResultSet rs = exec.executeQuery( sql );
+//        rs.next();
+//        Map<String, Object> peerAttributes = Manager.convertSQLToJava( rs );
+//        Peer p = new Peer( peerAttributes );
+//        Assert.assertEquals( p.getFirstName(), "Charles" );
+//        Assert.assertEquals( p.getLastName(), "Yang" );
+//        Assert.assertEquals( p.getEmail(), "donchoa@gmail.com" );
+//        Assert.assertEquals( p.getUserName(), "snwfog" );
+//        Assert.assertEquals( p.getPassword(), "1234" );
+//        Assert.assertEquals( p.getPoint(), new Integer( 9000 ) );
+//        Assert.assertEquals( p.getPersonalWebsite(), "http://charlescy.com" );
+//    }
 
     //  @Test(enabled = false)
     //  public void findAllTest() throws SQLException

@@ -1,6 +1,5 @@
 package com.sunnyd.database;
 
-import com.sunnyd.database.query.QueryExecutor;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,13 +15,11 @@ public class DatabaseTestSetup {
     final Logger logger = LoggerFactory.getLogger( DatabaseTestSetup.class );
     protected Connection conn;
     protected Statement stmt;
-    protected QueryExecutor exec;
 
     @BeforeClass
     public void setUp() throws SQLException {
         conn = Connector.getConnection();
         stmt = conn.createStatement();
-        exec = QueryExecutor.getInstance();
     }
 
     @AfterClass
