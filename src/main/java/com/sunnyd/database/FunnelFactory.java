@@ -58,7 +58,16 @@ public class FunnelFactory {
                                 if ( value != null ) {
                                     into.putString( value.toString(), Charsets.UTF_8 );
                                 }
-                            } else {
+                                
+      
+
+                            }
+                            else if ( fieldType == Boolean.class ) {
+                                Boolean value = f.get( instance ) == null ? null : (Boolean) f.get( instance );
+                                if ( value != null ) {
+                                    into.putBoolean( (Boolean) f.get( instance ) );
+                                }
+                            }else {
                                 into.putString( f.get( instance ).toString(), Charsets.UTF_8 );
                                 throw new Throwable( "Could not find associate Funnel for class of type: <" +
                                         fieldType.toString() + ">:" + f.getName() + "(" + f.get( instance ) + ")" );
